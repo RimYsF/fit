@@ -43,7 +43,7 @@
             }, 500);
         });
     </script>
-    <title>FitTracker AI</title>
+    <title>FitTracker</title>
     <style>
         :root {
             --tg-theme-bg-color: #ffffff;
@@ -303,11 +303,19 @@
             display: none; /* Hide video feed completely */
         }
 
+        #pose-canvas {
+            background-color: #1a3d2e; /* Темно-зеленый фон */
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+
         .video-container {
             position: relative;
             width: 100%;
             height: 50vh;
-            background: #000;
+            background: #1a3d2e; /* Темно-зеленый фон */
         }
 
         .pose-overlay {
@@ -317,7 +325,7 @@
             right: 0;
             bottom: 0;
             pointer-events: none;
-            background: #000; /* Black background */
+            background: #1a3d2e; /* Темно-зеленый фон */
         }
 
       
@@ -352,7 +360,7 @@
             color: var(--tg-theme-hint-color);
         }
 
-        .ai-feedback {
+        .feedback {
             background: var(--tg-theme-bg-color);
             border-radius: 8px;
             padding: 15px;
@@ -361,7 +369,7 @@
             border-left: 4px solid var(--primary);
         }
 
-        .ai-feedback-text {
+        .feedback-text {
             font-size: 16px;
             line-height: 1.5;
         }
@@ -730,13 +738,7 @@
                             <div class="toggle-slider"></div>
                         </div>
                     </div>
-                    <div class="setting-item">
-                        <span class="setting-label">Подсказки ИИ</span>
-                        <div class="toggle-switch active" id="ai-tips-toggle">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
+                                    </div>
 
                 <div class="settings-section">
                     <h3 class="settings-title">Данные</h3>
@@ -775,8 +777,8 @@
                         <div class="stat-label">Калории</div>
                     </div>
                 </div>
-                <div class="ai-feedback">
-                    <div class="ai-feedback-text" id="ai-feedback">Готовьтесь начать упражнение...</div>
+                <div class="feedback">
+                    <div class="feedback-text" id="feedback">Готовьтесь начать упражнение...</div>
                 </div>
                 <div class="control-buttons">
                     <button class="btn btn-primary" id="start-btn" onclick="startExercise()">Начать</button>
@@ -801,23 +803,6 @@
         let repCount = 0;
         let pose = null;
         let webcamStream = null;
-        let aiStreamController = null;
-
-        // Encrypted API key (Base64)
-        const ENCRYPTED_API_KEY = 'c2stb3ItdjEtNjEwZWViZDU0NWMzYjBlMGQwODI0OWI4YmQzZTU1NzlhNDk1Yjc4ZTEyYzJkYmJiMmUzM2Y3MGU5ZGUxYTJjMzU=';
-
-        // Function to decrypt Base64
-        function decryptApiKey(encryptedKey) {
-            try {
-                return atob(encryptedKey);
-            } catch (error) {
-                console.error('Error decrypting API key:', error);
-                return null;
-            }
-        }
-
-        // Get decrypted API key
-        const API_KEY = decryptApiKey(ENCRYPTED_API_KEY);
 
         // Exercise database
         const exercises = [
@@ -877,8 +862,7 @@
                     },
                     settings: {
                         soundEnabled: true,
-                        vibrationEnabled: true,
-                        aiTipsEnabled: true
+                        vibrationEnabled: true
                     }
                 };
                 localStorage.setItem('fittracker_data', JSON.stringify(initialData));
@@ -897,7 +881,6 @@
             // Settings toggles
             document.getElementById('sound-toggle').addEventListener('click', toggleSound);
             document.getElementById('vibration-toggle').addEventListener('click', toggleVibration);
-            document.getElementById('ai-tips-toggle').addEventListener('click', toggleAITips);
         }
 
         function switchWindow(windowName) {
@@ -982,7 +965,7 @@
             // Update modal
             document.getElementById('modal-exercise-name').textContent = exercise.name;
             document.getElementById('rep-count').textContent = '0';
-            document.getElementById('ai-feedback').textContent = 'Нажмите "Начать" для запуска упражнения';
+            document.getElementById('feedback').textContent = 'Нажмите "Начать" для запуска упражнения';
 
             // Show modal
             document.getElementById('exercise-modal').classList.add('active');
@@ -1064,13 +1047,6 @@
                         return;
                     }
 
-                    // Save context state
-                    ctx.save();
-
-                    // Apply mirror transformation for selfie view
-                    ctx.scale(-1, 1);
-                    ctx.translate(-canvas.width, 0);
-
                     // Draw pose landmarks and connections with optimizations
                     if (results.poseLandmarks) {
                         // Direct drawing for better real-time performance
@@ -1084,9 +1060,6 @@
                             });
                         }
                     }
-
-                    // Restore context state
-                    ctx.restore();
                 });
 
                 // Different constraints for Telegram
@@ -1162,7 +1135,7 @@
                 console.log('Camera and MediaPipe initialized successfully');
 
                 // Update feedback
-                document.getElementById('ai-feedback').textContent =
+                document.getElementById('feedback').textContent =
                     'Камера готова! Распознавание поз активно.';
 
             } catch (error) {
@@ -1186,7 +1159,7 @@
                     window.Telegram.WebApp.showAlert(errorMessage);
                 }
 
-                document.getElementById('ai-feedback').textContent = errorMessage;
+                document.getElementById('feedback').textContent = errorMessage;
 
                 // Enable manual retry
                 const startBtn = document.getElementById('start-btn');
@@ -1206,13 +1179,10 @@
             // Update UI
             document.getElementById('start-btn').style.display = 'none';
             document.getElementById('pause-btn').style.display = 'block';
-            document.getElementById('ai-feedback').textContent = 'Начинаем упражнение!';
+            document.getElementById('feedback').textContent = 'Начинаем упражнение!';
 
             // Start timer
             startTimer();
-
-            // Start AI analysis
-            await startAIAnalysis();
         }
 
         function pauseExercise() {
@@ -1245,76 +1215,7 @@
             }, 1000);
         }
 
-        async function startAIAnalysis() {
-            // Initialize OpenRouter connection
-            if (!API_KEY) {
-                console.error('API key not available');
-                document.getElementById('ai-feedback').textContent = 'Ошибка: API ключ недоступен';
-                return;
-            }
-
-            try {
-                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${API_KEY}`,
-                        'Content-Type': 'application/json',
-                        'HTTP-Referer': window.location.origin,
-                        'X-Title': 'FitTracker AI'
-                    },
-                    body: JSON.stringify({
-                        model: 'google/gemini-2.0-flash-001',
-                        messages: [{
-                            role: 'system',
-                            content: `You are a fitness AI coach analyzing exercise form through computer vision.
-                            Current exercise: ${currentExercise.name}
-                            Target: ${currentExercise.target} ${currentExercise.id === 'plank' ? 'seconds' : 'repetitions'}
-
-                            Provide concise, encouraging feedback in Russian. Focus on:
-                            1. Exercise form correction
-                            2. Counting repetitions
-                            3. Motivational comments
-
-                            Keep responses under 100 characters.`
-                        }],
-                        stream: true
-                    })
-                });
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    const chunk = decoder.decode(value);
-                    const lines = chunk.split('\n');
-
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const data = line.slice(6);
-                            if (data === '[DONE]') continue;
-
-                            try {
-                                const parsed = JSON.parse(data);
-                                const content = parsed.choices?.[0]?.delta?.content;
-                                if (content) {
-                                    updateAIFeedback(content);
-                                }
-                            } catch (e) {
-                                // Skip invalid JSON
-                            }
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('AI Analysis error:', error);
-                document.getElementById('ai-feedback').textContent =
-                    'AI недоступен. Продолжайте упражнение самостоятельно.';
-            }
-        }
-
+    
         function analyzeExerciseMediaPipe(landmarks) {
             // Extract key points for the current exercise using MediaPipe format
             let exerciseData = null;
@@ -1348,7 +1249,7 @@
                 if (exerciseData.repDetected) {
                     repCount++;
                     document.getElementById('rep-count').textContent = repCount;
-                    document.getElementById('ai-feedback').textContent =
+                    document.getElementById('feedback').textContent =
                         `Отлично! ${repCount} из ${currentExercise.target}`;
 
                     // Check if target reached
@@ -1356,9 +1257,6 @@
                         completeExercise();
                     }
                 }
-
-                // Send exercise data to AI
-                sendToAI(exerciseData);
             }
         }
 
@@ -1611,8 +1509,8 @@
             const width = canvas.width;
             const height = canvas.height;
 
-            // Fill canvas with black background
-            ctx.fillStyle = '#000000';
+            // Fill canvas with dark green background
+            ctx.fillStyle = '#1a3d2e';
             ctx.fillRect(0, 0, width, height);
 
             // Set rendering optimizations
@@ -1889,18 +1787,9 @@
             return angle;
         }
 
-        function sendToAI(exerciseData) {
-            // This would send the exercise data to the AI for analysis
-            // The AI would respond with feedback and rep counting
-        }
-
-        function updateAIFeedback(feedback) {
-            const feedbackElement = document.getElementById('ai-feedback');
-            feedbackElement.textContent = feedback;
-        }
-
+      
         function updateExerciseFeedback(exerciseData) {
-            const feedbackElement = document.getElementById('ai-feedback');
+            const feedbackElement = document.getElementById('feedback');
 
             if (!exerciseData) return;
 
@@ -1955,7 +1844,7 @@
             pauseExercise();
 
             // Show completion message
-            document.getElementById('ai-feedback').textContent =
+            document.getElementById('feedback').textContent =
                 `Отлично! Выполнено ${repCount} повторений!`;
 
             // Save to progress
@@ -2152,15 +2041,7 @@
             localStorage.setItem('fittracker_data', JSON.stringify(data));
         }
 
-        function toggleAITips() {
-            const toggle = document.getElementById('ai-tips-toggle');
-            toggle.classList.toggle('active');
-
-            const data = JSON.parse(localStorage.getItem('fittracker_data'));
-            data.settings.aiTipsEnabled = toggle.classList.contains('active');
-            localStorage.setItem('fittracker_data', JSON.stringify(data));
-        }
-
+        
         function resetProgress() {
             if (confirm('Вы уверены, что хотите сбросить весь прогресс? Это действие нельзя отменить.')) {
                 localStorage.removeItem('fittracker_data');
