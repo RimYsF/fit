@@ -850,6 +850,32 @@
         let pose = null;
         let webcamStream = null;
 
+        // Smoothing for pose tracking
+        let previousLandmarks = null;
+        const smoothingFactor = 0.7; // 0 = no smoothing, 1 = maximum smoothing
+
+        // Function to smooth landmarks for stability
+        function smoothLandmarks(currentLandmarks) {
+            if (!previousLandmarks) {
+                previousLandmarks = currentLandmarks.map(lm => ({ ...lm }));
+                return currentLandmarks;
+            }
+
+            const smoothedLandmarks = currentLandmarks.map((landmark, index) => {
+                const prev = previousLandmarks[index];
+                return {
+                    ...landmark,
+                    x: landmark.x * smoothingFactor + prev.x * (1 - smoothingFactor),
+                    y: landmark.y * smoothingFactor + prev.y * (1 - smoothingFactor),
+                    z: (landmark.z || 0) * smoothingFactor + (prev.z || 0) * (1 - smoothingFactor),
+                    visibility: Math.max(landmark.visibility, prev.visibility)
+                };
+            });
+
+            previousLandmarks = smoothedLandmarks.map(lm => ({ ...lm }));
+            return smoothedLandmarks;
+        }
+
         // Exercise database
         const exercises = [
             { id: 'pushups', name: 'Отжимания', icon: '💪', target: 20, calories: 0.5 },
@@ -1073,14 +1099,16 @@
                     }
                 });
 
-                // Configure MediaPipe Pose for full body tracking
+                // Configure MediaPipe Pose for maximum accuracy
                 pose.setOptions({
-                    modelComplexity: 2,  // Higher accuracy for more landmarks
+                    modelComplexity: 2,  // Maximum accuracy model
                     smoothLandmarks: true,
                     enableSegmentation: false,
                     smoothSegmentation: false,
-                    minDetectionConfidence: 0.3,  // Lower threshold for better detection
-                    minTrackingConfidence: 0.3
+                    minDetectionConfidence: 0.1,  // Very low threshold for better detection
+                    minTrackingConfidence: 0.1,   // Very low threshold for persistent tracking
+                    staticImageMode: false,        // Optimized for video
+                    refineFaceLandmarks: false     // Disable face landmarks for performance
                 });
 
                 // Optimized MediaPipe callback with frame skipping for better performance
@@ -1095,14 +1123,17 @@
 
                     // Draw pose landmarks and connections with optimizations
                     if (results.poseLandmarks) {
-                        // Direct drawing for better real-time performance
-                        drawCustomSkeleton(ctx, results.poseLandmarks);
+                        // Apply smoothing for stable tracking
+                        const smoothedLandmarks = smoothLandmarks(results.poseLandmarks);
 
-                        // Non-blocking exercise analysis
+                        // Direct drawing for better real-time performance
+                        drawCustomSkeleton(ctx, smoothedLandmarks);
+
+                        // Non-blocking exercise analysis with smoothed landmarks
                         if (isExerciseActive) {
                             // Use microtask for non-blocking analysis
                             Promise.resolve().then(() => {
-                                analyzeExerciseMediaPipe(results.poseLandmarks);
+                                analyzeExerciseMediaPipe(smoothedLandmarks);
                             });
                         }
                     }
@@ -1134,6 +1165,10 @@
                 video.srcObject = webcamStream;
                 video.setAttribute('playsinline', ''); // Important for iOS
                 video.setAttribute('muted', ''); // Mute to prevent issues
+
+                // Add CSS for mirror effect
+                video.style.transform = 'scaleX(-1)';
+                video.style.display = 'none'; // Hide video, show only canvas with skeleton
 
                 // Wait for video to be ready
                 await new Promise((resolve, reject) => {
@@ -1559,7 +1594,7 @@
             29: 'LEFT_LEG', 30: 'RIGHT_LEG', 31: 'LEFT_LEG', 32: 'RIGHT_LEG'
         };
 
-        // Enhanced skeleton drawing optimized for black background
+        // Enhanced skeleton drawing with mirroring for natural movement
         function drawCustomSkeleton(ctx, landmarks) {
             const canvas = ctx.canvas;
             const width = canvas.width;
@@ -1573,40 +1608,63 @@
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
 
-            // Pre-calculate landmark positions for better performance
-            const positions = landmarks.map(landmark => ({
+            // Enable mirroring for natural movement (right hand on screen = right hand of user)
+            ctx.save();
+            ctx.translate(width, 0);
+            ctx.scale(-1, 1);
+
+            // Enhanced landmark processing with stability improvements
+            const positions = landmarks.map((landmark, index) => ({
                 x: landmark.x * width,
                 y: landmark.y * height,
                 visibility: landmark.visibility || 0,
-                z: landmark.z || 0
+                z: (landmark.z || 0) * 100, // Amplify z for better depth perception
+                index: index
             }));
 
-            // Draw connections with enhanced colors for black background
-            ctx.save();
+            // Draw connections with enhanced colors and improved accuracy
 
             POSE_CONNECTIONS.forEach(([start, end]) => {
                 const startPoint = positions[start];
                 const endPoint = positions[end];
 
+                // Lower visibility threshold for better tracking
                 if (startPoint && endPoint &&
-                    startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
+                    startPoint.visibility > 0.3 && endPoint.visibility > 0.3) {
 
-                    // Calculate connection properties
+                    // Calculate connection properties with improved accuracy
                     const avgVisibility = (startPoint.visibility + endPoint.visibility) / 2;
                     const avgZ = (startPoint.z + endPoint.z) / 2;
-                    const opacity = Math.max(0.5, avgVisibility); // Higher minimum opacity for black bg
+                    const opacity = Math.max(0.3, avgVisibility); // Allow lower opacity for better tracking
 
-                    // Dynamic line width based on depth
-                    const lineWidth = Math.max(3, Math.min(5, 4 * (1.0 + Math.abs(avgZ))));
+                    // Enhanced line width calculation based on depth and visibility
+                    const depthFactor = Math.max(0.8, Math.min(1.2, 1.0 + avgZ * 0.01));
+                    const visibilityFactor = Math.max(0.7, avgVisibility);
+                    const lineWidth = Math.max(2, Math.min(6, 4 * depthFactor * visibilityFactor));
 
-                    // Enhanced color selection based on confidence
+                    // Smoother color transitions
                     let colorRGB;
-                    if (avgVisibility > 0.8) {
+                    const confidence = avgVisibility;
+                    if (confidence > 0.85) {
                         colorRGB = CONNECTION_COLORS.HIGH_CONFIDENCE;
-                    } else if (avgVisibility > 0.6) {
+                    } else if (confidence > 0.65) {
+                        // Interpolate between high and medium confidence
+                        const t = (confidence - 0.65) / 0.2;
+                        colorRGB = {
+                            r: Math.floor(CONNECTION_COLORS.MEDIUM_CONFIDENCE.r * (1-t) + CONNECTION_COLORS.HIGH_CONFIDENCE.r * t),
+                            g: Math.floor(CONNECTION_COLORS.MEDIUM_CONFIDENCE.g * (1-t) + CONNECTION_COLORS.HIGH_CONFIDENCE.g * t),
+                            b: Math.floor(CONNECTION_COLORS.MEDIUM_CONFIDENCE.b * (1-t) + CONNECTION_COLORS.HIGH_CONFIDENCE.b * t)
+                        };
+                    } else if (confidence > 0.45) {
                         colorRGB = CONNECTION_COLORS.MEDIUM_CONFIDENCE;
                     } else {
-                        colorRGB = CONNECTION_COLORS.LOW_CONFIDENCE;
+                        // Interpolate between medium and low confidence
+                        const t = (confidence - 0.3) / 0.15;
+                        colorRGB = {
+                            r: Math.floor(CONNECTION_COLORS.LOW_CONFIDENCE.r * (1-t) + CONNECTION_COLORS.MEDIUM_CONFIDENCE.r * t),
+                            g: Math.floor(CONNECTION_COLORS.LOW_CONFIDENCE.g * (1-t) + CONNECTION_COLORS.MEDIUM_CONFIDENCE.g * t),
+                            b: Math.floor(CONNECTION_COLORS.LOW_CONFIDENCE.b * (1-t) + CONNECTION_COLORS.MEDIUM_CONFIDENCE.b * t)
+                        };
                     }
 
                     // Apply depth-based brightness adjustment
@@ -1641,15 +1699,16 @@
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
 
-            // Draw landmarks with enhanced effects for dark green background
+            // Draw landmarks with enhanced visibility and accuracy
             positions.forEach((pos, index) => {
                 const bodyPart = BODY_PARTS[index];
 
-                // Skip face landmarks and invisible points
-                if (bodyPart === 'SKIP' || pos.visibility <= 0.3) return;
+                // Lower threshold for better tracking, but still skip face landmarks
+                if (bodyPart === 'SKIP' || pos.visibility <= 0.1) return;
 
                 const color = BODY_PART_COLORS[bodyPart] || '#FFFFFF';
-                const opacity = pos.visibility > 0.7 ? 1.0 : pos.visibility; // Full opacity for high confidence
+                // Use gradual opacity for better visibility of low-confidence points
+                const opacity = pos.visibility > 0.8 ? 1.0 : Math.max(0.3, pos.visibility);
 
                 // Dynamic radius based on body part and depth
                 let baseRadius;
@@ -1663,22 +1722,26 @@
                     baseRadius = 6; // Hips/torso
                 }
 
-                const radius = baseRadius * (1.0 + Math.min(0.3, Math.abs(pos.z) * 1.5));
+                const radius = baseRadius * (1.0 + Math.min(0.3, Math.abs(pos.z) * 0.015));
 
-                // Enhanced outer glow for better visibility on black
-                if (pos.visibility > 0.8) {
+                // Adaptive glow effect based on visibility
+                const glowIntensity = pos.visibility > 0.7 ? 12 : (pos.visibility > 0.4 ? 8 : 4);
+                const glowOpacity = pos.visibility > 0.7 ? 0.4 : (pos.visibility > 0.4 ? 0.3 : 0.2);
+
+                if (pos.visibility > 0.3) {
                     const glowGradient = ctx.createRadialGradient(
                         pos.x, pos.y, radius * 0.5,
-                        pos.x, pos.y, radius + 12
+                        pos.x, pos.y, radius + glowIntensity
                     );
                     glowGradient.addColorStop(0, color);
-                    glowGradient.addColorStop(0.5, color + '80'); // Semi-transparent
+                    glowGradient.addColorStop(0.3, color + 'CC'); // Less transparent
+                    glowGradient.addColorStop(0.7, color + '40'); // More transparent
                     glowGradient.addColorStop(1, 'transparent');
 
                     ctx.fillStyle = glowGradient;
-                    ctx.globalAlpha = opacity * 0.4;
+                    ctx.globalAlpha = opacity * glowOpacity;
                     ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, radius + 12, 0, 2 * Math.PI);
+                    ctx.arc(pos.x, pos.y, radius + glowIntensity, 0, 2 * Math.PI);
                     ctx.fill();
                 }
 
@@ -1747,10 +1810,11 @@
                 }
             });
 
-            
+  
             // Reset all context states
             ctx.globalAlpha = 1.0;
-            ctx.restore();
+            ctx.restore();  // Restore from connection/landmark drawing state
+            ctx.restore();  // Restore from mirror transformation
         }
 
         // Helper function to calculate 3D angle between three points
