@@ -315,6 +315,23 @@
             transform: scaleX(-1);
         }
 
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 50vh;
+            background: #000;
+        }
+
+        .pose-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            transform: scaleX(-1);
+        }
+
         .pose-overlay {
             position: absolute;
             top: 0;
@@ -1037,29 +1054,19 @@
 
                 // Setup MediaPipe callback
                 pose.onResults((results) => {
-                    // Clear canvas
-                    ctx.save();
+                    // Clear canvas (transparent background)
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    // Draw the video frame (mirrored for natural feel)
-                    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
 
                     // Draw pose landmarks and connections
                     if (results.poseLandmarks) {
-                        // Draw connections
-                        drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS,
-                            { color: '#00FF00', lineWidth: 2 });
-                        // Draw landmarks
-                        drawLandmarks(ctx, results.poseLandmarks,
-                            { color: '#FF0000', lineWidth: 1, radius: 3 });
+                        // Draw custom skeleton
+                        drawCustomSkeleton(ctx, results.poseLandmarks);
 
                         // Analyze exercise if active
                         if (isExerciseActive) {
                             analyzeExerciseMediaPipe(results.poseLandmarks);
                         }
                     }
-
-                    ctx.restore();
                 });
 
                 // Different constraints for Telegram
@@ -1533,6 +1540,71 @@
                 isGoodForm: true,
                 repDetected: false // Complex movement requiring state tracking
             };
+        }
+
+        // Custom function to draw skeleton
+        function drawCustomSkeleton(ctx, landmarks) {
+            // Define connections for pose skeleton
+            const connections = [
+                // Face
+                [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8],
+                // Arms
+                [11, 12], // Shoulders
+                [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], // Left arm
+                [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], // Right arm
+                [11, 23], [12, 24], // Shoulders to hips
+                // Torso
+                [23, 24], // Hips
+                [23, 25], [24, 26], // Hips to knees
+                // Legs
+                [25, 27], [27, 29], [29, 31], // Left leg
+                [26, 28], [28, 30], [30, 32], // Right leg
+            ];
+
+            // Draw connections (skeleton lines)
+            ctx.strokeStyle = '#00FF00';
+            ctx.lineWidth = 3;
+
+            connections.forEach(([start, end]) => {
+                const startPoint = landmarks[start];
+                const endPoint = landmarks[end];
+
+                if (startPoint && endPoint &&
+                    startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
+                    ctx.beginPath();
+                    ctx.moveTo(startPoint.x * ctx.canvas.width, startPoint.y * ctx.canvas.height);
+                    ctx.lineTo(endPoint.x * ctx.canvas.width, endPoint.y * ctx.canvas.height);
+                    ctx.stroke();
+                }
+            });
+
+            // Draw landmarks (joints)
+            landmarks.forEach((landmark, index) => {
+                if (landmark.visibility > 0.5) {
+                    const x = landmark.x * ctx.canvas.width;
+                    const y = landmark.y * ctx.canvas.height;
+
+                    // Different colors for different body parts
+                    if (index <= 10) { // Face
+                        ctx.fillStyle = '#FFD700'; // Gold
+                    } else if (index <= 22) { // Arms
+                        ctx.fillStyle = '#FF4444'; // Red
+                    } else if (index <= 24) { // Core
+                        ctx.fillStyle = '#4444FF'; // Blue
+                    } else { // Legs
+                        ctx.fillStyle = '#44FF44'; // Green
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Add white border
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            });
         }
 
         // Helper function to calculate 3D angle between three points
