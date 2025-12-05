@@ -808,6 +808,21 @@
             renderWorkoutWindow();
             updateStatistics();
             setupEventListeners();
+
+            // Check if running in Telegram
+            if (window.Telegram && window.Telegram.WebApp) {
+                console.log('Running in Telegram Mini App');
+
+                // Set theme based on Telegram
+                const themeParams = window.Telegram.WebApp.themeParams;
+                if (themeParams) {
+                    document.documentElement.style.setProperty('--tg-theme-bg-color', themeParams.bg_color || '#ffffff');
+                    document.documentElement.style.setProperty('--tg-theme-text-color', themeParams.text_color || '#222222');
+                    document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', themeParams.secondary_bg_color || '#f5f5f5');
+                }
+            } else {
+                console.log('Running in regular browser');
+            }
         });
 
         function initializeApp() {
@@ -939,39 +954,71 @@
         }
 
         async function initializeCamera() {
-            try {
-                const video = document.getElementById('webcam');
+            const video = document.getElementById('webcam');
+            const isTelegram = window.Telegram && window.Telegram.WebApp;
 
+            // Special handling for Telegram Mini App
+            if (isTelegram) {
+                console.log('Initializing camera in Telegram Mini App');
+            }
+
+            try {
                 // Check browser support
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     throw new Error('Браузер не поддерживает доступ к камере');
                 }
 
-                // Request camera access with better constraints
-                webcamStream = await navigator.mediaDevices.getUserMedia({
+                // Different constraints for Telegram
+                const constraints = isTelegram ? {
+                    video: {
+                        width: { min: 320, ideal: 640, max: 1280 },
+                        height: { min: 240, ideal: 480, max: 720 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                } : {
                     video: {
                         width: { ideal: 640 },
                         height: { ideal: 480 },
                         facingMode: 'user'
                     },
                     audio: false
-                });
+                };
 
-                // Set video source and wait for it to load
+                console.log('Requesting camera with constraints:', constraints);
+
+                // Request camera access
+                webcamStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                // Set video source
                 video.srcObject = webcamStream;
+                video.setAttribute('playsinline', ''); // Important for iOS
+                video.setAttribute('muted', ''); // Mute to prevent issues
 
                 // Wait for video to be ready
                 await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Timeout waiting for video to load'));
+                    }, 10000); // Increased timeout for Telegram
+
                     video.onloadedmetadata = () => {
+                        clearTimeout(timeout);
                         video.play()
-                            .then(resolve)
-                            .catch(reject);
+                            .then(() => {
+                                console.log('Video playing successfully');
+                                // Additional delay for Telegram
+                                setTimeout(resolve, 500);
+                            })
+                            .catch(err => {
+                                console.error('Video play error:', err);
+                                reject(err);
+                            });
                     };
 
-                    // Set timeout for error handling
-                    setTimeout(() => {
-                        reject(new Error('Timeout waiting for video to load'));
-                    }, 5000);
+                    video.onerror = (e) => {
+                        clearTimeout(timeout);
+                        reject(new Error('Video error: ' + e));
+                    };
                 });
 
                 console.log('Camera initialized successfully');
@@ -979,12 +1026,16 @@
                 // Initialize pose detection after video is ready
                 await initializePoseDetection();
 
+                // Update feedback
+                document.getElementById('ai-feedback').textContent =
+                    'Камера готова! Нажмите "Начать" для тренировки.';
+
             } catch (error) {
                 console.error('Camera initialization error:', error);
                 let errorMessage = 'Не удалось получить доступ к камере. ';
 
                 if (error.name === 'NotAllowedError') {
-                    errorMessage = 'Доступ к камере запрещен. Пожалуйста, разрешите доступ в настройках браузера.';
+                    errorMessage = 'Доступ к камере запрещен. Проверьте разрешения Telegram в настройках телефона.';
                 } else if (error.name === 'NotFoundError') {
                     errorMessage = 'Камера не найдена. Пожалуйста, проверьте подключение.';
                 } else if (error.name === 'NotReadableError') {
@@ -995,7 +1046,19 @@
                     errorMessage += error.message;
                 }
 
+                // In Telegram, also show a native alert
+                if (isTelegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showAlert(errorMessage);
+                }
+
                 document.getElementById('ai-feedback').textContent = errorMessage;
+
+                // Enable manual retry
+                const startBtn = document.getElementById('start-btn');
+                if (startBtn) {
+                    startBtn.textContent = 'Повторить';
+                    startBtn.onclick = initializeCamera;
+                }
             }
         }
 
@@ -1006,10 +1069,16 @@
                     throw new Error('Библиотека распознавания поз не загружена');
                 }
 
+                console.log('Loading TensorFlow.js models...');
+
+                // Wait for TensorFlow to be ready
+                if (window.tf && window.tf.ready) {
+                    await window.tf.ready();
+                }
+
                 const detectorConfig = {
                     modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-                    enableSmoothing: true,
-                    modelUrl: 'https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/models/movenet/singlepose/lightning/model.json'
+                    enableSmoothing: true
                 };
 
                 console.log('Initializing pose detector...');
@@ -1020,6 +1089,10 @@
 
                 console.log('Pose detector initialized successfully');
 
+                // Update feedback
+                document.getElementById('ai-feedback').textContent =
+                    'Распознавание поз активно. Встаньте в кадр!';
+
                 // Start pose detection loop after a short delay
                 setTimeout(() => {
                     detectPose();
@@ -1028,7 +1101,27 @@
             } catch (error) {
                 console.error('Pose detection initialization error:', error);
                 document.getElementById('ai-feedback').textContent =
-                    'Не удалось инициализировать распознавание поз. Пожалуйста, обновите страницу и попробуйте снова.';
+                    'Распознавание поз недоступно. Вы можете выполнять упражнение без подсчета.';
+
+                // Continue without pose detection but allow manual counting
+                enableManualMode();
+            }
+        }
+
+        function enableManualMode() {
+            // Enable manual mode when pose detection fails
+            const startBtn = document.getElementById('start-btn');
+            if (startBtn) {
+                startBtn.style.display = 'block';
+                startBtn.textContent = 'Начать (ручной режим)';
+                startBtn.onclick = () => {
+                    isExerciseActive = true;
+                    startTimer();
+                    startBtn.style.display = 'none';
+                    document.getElementById('pause-btn').style.display = 'block';
+                    document.getElementById('ai-feedback').textContent =
+                        'Ручной режим. Считайте повторения самостоятельно!';
+                };
             }
         }
 
