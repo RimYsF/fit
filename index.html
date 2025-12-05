@@ -9,48 +9,22 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="robots" content="noindex,nofollow" />
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
-    <!-- MediaPipe for pose detection - optimized for mobile and Telegram Mini Apps -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
-    <!-- Additional script for MediaPipe initialization -->
+    <!-- MediaPipe for pose detection - using direct script tags -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" crossorigin="anonymous"></script>
+    <!-- Initialize MediaPipe after scripts load -->
     <script>
-        // Global flag to track MediaPipe loading
-        window.mediapipeReady = false;
-        window.Pose = null;
+        // MediaPipe is loaded automatically, no need to wait
+        console.log('MediaPipe scripts loaded');
 
-        // Wait for MediaPipe to load
-        function waitForMediaPipe() {
-            return new Promise((resolve) => {
-                const checkInterval = setInterval(() => {
-                    if (window.Pose && window.Camera) {
-                        clearInterval(checkInterval);
-                        console.log('MediaPipe loaded successfully');
-                        window.mediapipeReady = true;
-                        resolve();
-                    }
-                }, 100);
-
-                // Fallback after 10 seconds
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    console.warn('MediaPipe did not load properly');
-                    resolve();
-                }, 10000);
-            });
+        // Check if MediaPipe is available
+        if (typeof window.Pose !== 'undefined') {
+            console.log('MediaPipe Pose is available');
+            window.mediapipeReady = true;
+        } else {
+            console.error('MediaPipe Pose not found');
         }
-
-        // Initialize MediaPipe
-        window.addEventListener('load', () => {
-            waitForMediaPipe().then(() => {
-                if (window.mediapipeReady) {
-                    console.log('MediaPipe ready for use');
-                } else {
-                    console.error('Failed to load MediaPipe');
-                }
-            });
-        });
     </script>
     <title>FitTracker AI</title>
     <style>
@@ -1032,12 +1006,6 @@
                 console.log('Checking MediaPipe availability...');
                 console.log('window.Pose:', typeof window.Pose);
                 console.log('window.Camera:', typeof window.Camera);
-
-                // Wait for MediaPipe to be ready
-                if (!window.mediapipeReady) {
-                    console.log('Waiting for MediaPipe to load...');
-                    await waitForMediaPipe();
-                }
 
                 // Check if Pose constructor is available
                 if (typeof window.Pose !== 'function') {
