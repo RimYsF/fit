@@ -9,22 +9,25 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="robots" content="noindex,nofollow" />
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
-    <!-- TensorFlow.js with specific version for better compatibility -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js" crossorigin="anonymous"></script>
-    <!-- Additional script to ensure models load properly -->
+    <!-- MediaPipe for pose detection - optimized for mobile and Telegram Mini Apps -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <!-- Additional script for MediaPipe initialization -->
     <script>
-        // Global flag to track loading
-        window.modelsLoaded = false;
-        window.poseDetectionReady = false;
+        // Global flag to track MediaPipe loading
+        window.mediapipeReady = false;
+        window.Pose = null;
 
-        // Wait for libraries to load
-        function waitForLibraries() {
+        // Wait for MediaPipe to load
+        function waitForMediaPipe() {
             return new Promise((resolve) => {
                 const checkInterval = setInterval(() => {
-                    if (window.tf && window.poseDetection) {
+                    if (window.Pose && window.Pose && window.Camera) {
                         clearInterval(checkInterval);
-                        console.log('Libraries loaded successfully');
+                        console.log('MediaPipe loaded successfully');
+                        window.mediapipeReady = true;
                         resolve();
                     }
                 }, 100);
@@ -32,20 +35,19 @@
                 // Fallback after 10 seconds
                 setTimeout(() => {
                     clearInterval(checkInterval);
-                    console.warn('Libraries did not load properly');
+                    console.warn('MediaPipe did not load properly');
                     resolve();
                 }, 10000);
             });
         }
 
-        // Initialize libraries
+        // Initialize MediaPipe
         window.addEventListener('load', () => {
-            waitForLibraries().then(() => {
-                if (window.tf && window.poseDetection) {
-                    window.poseDetectionReady = true;
-                    console.log('Pose detection ready');
+            waitForMediaPipe().then(() => {
+                if (window.mediapipeReady) {
+                    console.log('MediaPipe ready for use');
                 } else {
-                    console.error('Failed to load required libraries');
+                    console.error('Failed to load MediaPipe');
                 }
             });
         });
@@ -800,7 +802,8 @@
         let exerciseTimer = null;
         let startTime = null;
         let repCount = 0;
-        let poseDetector = null;
+        let pose = null;
+        let camera = null;
         let webcamStream = null;
         let aiStreamController = null;
 
@@ -994,11 +997,13 @@
 
         async function initializeCamera() {
             const video = document.getElementById('webcam');
+            const canvas = document.getElementById('pose-canvas');
+            const ctx = canvas.getContext('2d');
             const isTelegram = window.Telegram && window.Telegram.WebApp;
 
             // Special handling for Telegram Mini App
             if (isTelegram) {
-                console.log('Initializing camera in Telegram Mini App');
+                console.log('Initializing camera in Telegram Mini App with MediaPipe');
             }
 
             try {
@@ -1006,6 +1011,56 @@
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     throw new Error('Браузер не поддерживает доступ к камере');
                 }
+
+                // Wait for MediaPipe to be ready
+                if (!window.mediapipeReady) {
+                    console.log('Waiting for MediaPipe to load...');
+                    await waitForMediaPipe();
+                }
+
+                // Initialize MediaPipe Pose
+                pose = new Pose({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+                    }
+                });
+
+                // Configure MediaPipe Pose for Telegram Mini App optimization
+                pose.setOptions({
+                    modelComplexity: 1,  // Balanced performance
+                    smoothLandmarks: true,
+                    enableSegmentation: false,
+                    smoothSegmentation: false,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+
+                // Setup MediaPipe callback
+                pose.onResults((results) => {
+                    // Clear canvas
+                    ctx.save();
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw the video frame (mirrored for natural feel)
+                    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+
+                    // Draw pose landmarks and connections
+                    if (results.poseLandmarks) {
+                        // Draw connections
+                        drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS,
+                            { color: '#00FF00', lineWidth: 2 });
+                        // Draw landmarks
+                        drawLandmarks(ctx, results.poseLandmarks,
+                            { color: '#FF0000', lineWidth: 1, radius: 3 });
+
+                        // Analyze exercise if active
+                        if (isExerciseActive) {
+                            analyzeExerciseMediaPipe(results.poseLandmarks);
+                        }
+                    }
+
+                    ctx.restore();
+                });
 
                 // Different constraints for Telegram
                 const constraints = isTelegram ? {
@@ -1060,14 +1115,28 @@
                     };
                 });
 
-                console.log('Camera initialized successfully');
+                // Set canvas size to match video
+                video.addEventListener('loadedmetadata', () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                });
 
-                // Initialize pose detection after video is ready
-                await initializePoseDetection();
+                // Start MediaPipe camera
+                camera = new Camera(video, {
+                    onFrame: async () => {
+                        await pose.send({ image: video });
+                    },
+                    width: 640,
+                    height: 480
+                });
+
+                await camera.start();
+
+                console.log('Camera and MediaPipe initialized successfully');
 
                 // Update feedback
                 document.getElementById('ai-feedback').textContent =
-                    'Камера готова! Нажмите "Начать" для тренировки.';
+                    'Камера готова! Распознавание поз активно.';
 
             } catch (error) {
                 console.error('Camera initialization error:', error);
@@ -1101,213 +1170,7 @@
             }
         }
 
-        async function initializePoseDetection() {
-            try {
-                console.log('Starting pose detection initialization...');
-
-                // Wait for libraries to be ready
-                if (!window.poseDetectionReady) {
-                    console.log('Waiting for libraries to load...');
-                    await waitForPoseDetectionReady();
-                }
-
-                // Check if poseDetection is available
-                if (!window.poseDetection) {
-                    throw new Error('Библиотека распознавания поз недоступна');
-                }
-
-                console.log('TensorFlow version:', window.tf.version);
-                console.log('Pose detection version:', window.poseDetection.VERSION);
-
-                // Wait for TensorFlow backend to be ready
-                if (window.tf && window.tf.backend) {
-                    await window.tf.ready();
-                    console.log('TensorFlow backend ready');
-                }
-
-                // Create detector with specific config for Telegram
-                const detectorConfig = {
-                    modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-                    enableSmoothing: true,
-                    modelUrl: 'https://tfhub.dev/google/tfjs-model/movenet/singlepose/lightning/4',
-                    minPoseScore: 0.25
-                };
-
-                console.log('Creating pose detector with config:', detectorConfig);
-
-                // Create detector
-                poseDetector = await poseDetection.createDetector(
-                    poseDetection.SupportedModels.MoveNet,
-                    detectorConfig
-                );
-
-                console.log('Pose detector created successfully');
-
-                // Test the detector once
-                const video = document.getElementById('webcam');
-                if (video.readyState >= 2) {
-                    const testPoses = await poseDetector.estimatePoses(video);
-                    console.log('Test detection successful, found poses:', testPoses.length);
-                }
-
-                // Update feedback
-                document.getElementById('ai-feedback').textContent =
-                    'Распознавание поз активно! Встаньте в кадр и начните упражнение.';
-
-                // Start pose detection loop
-                setTimeout(() => {
-                    detectPose();
-                }, 500);
-
-            } catch (error) {
-                console.error('Pose detection initialization error:', error);
-                console.error('Error details:', error.stack);
-
-                // More specific error messages
-                let errorMessage = 'Распознавание поз недоступно. ';
-                if (error.message.includes('Failed to fetch')) {
-                    errorMessage = 'Не удалось загрузить модель AI. Проверьте интернет-соединение.';
-                } else if (error.message.includes('WebGL')) {
-                    errorMessage = 'WebGL не поддерживается. Используйте ручной режим.';
-                } else {
-                    errorMessage += error.message;
-                }
-
-                document.getElementById('ai-feedback').textContent = errorMessage;
-
-                // Enable manual mode
-                enableManualMode();
-            }
-        }
-
-        // Helper function to wait for pose detection to be ready
-        function waitForPoseDetectionReady() {
-            return new Promise((resolve) => {
-                const maxWait = 10000; // 10 seconds
-                const startTime = Date.now();
-
-                const checkReady = () => {
-                    if (window.poseDetectionReady || window.poseDetection) {
-                        resolve();
-                    } else if (Date.now() - startTime > maxWait) {
-                        console.warn('Timeout waiting for pose detection');
-                        resolve();
-                    } else {
-                        setTimeout(checkReady, 100);
-                    }
-                };
-
-                checkReady();
-            });
-        }
-
-        function enableManualMode() {
-            // Enable manual mode when pose detection fails
-            const startBtn = document.getElementById('start-btn');
-            if (startBtn) {
-                startBtn.style.display = 'block';
-                startBtn.textContent = 'Начать (ручной режим)';
-                startBtn.onclick = () => {
-                    isExerciseActive = true;
-                    startTimer();
-                    startBtn.style.display = 'none';
-                    document.getElementById('pause-btn').style.display = 'block';
-                    document.getElementById('ai-feedback').textContent =
-                        'Ручной режим. Считайте повторения самостоятельно!';
-                };
-            }
-        }
-
-        async function detectPose() {
-            if (!poseDetector || !isExerciseActive) return;
-
-            const video = document.getElementById('webcam');
-            const canvas = document.getElementById('pose-canvas');
-            const ctx = canvas.getContext('2d');
-
-            // Check if video is ready
-            if (!video || video.readyState < 2) {
-                requestAnimationFrame(detectPose);
-                return;
-            }
-
-            // Set canvas size to match video
-            if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
-            }
-
-            try {
-                // Only detect poses if video is playing
-                if (!video.paused && !video.ended && video.videoWidth > 0) {
-                    // Add timestamp to prevent caching issues
-                    const poses = await poseDetector.estimatePoses(video, {
-                        flipHorizontal: false
-                    });
-
-                    // Clear canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    // Draw pose if detected
-                    if (poses && poses.length > 0) {
-                        const pose = poses[0];
-                        drawPose(pose, ctx);
-
-                        // Update feedback only when exercise is active
-                        if (isExerciseActive) {
-                            analyzeExercise(pose);
-                        } else {
-                            document.getElementById('ai-feedback').textContent =
-                                'Распознавание поз активно! Нажмите "Начать".';
-                        }
-                    } else {
-                        // No pose detected - update feedback occasionally
-                        if (Math.random() < 0.01) { // Only update 1% of the time to avoid spam
-                            document.getElementById('ai-feedback').textContent =
-                                'Встаньте в камеру, чтобы видеть распознавание.';
-                        }
-                    }
-                }
-            } catch (error) {
-                // Log error but continue loop
-                if (Math.random() < 0.01) { // Only log 1% of errors to avoid spam
-                    console.error('Pose detection error:', error);
-                }
-            }
-
-            // Continue detection loop
-            requestAnimationFrame(detectPose);
-        }
-
-        function drawPose(pose, ctx) {
-            // Draw keypoints
-            pose.keypoints.forEach(keypoint => {
-                if (keypoint.score > 0.3) {
-                    ctx.beginPath();
-                    ctx.arc(keypoint.x, keypoint.y, 5, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#00FF00';
-                    ctx.fill();
-                }
-            });
-
-            // Draw skeleton
-            const adjacentKeyPoints = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.MoveNet);
-            adjacentKeyPoints.forEach(([i, j]) => {
-                const kp1 = pose.keypoints[i];
-                const kp2 = pose.keypoints[j];
-
-                if (kp1.score > 0.3 && kp2.score > 0.3) {
-                    ctx.beginPath();
-                    ctx.moveTo(kp1.x, kp1.y);
-                    ctx.lineTo(kp2.x, kp2.y);
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#00FF00';
-                    ctx.stroke();
-                }
-            });
-        }
-
+    
         async function startExercise() {
             isExerciseActive = true;
             startTime = Date.now();
@@ -1425,28 +1288,41 @@
             }
         }
 
-        function analyzeExercise(pose) {
-            // Extract key points for the current exercise
+        function analyzeExerciseMediaPipe(landmarks) {
+            // Extract key points for the current exercise using MediaPipe format
             let exerciseData = null;
 
             switch (currentExercise.id) {
                 case 'pushups':
-                    exerciseData = analyzePushups(pose);
+                    exerciseData = analyzePushupsMediaPipe(landmarks);
                     break;
                 case 'squats':
-                    exerciseData = analyzeSquats(pose);
+                    exerciseData = analyzeSquatsMediaPipe(landmarks);
                     break;
                 case 'plank':
-                    exerciseData = analyzePlank(pose);
+                    exerciseData = analyzePlankMediaPipe(landmarks);
                     break;
-                // Add more exercises as needed
+                case 'jumping_jacks':
+                    exerciseData = analyzeJumpingJacksMediaPipe(landmarks);
+                    break;
+                case 'lunges':
+                    exerciseData = analyzeLungesMediaPipe(landmarks);
+                    break;
+                case 'burpees':
+                    exerciseData = analyzeBurpeesMediaPipe(landmarks);
+                    break;
             }
 
             if (exerciseData) {
+                // Update feedback based on exercise state
+                updateExerciseFeedback(exerciseData);
+
                 // Update rep count if new rep detected
                 if (exerciseData.repDetected) {
                     repCount++;
                     document.getElementById('rep-count').textContent = repCount;
+                    document.getElementById('ai-feedback').textContent =
+                        `Отлично! ${repCount} из ${currentExercise.target}`;
 
                     // Check if target reached
                     if (repCount >= currentExercise.target) {
@@ -1459,66 +1335,245 @@
             }
         }
 
-        function analyzePushups(pose) {
-            const leftShoulder = pose.keypoints[5];
-            const rightShoulder = pose.keypoints[6];
-            const leftElbow = pose.keypoints[7];
-            const rightElbow = pose.keypoints[8];
+        function analyzePushupsMediaPipe(landmarks) {
+            // MediaPipe landmark indices for pose
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftElbow = landmarks[13];
+            const rightElbow = landmarks[14];
+            const leftWrist = landmarks[15];
+            const rightWrist = landmarks[16];
 
-            if (!leftShoulder.score || !rightShoulder.score || !leftElbow.score || !rightElbow.score) {
+            // Check visibility
+            if (leftElbow.visibility < 0.5 || rightElbow.visibility < 0.5 ||
+                leftShoulder.visibility < 0.5 || rightShoulder.visibility < 0.5) {
                 return null;
             }
 
+            // Calculate average elbow position
             const avgElbowY = (leftElbow.y + rightElbow.y) / 2;
             const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
-            const elbowAngle = calculateAngle(leftShoulder, leftElbow, pose.keypoints[9]);
+            const avgWristY = (leftWrist.y + rightWrist.y) / 2;
+
+            // Calculate elbow angles
+            const leftElbowAngle = calculateAngle3D(leftShoulder, leftElbow, leftWrist);
+            const rightElbowAngle = calculateAngle3D(rightShoulder, rightElbow, rightWrist);
+            const avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
+
+            // Determine pushup position
+            const isDown = avgElbowY > avgShoulderY && avgElbowAngle < 90;
+            const isUp = avgWristY < avgShoulderY && avgElbowAngle > 160;
 
             return {
-                elbowAngle: elbowAngle,
-                position: avgElbowY > avgShoulderY ? 'down' : 'up',
-                isGoodForm: elbowAngle > 90
+                elbowAngle: avgElbowAngle,
+                position: isDown ? 'down' : (isUp ? 'up' : 'middle'),
+                isGoodForm: avgElbowAngle > 80 && avgElbowAngle < 100,
+                repDetected: false // Will be set based on state transitions
             };
         }
 
-        function analyzeSquats(pose) {
-            const leftHip = pose.keypoints[11];
-            const rightHip = pose.keypoints[12];
-            const leftKnee = pose.keypoints[13];
-            const rightKnee = pose.keypoints[14];
+        function analyzeSquatsMediaPipe(landmarks) {
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftKnee = landmarks[25];
+            const rightKnee = landmarks[26];
+            const leftAnkle = landmarks[27];
+            const rightAnkle = landmarks[28];
 
-            if (!leftHip.score || !rightHip.score || !leftKnee.score || !rightKnee.score) {
+            // Check visibility
+            if (leftHip.visibility < 0.5 || rightHip.visibility < 0.5 ||
+                leftKnee.visibility < 0.5 || rightKnee.visibility < 0.5) {
                 return null;
             }
 
-            const kneeAngle = calculateAngle(leftHip, leftKnee, pose.keypoints[15]);
-            const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
+            // Calculate average positions
             const avgHipY = (leftHip.y + rightHip.y) / 2;
+            const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
+            const avgAnkleY = (leftAnkle.y + rightAnkle.y) / 2;
+
+            // Calculate knee angles
+            const leftKneeAngle = calculateAngle3D(leftHip, leftKnee, leftAnkle);
+            const rightKneeAngle = calculateAngle3D(rightHip, rightKnee, rightAnkle);
+            const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
+
+            // Determine squat position
+            const isDown = avgKneeAngle < 100;
+            const isUp = avgKneeAngle > 160;
 
             return {
-                kneeAngle: kneeAngle,
-                depth: avgKneeY > avgHipY ? 'deep' : 'shallow',
-                isGoodForm: kneeAngle > 90
+                kneeAngle: avgKneeAngle,
+                depth: isDown ? 'deep' : (isUp ? 'standing' : 'middle'),
+                isGoodForm: avgKneeAngle > 80 && avgKneeAngle < 120,
+                repDetected: false
             };
         }
 
-        function analyzePlank(pose) {
-            const leftShoulder = pose.keypoints[5];
-            const rightShoulder = pose.keypoints[6];
-            const leftHip = pose.keypoints[11];
-            const rightHip = pose.keypoints[12];
+        function analyzePlankMediaPipe(landmarks) {
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftAnkle = landmarks[27];
+            const rightAnkle = landmarks[28];
 
-            if (!leftShoulder.score || !rightShoulder.score || !leftHip.score || !rightHip.score) {
+            // Check visibility
+            if (leftShoulder.visibility < 0.5 || rightShoulder.visibility < 0.5 ||
+                leftHip.visibility < 0.5 || rightHip.visibility < 0.5) {
                 return null;
             }
 
+            // Calculate average positions
             const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
             const avgHipY = (leftHip.y + rightHip.y) / 2;
+            const avgAnkleY = (leftAnkle.y + rightAnkle.y) / 2;
+
+            // Check body alignment (should be relatively straight)
             const bodyLine = Math.abs(avgShoulderY - avgHipY);
+            const hipDrop = Math.abs(avgHipY - ((avgShoulderY + avgAnkleY) / 2));
 
             return {
                 bodyLine: bodyLine,
-                isGoodForm: bodyLine < 50 // Threshold for straight back
+                hipDrop: hipDrop,
+                isGoodForm: hipDrop < 0.1 && bodyLine > 0.1,
+                timeInPosition: Date.now() - startTime,
+                repDetected: false // For plank, we track time instead of reps
             };
+        }
+
+        function analyzeJumpingJacksMediaPipe(landmarks) {
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftWrist = landmarks[15];
+            const rightWrist = landmarks[16];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftAnkle = landmarks[27];
+            const rightAnkle = landmarks[28];
+
+            // Check visibility
+            if (leftWrist.visibility < 0.5 || rightWrist.visibility < 0.5 ||
+                leftAnkle.visibility < 0.5 || rightAnkle.visibility < 0.5) {
+                return null;
+            }
+
+            // Calculate arm position
+            const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+            const avgWristY = (leftWrist.y + rightWrist.y) / 2;
+            const armsUp = avgWristY < avgShoulderY;
+
+            // Calculate leg position
+            const avgHipY = (leftHip.y + rightHip.y) / 2;
+            const leftAnkleX = leftAnkle.x;
+            const rightAnkleX = rightAnkle.x;
+            const legsSpread = Math.abs(leftAnkleX - rightAnkleX) > 0.3;
+
+            return {
+                armsUp: armsUp,
+                legsSpread: legsSpread,
+                isGoodForm: true,
+                repDetected: armsUp && legsSpread
+            };
+        }
+
+        function analyzeLungesMediaPipe(landmarks) {
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftKnee = landmarks[25];
+            const rightKnee = landmarks[26];
+            const leftAnkle = landmarks[27];
+            const rightAnkle = landmarks[28];
+
+            if (leftKnee.visibility < 0.5 || rightKnee.visibility < 0.5) {
+                return null;
+            }
+
+            // Calculate knee angles
+            const leftKneeAngle = calculateAngle3D(leftHip, leftKnee, leftAnkle);
+            const rightKneeAngle = calculateAngle3D(rightHip, rightKnee, rightAnkle);
+
+            // Determine lunge position (one knee bent, other relatively straight)
+            const leftKneeBent = leftKneeAngle < 120;
+            const rightKneeBent = rightKneeAngle < 120;
+
+            return {
+                leftKneeAngle: leftKneeAngle,
+                rightKneeAngle: rightKneeAngle,
+                isLungePosition: (leftKneeBent && !rightKneeBent) || (!leftKneeBent && rightKneeBent),
+                isGoodForm: (leftKneeAngle > 70 && leftKneeAngle < 140) ||
+                            (rightKneeAngle > 70 && rightKneeAngle < 140),
+                repDetected: false
+            };
+        }
+
+        function analyzeBurpeesMediaPipe(landmarks) {
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftAnkle = landmarks[27];
+            const rightAnkle = landmarks[28];
+
+            // Check visibility
+            if (leftShoulder.visibility < 0.5 || rightShoulder.visibility < 0.5) {
+                return null;
+            }
+
+            // Calculate body position
+            const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
+            const avgHipY = (leftHip.y + rightHip.y) / 2;
+            const avgAnkleY = (leftAnkle.y + rightAnkle.y) / 2;
+
+            // Determine position (standing, squat, or plank on ground)
+            const isStanding = avgAnkleY > avgHipY && avgHipY > avgShoulderY;
+            const isSquat = avgKneeAngle < 120;
+            const isOnGround = avgShoulderY > avgHipY && Math.abs(avgShoulderY - avgHipY) < 0.1;
+
+            return {
+                position: isStanding ? 'standing' : (isOnGround ? 'plank' : 'squat'),
+                isGoodForm: true,
+                repDetected: false // Complex movement requiring state tracking
+            };
+        }
+
+        // Helper function to calculate 3D angle between three points
+        function calculateAngle3D(a, b, c) {
+            const ab = {
+                x: a.x - b.x,
+                y: a.y - b.y,
+                z: (a.z || 0) - (b.z || 0)
+            };
+            const cb = {
+                x: c.x - b.x,
+                y: c.y - b.y,
+                z: (c.z || 0) - (b.z || 0)
+            };
+
+            const dot = ab.x * cb.x + ab.y * cb.y + ab.z * cb.z;
+            const abLen = Math.sqrt(ab.x * ab.x + ab.y * ab.y + ab.z * ab.z);
+            const cbLen = Math.sqrt(cb.x * cb.x + cb.y * cb.y + cb.z * cb.z);
+
+            const angle = Math.acos(dot / (abLen * cbLen));
+            return angle * (180 / Math.PI);
+        }
+
+        // Legacy functions for backward compatibility
+        function analyzeExercise(pose) {
+            // This function is kept for compatibility but routes to MediaPipe version
+            if (pose && pose.landmarks) {
+                analyzeExerciseMediaPipe(pose.landmarks);
+            }
+        }
+
+        function analyzePushups(pose) {
+            return analyzePushupsMediaPipe(pose.landmarks || pose);
+        }
+
+        function analyzeSquats(pose) {
+            return analyzeSquatsMediaPipe(pose.landmarks || pose);
+        }
+
+        function analyzePlank(pose) {
+            return analyzePlankMediaPipe(pose.landmarks || pose);
         }
 
         function calculateAngle(a, b, c) {
@@ -1538,6 +1593,58 @@
         function updateAIFeedback(feedback) {
             const feedbackElement = document.getElementById('ai-feedback');
             feedbackElement.textContent = feedback;
+        }
+
+        function updateExerciseFeedback(exerciseData) {
+            const feedbackElement = document.getElementById('ai-feedback');
+
+            if (!exerciseData) return;
+
+            // Provide feedback based on exercise type and form
+            switch (currentExercise.id) {
+                case 'pushups':
+                    if (!exerciseData.isGoodForm) {
+                        if (exerciseData.elbowAngle < 80) {
+                            feedbackElement.textContent = 'Сгибайте руки больше! Опускайтесь ниже.';
+                        } else if (exerciseData.elbowAngle > 100) {
+                            feedbackElement.textContent = 'Выпрямляйте руки полностью в верхней точке.';
+                        }
+                    } else if (exerciseData.position === 'down') {
+                        feedbackElement.textContent = 'Отлично! Теперь поднимайтесь.';
+                    }
+                    break;
+
+                case 'squats':
+                    if (!exerciseData.isGoodForm) {
+                        if (exerciseData.kneeAngle > 120) {
+                            feedbackElement.textContent = 'Приседайте глубже! Колени должны быть согнуты.';
+                        } else if (exerciseData.kneeAngle < 80) {
+                            feedbackElement.textContent = 'Не слишком глубоко! Выпрямляйтесь.';
+                        }
+                    } else if (exerciseData.depth === 'deep') {
+                        feedbackElement.textContent = 'Хорошая глубина! Поднимайтесь.';
+                    }
+                    break;
+
+                case 'plank':
+                    const seconds = Math.floor((Date.now() - startTime) / 1000);
+                    if (!exerciseData.isGoodForm) {
+                        if (exerciseData.hipDrop > 0.1) {
+                            feedbackElement.textContent = 'Таз не должен провисать! Напрягите пресс.';
+                        }
+                    } else {
+                        feedbackElement.textContent = `Отличная планка! Удерживайте: ${seconds}с`;
+                    }
+                    break;
+
+                case 'jumping_jacks':
+                    if (!exerciseData.armsUp && exerciseData.legsSpread) {
+                        feedbackElement.textContent = 'Поднимайте руки выше!';
+                    } else if (exerciseData.armsUp && !exerciseData.legsSpread) {
+                        feedbackElement.textContent = 'Раздвигайте ноги шире!';
+                    }
+                    break;
+            }
         }
 
         function completeExercise() {
@@ -1691,10 +1798,22 @@
         }
 
         function closeExerciseModal() {
-            // Stop camera
+            // Stop MediaPipe camera
+            if (camera) {
+                camera.stop();
+                camera = null;
+            }
+
+            // Stop camera stream
             if (webcamStream) {
                 webcamStream.getTracks().forEach(track => track.stop());
                 webcamStream = null;
+            }
+
+            // Close MediaPipe pose
+            if (pose) {
+                pose.close();
+                pose = null;
             }
 
             // Hide modal
@@ -1703,11 +1822,17 @@
             // Reset state
             isExerciseActive = false;
             currentExercise = null;
-            poseDetector = null;
 
             // Clear timer
             if (exerciseTimer) {
                 clearInterval(exerciseTimer);
+            }
+
+            // Clear canvas
+            const canvas = document.getElementById('pose-canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         }
 
