@@ -300,10 +300,7 @@
         }
 
         #webcam {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
+            display: none; /* Hide video feed completely */
         }
 
         .video-container {
@@ -320,18 +317,10 @@
             right: 0;
             bottom: 0;
             pointer-events: none;
-            transform: scaleX(-1);
+            background: #000; /* Black background */
         }
 
-        .pose-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-        }
-
+      
         .exercise-stats {
             padding: 20px;
             background: var(--tg-theme-secondary-bg-color);
@@ -1082,9 +1071,6 @@
                     ctx.scale(-1, 1);
                     ctx.translate(-canvas.width, 0);
 
-                    // Clear canvas with transparency
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
                     // Draw pose landmarks and connections with optimizations
                     if (results.poseLandmarks) {
                         // Direct drawing for better real-time performance
@@ -1593,7 +1579,7 @@
             [28, 30], [29, 31], [30, 32], [27, 31], [28, 32]
         ];
 
-        // Color scheme for different body parts (optimized for visibility)
+        // Enhanced color scheme optimized for black background
         const BODY_PART_COLORS = {
             FACE: '#FFD700',        // Gold
             LEFT_ARM: '#FF6B6B',    // Red
@@ -1601,6 +1587,13 @@
             TORSO: '#45B7D1',      // Blue
             LEFT_LEG: '#96CEB4',    // Green
             RIGHT_LEG: '#FECA57'    // Yellow
+        };
+
+        // Enhanced connection colors for black background
+        const CONNECTION_COLORS = {
+            HIGH_CONFIDENCE: { r: 0, g: 255, b: 100 },    // Bright green
+            MEDIUM_CONFIDENCE: { r: 100, g: 200, b: 255 }, // Light blue
+            LOW_CONFIDENCE: { r: 255, g: 200, b: 100 }     // Orange
         };
 
         // Body part mapping for landmarks
@@ -1612,14 +1605,15 @@
             29: 'LEFT_LEG', 30: 'RIGHT_LEG', 31: 'LEFT_LEG', 32: 'RIGHT_LEG'
         };
 
-        // Enhanced skeleton drawing with 3D depth effects and performance optimizations
+        // Enhanced skeleton drawing optimized for black background
         function drawCustomSkeleton(ctx, landmarks) {
             const canvas = ctx.canvas;
             const width = canvas.width;
             const height = canvas.height;
 
-            // Clear canvas with transparency
-            ctx.clearRect(0, 0, width, height);
+            // Fill canvas with black background
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, width, height);
 
             // Set rendering optimizations
             ctx.imageSmoothingEnabled = true;
@@ -1633,7 +1627,7 @@
                 z: landmark.z || 0
             }));
 
-            // Draw connections with dynamic styling based on depth and visibility
+            // Draw connections with enhanced colors for black background
             ctx.save();
 
             POSE_CONNECTIONS.forEach(([start, end]) => {
@@ -1646,28 +1640,39 @@
                     // Calculate connection properties
                     const avgVisibility = (startPoint.visibility + endPoint.visibility) / 2;
                     const avgZ = (startPoint.z + endPoint.z) / 2;
-                    const opacity = Math.max(0.3, avgVisibility);
+                    const opacity = Math.max(0.5, avgVisibility); // Higher minimum opacity for black bg
 
                     // Dynamic line width based on depth
-                    const lineWidth = Math.max(2, Math.min(4, 3 * (1.0 + Math.abs(avgZ))));
+                    const lineWidth = Math.max(3, Math.min(5, 4 * (1.0 + Math.abs(avgZ))));
 
-                    // Dynamic color intensity based on depth
-                    const brightness = Math.max(0.6, Math.min(1.0, 1.0 + avgZ * 1.5));
-                    const green = Math.floor(255 * brightness);
-                    const blue = Math.floor(120 * brightness);
+                    // Enhanced color selection based on confidence
+                    let colorRGB;
+                    if (avgVisibility > 0.8) {
+                        colorRGB = CONNECTION_COLORS.HIGH_CONFIDENCE;
+                    } else if (avgVisibility > 0.6) {
+                        colorRGB = CONNECTION_COLORS.MEDIUM_CONFIDENCE;
+                    } else {
+                        colorRGB = CONNECTION_COLORS.LOW_CONFIDENCE;
+                    }
 
-                    ctx.strokeStyle = `rgba(0, ${green}, ${blue}, ${opacity})`;
+                    // Apply depth-based brightness adjustment
+                    const brightness = Math.max(0.7, Math.min(1.0, 1.0 + avgZ * 1.2));
+                    const r = Math.floor(colorRGB.r * brightness);
+                    const g = Math.floor(colorRGB.g * brightness);
+                    const b = Math.floor(colorRGB.b * brightness);
+
+                    ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
                     ctx.lineWidth = lineWidth;
                     ctx.lineCap = 'round';
                     ctx.lineJoin = 'round';
 
                     // Enhanced glow effect for high confidence
                     if (avgVisibility > 0.8) {
-                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.4)`;
-                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
+                        ctx.shadowBlur = 10;
                     } else if (avgVisibility > 0.6) {
-                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.2)`;
-                        ctx.shadowBlur = 4;
+                        ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
+                        ctx.shadowBlur = 5;
                     }
 
                     // Draw smooth connection line
@@ -1682,41 +1687,43 @@
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
 
-            // Draw landmarks with enhanced 3D effects
+            // Draw landmarks with enhanced effects for black background
             positions.forEach((pos, index) => {
                 if (pos.visibility > 0.5) {
                     const bodyPart = BODY_PARTS[index];
                     const color = BODY_PART_COLORS[bodyPart] || '#FFFFFF';
-                    const opacity = Math.max(0.6, pos.visibility);
+                    const opacity = Math.max(0.7, pos.visibility); // Higher opacity for black bg
 
                     // Dynamic radius based on depth
-                    const baseRadius = 6;
-                    const radius = baseRadius * (1.0 + Math.min(0.4, Math.abs(pos.z) * 2));
+                    const baseRadius = 7; // Slightly larger for black background
+                    const radius = baseRadius * (1.0 + Math.min(0.5, Math.abs(pos.z) * 2));
 
-                    // Outer glow for high confidence
-                    if (pos.visibility > 0.85) {
+                    // Enhanced outer glow for better visibility on black
+                    if (pos.visibility > 0.8) {
                         const glowGradient = ctx.createRadialGradient(
-                            pos.x, pos.y, radius,
-                            pos.x, pos.y, radius + 8
+                            pos.x, pos.y, radius * 0.5,
+                            pos.x, pos.y, radius + 12
                         );
                         glowGradient.addColorStop(0, color);
+                        glowGradient.addColorStop(0.5, color + '80'); // Semi-transparent
                         glowGradient.addColorStop(1, 'transparent');
 
                         ctx.fillStyle = glowGradient;
-                        ctx.globalAlpha = opacity * 0.3;
+                        ctx.globalAlpha = opacity * 0.4;
                         ctx.beginPath();
-                        ctx.arc(pos.x, pos.y, radius + 8, 0, 2 * Math.PI);
+                        ctx.arc(pos.x, pos.y, radius + 12, 0, 2 * Math.PI);
                         ctx.fill();
                     }
 
-                    // Main landmark with gradient
+                    // Main landmark with enhanced gradient
                     const landmarkGradient = ctx.createRadialGradient(
-                        pos.x - radius/3, pos.y - radius/3, 0,
-                        pos.x, pos.y, radius
+                        pos.x - radius/4, pos.y - radius/4, 0,
+                        pos.x, pos.y, radius * 1.2
                     );
                     landmarkGradient.addColorStop(0, '#FFFFFF');
-                    landmarkGradient.addColorStop(0.4, color);
-                    landmarkGradient.addColorStop(1, color);
+                    landmarkGradient.addColorStop(0.3, color);
+                    landmarkGradient.addColorStop(0.8, color);
+                    landmarkGradient.addColorStop(1, color + 'CC'); // Slightly darker edge
 
                     ctx.fillStyle = landmarkGradient;
                     ctx.globalAlpha = opacity;
@@ -1724,26 +1731,47 @@
                     ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
                     ctx.fill();
 
-                    // White border for definition
-                    ctx.strokeStyle = '#FFFFFF';
-                    ctx.lineWidth = 2;
-                    ctx.globalAlpha = opacity * 0.9;
+                    // Enhanced border with glow
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3;
+                    ctx.globalAlpha = opacity * 0.6;
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 8;
                     ctx.beginPath();
                     ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
                     ctx.stroke();
 
-                    // Inner precision dot for very high confidence
-                    if (pos.visibility > 0.95) {
-                        ctx.fillStyle = '#FFFFFF';
+                    // Reset shadow
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+
+                    // White inner border for definition
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = opacity * 0.9;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, radius * 0.8, 0, 2 * Math.PI);
+                    ctx.stroke();
+
+                    // Bright center dot for high confidence
+                    if (pos.visibility > 0.9) {
+                        const centerGradient = ctx.createRadialGradient(
+                            pos.x, pos.y, 0,
+                            pos.x, pos.y, Math.max(3, radius * 0.4)
+                        );
+                        centerGradient.addColorStop(0, '#FFFFFF');
+                        centerGradient.addColorStop(1, '#FFFFFFCC');
+
+                        ctx.fillStyle = centerGradient;
                         ctx.globalAlpha = opacity;
                         ctx.beginPath();
-                        ctx.arc(pos.x, pos.y, Math.max(2, radius * 0.3), 0, 2 * Math.PI);
+                        ctx.arc(pos.x, pos.y, Math.max(3, radius * 0.4), 0, 2 * Math.PI);
                         ctx.fill();
                     }
                 }
             });
 
-            // Draw orientation indicator (shows body facing direction)
+            // Enhanced orientation indicator for black background
             if (positions[0] && positions[11] && positions[12]) { // Nose and shoulders
                 const nose = positions[0];
                 const leftShoulder = positions[11];
@@ -1761,34 +1789,47 @@
                     if (length > 20) { // Only show if there's clear direction
                         const unitX = directionX / length;
                         const unitY = directionY / length;
-                        const arrowLength = Math.min(30, length * 0.3);
+                        const arrowLength = Math.min(35, length * 0.3);
 
-                        // Draw directional arrow
-                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                        ctx.lineWidth = 2;
+                        // Enhanced directional arrow with glow
+                        ctx.shadowColor = '#00FFFF';
+                        ctx.shadowBlur = 10;
+                        ctx.strokeStyle = '#00FFFF';
+                        ctx.fillStyle = '#00FFFF';
+                        ctx.lineWidth = 3;
+                        ctx.globalAlpha = 0.8;
 
                         ctx.beginPath();
                         ctx.moveTo(centerX, centerY);
                         ctx.lineTo(centerX + unitX * arrowLength, centerY + unitY * arrowLength);
                         ctx.stroke();
 
-                        // Arrowhead
-                        const headLength = 8;
+                        // Enhanced arrowhead
+                        const headLength = 12;
                         const angle = Math.atan2(unitY, unitX);
 
                         ctx.beginPath();
                         ctx.moveTo(centerX + unitX * arrowLength, centerY + unitY * arrowLength);
                         ctx.lineTo(
-                            centerX + unitX * arrowLength - headLength * Math.cos(angle - Math.PI/6),
-                            centerY + unitY * arrowLength - headLength * Math.sin(angle - Math.PI/6)
+                            centerX + unitX * arrowLength - headLength * Math.cos(angle - Math.PI/5),
+                            centerY + unitY * arrowLength - headLength * Math.sin(angle - Math.PI/5)
                         );
                         ctx.lineTo(
-                            centerX + unitX * arrowLength - headLength * Math.cos(angle + Math.PI/6),
-                            centerY + unitY * arrowLength - headLength * Math.sin(angle + Math.PI/6)
+                            centerX + unitX * arrowLength - headLength * Math.cos(angle + Math.PI/5),
+                            centerY + unitY * arrowLength - headLength * Math.sin(angle + Math.PI/5)
                         );
                         ctx.closePath();
                         ctx.fill();
+
+                        // Add center dot
+                        ctx.beginPath();
+                        ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+
+                        // Reset effects
+                        ctx.shadowColor = 'transparent';
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1.0;
                     }
                 }
             }
