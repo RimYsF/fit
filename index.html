@@ -24,7 +24,7 @@
         function waitForMediaPipe() {
             return new Promise((resolve) => {
                 const checkInterval = setInterval(() => {
-                    if (window.Pose && window.Pose && window.Camera) {
+                    if (window.Pose && window.Camera) {
                         clearInterval(checkInterval);
                         console.log('MediaPipe loaded successfully');
                         window.mediapipeReady = true;
@@ -820,7 +820,6 @@
         let startTime = null;
         let repCount = 0;
         let pose = null;
-        let camera = null;
         let webcamStream = null;
         let aiStreamController = null;
 
@@ -1029,12 +1028,23 @@
                     throw new Error('Браузер не поддерживает доступ к камере');
                 }
 
+                // Check if MediaPipe libraries are loaded
+                console.log('Checking MediaPipe availability...');
+                console.log('window.Pose:', typeof window.Pose);
+                console.log('window.Camera:', typeof window.Camera);
+
                 // Wait for MediaPipe to be ready
                 if (!window.mediapipeReady) {
                     console.log('Waiting for MediaPipe to load...');
                     await waitForMediaPipe();
                 }
 
+                // Check if Pose constructor is available
+                if (typeof window.Pose !== 'function') {
+                    throw new Error('MediaPipe Pose constructor not available. Check if libraries loaded correctly.');
+                }
+
+                console.log('Creating MediaPipe Pose instance...');
                 // Initialize MediaPipe Pose
                 pose = new Pose({
                     locateFile: (file) => {
@@ -1128,16 +1138,16 @@
                     canvas.height = video.videoHeight;
                 });
 
-                // Start MediaPipe camera
-                camera = new Camera(video, {
-                    onFrame: async () => {
+                // Start processing without MediaPipe Camera (more compatible)
+                const processFrame = async () => {
+                    if (pose && video.readyState === 4) {
                         await pose.send({ image: video });
-                    },
-                    width: 640,
-                    height: 480
-                });
+                    }
+                    requestAnimationFrame(processFrame);
+                };
 
-                await camera.start();
+                // Start the processing loop
+                processFrame();
 
                 console.log('Camera and MediaPipe initialized successfully');
 
@@ -1517,11 +1527,14 @@
             const rightShoulder = landmarks[12];
             const leftHip = landmarks[23];
             const rightHip = landmarks[24];
+            const leftKnee = landmarks[25];
+            const rightKnee = landmarks[26];
             const leftAnkle = landmarks[27];
             const rightAnkle = landmarks[28];
 
             // Check visibility
-            if (leftShoulder.visibility < 0.5 || rightShoulder.visibility < 0.5) {
+            if (leftShoulder.visibility < 0.5 || rightShoulder.visibility < 0.5 ||
+                leftHip.visibility < 0.5 || rightHip.visibility < 0.5) {
                 return null;
             }
 
@@ -1529,6 +1542,11 @@
             const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
             const avgHipY = (leftHip.y + rightHip.y) / 2;
             const avgAnkleY = (leftAnkle.y + rightAnkle.y) / 2;
+
+            // Calculate knee angles for squat detection
+            const leftKneeAngle = calculateAngle3D(leftHip, leftKnee, leftAnkle);
+            const rightKneeAngle = calculateAngle3D(rightHip, rightKnee, rightAnkle);
+            const avgKneeAngle = (leftKneeAngle + rightKneeAngle) / 2;
 
             // Determine position (standing, squat, or plank on ground)
             const isStanding = avgAnkleY > avgHipY && avgHipY > avgShoulderY;
@@ -1870,12 +1888,6 @@
         }
 
         function closeExerciseModal() {
-            // Stop MediaPipe camera
-            if (camera) {
-                camera.stop();
-                camera = null;
-            }
-
             // Stop camera stream
             if (webcamStream) {
                 webcamStream.getTracks().forEach(track => track.stop());
