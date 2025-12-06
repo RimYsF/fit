@@ -1042,13 +1042,18 @@
                     }
                 });
 
-                // Initialize MediaPipe Face Mesh
+                // Initialize MediaPipe Face Mesh (optional)
                 console.log('Creating MediaPipe Face Mesh instance...');
-                faceMesh = new FaceMesh({
-                    locateFile: (file) => {
-                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-                    }
-                });
+                try {
+                    faceMesh = new FaceMesh({
+                        locateFile: (file) => {
+                            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                        }
+                    });
+                } catch (error) {
+                    console.warn('Failed to initialize Face Mesh, continuing with pose only:', error);
+                    faceMesh = null;
+                }
 
                 // Configure MediaPipe Pose for Telegram Mini App optimization
                 pose.setOptions({
@@ -1061,12 +1066,19 @@
                 });
 
                 // Configure MediaPipe Face Mesh
-                faceMesh.setOptions({
-                    maxNumFaces: 1,
-                    refineLandmarks: true,
-                    minDetectionConfidence: 0.5,
-                    minTrackingConfidence: 0.5
-                });
+                if (faceMesh) {
+                    try {
+                        faceMesh.setOptions({
+                            maxNumFaces: 1,
+                            refineLandmarks: true,
+                            minDetectionConfidence: 0.5,
+                            minTrackingConfidence: 0.5
+                        });
+                    } catch (error) {
+                        console.warn('Failed to configure Face Mesh:', error);
+                        faceMesh = null;
+                    }
+                }
 
                 // Combined results storage
                 let combinedResults = {
@@ -1079,18 +1091,37 @@
                 const FRAME_SKIP_RATE = 1; // Process every frame (set to 2+ for lower end devices)
 
                 pose.onResults((poseResults) => {
+                    console.log('Pose results received:', {
+                        poseLandmarks: poseResults.poseLandmarks ? poseResults.poseLandmarks.length : 0
+                    });
                     combinedResults.poseLandmarks = poseResults.poseLandmarks;
-                    processCombinedResults();
+                    // Only process results after both pose and face have had a chance to update
+                    setTimeout(() => processCombinedResults(), 0);
                 });
 
-                faceMesh.onResults((faceResults) => {
-                    combinedResults.faceLandmarks = faceResults.multiFaceLandmarks ? faceResults.multiFaceLandmarks[0] : null;
-                    processCombinedResults();
-                });
+                if (faceMesh) {
+                    faceMesh.onResults((faceResults) => {
+                        console.log('Face mesh results received:', {
+                            faceLandmarks: faceResults.multiFaceLandmarks ? faceResults.multiFaceLandmarks.length : 0
+                        });
+                        combinedResults.faceLandmarks = faceResults.multiFaceLandmarks ? faceResults.multiFaceLandmarks[0] : null;
+                        // Only process results after both pose and face have had a chance to update
+                        setTimeout(() => processCombinedResults(), 0);
+                    });
+                }
 
                 function processCombinedResults() {
+                    // Debug logging
+                    console.log('processCombinedResults called', {
+                        poseLandmarks: !!combinedResults.poseLandmarks,
+                        faceLandmarks: !!combinedResults.faceLandmarks,
+                        frameSkip: frameSkip,
+                        FRAME_SKIP_RATE: FRAME_SKIP_RATE
+                    });
+
                     // Only process if we have pose landmarks (face is optional)
                     if (!combinedResults.poseLandmarks) {
+                        console.log('No pose landmarks, clearing canvas');
                         // Clear canvas if no pose landmarks
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         return;
@@ -1100,6 +1131,8 @@
                     if (frameSkip++ % FRAME_SKIP_RATE !== 0) {
                         return;
                     }
+
+                    console.log('Drawing skeleton with', combinedResults.poseLandmarks.length, 'pose landmarks');
 
                     // Clear canvas with transparency
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1182,12 +1215,18 @@
 
                 // Start processing without MediaPipe Camera (more compatible)
                 const processFrame = async () => {
-                    if (pose && faceMesh && video.readyState === 4) {
-                        // Send to both pose and face mesh models
-                        await Promise.all([
-                            pose.send({ image: video }),
-                            faceMesh.send({ image: video })
-                        ]);
+                    if (pose && video.readyState === 4) {
+                        // Always process pose
+                        await pose.send({ image: video });
+
+                        // Process face mesh if available (optional)
+                        if (faceMesh) {
+                            try {
+                                await faceMesh.send({ image: video });
+                            } catch (error) {
+                                console.warn('Face mesh processing error:', error);
+                            }
+                        }
                     }
                     requestAnimationFrame(processFrame);
                 };
@@ -1764,7 +1803,16 @@
 
         // Enhanced skeleton drawing with 3D depth effects and performance optimizations (legacy)
         function drawCustomSkeleton(ctx, landmarks) {
+            console.log('drawCustomSkeleton called with', landmarks ? landmarks.length : 0, 'landmarks');
+
             const canvas = ctx.canvas;
+            console.log('Canvas dimensions:', {
+                width: canvas.width,
+                height: canvas.height,
+                offsetWidth: canvas.offsetWidth,
+                offsetHeight: canvas.offsetHeight
+            });
+
             const width = canvas.width;
             const height = canvas.height;
 
