@@ -11,7 +11,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
     <!-- MediaPipe for pose detection - using umd bundle -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <!-- Initialize MediaPipe after scripts load -->
@@ -797,7 +796,6 @@
         let startTime = null;
         let repCount = 0;
         let pose = null;
-        let faceMesh = null;
         let webcamStream = null;
         let aiStreamController = null;
 
@@ -1042,19 +1040,6 @@
                     }
                 });
 
-                // Initialize MediaPipe Face Mesh (optional)
-                console.log('Creating MediaPipe Face Mesh instance...');
-                try {
-                    faceMesh = new FaceMesh({
-                        locateFile: (file) => {
-                            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-                        }
-                    });
-                } catch (error) {
-                    console.warn('Failed to initialize Face Mesh, continuing with pose only:', error);
-                    faceMesh = null;
-                }
-
                 // Configure MediaPipe Pose for Telegram Mini App optimization
                 pose.setOptions({
                     modelComplexity: 1,  // Balanced performance
@@ -1065,26 +1050,8 @@
                     minTrackingConfidence: 0.5
                 });
 
-                // Configure MediaPipe Face Mesh
-                if (faceMesh) {
-                    try {
-                        faceMesh.setOptions({
-                            maxNumFaces: 1,
-                            refineLandmarks: true,
-                            minDetectionConfidence: 0.5,
-                            minTrackingConfidence: 0.5
-                        });
-                    } catch (error) {
-                        console.warn('Failed to configure Face Mesh:', error);
-                        faceMesh = null;
-                    }
-                }
-
-                // Combined results storage
-                let combinedResults = {
-                    poseLandmarks: null,
-                    faceLandmarks: null
-                };
+                // Storage for pose results
+                let poseLandmarks = null;
 
                 // Optimized MediaPipe callback with frame skipping for better performance
                 let frameSkip = 0;
@@ -1094,65 +1061,35 @@
                     console.log('Pose results received:', {
                         poseLandmarks: poseResults.poseLandmarks ? poseResults.poseLandmarks.length : 0
                     });
-                    combinedResults.poseLandmarks = poseResults.poseLandmarks;
-                    // Only process results after both pose and face have had a chance to update
-                    setTimeout(() => processCombinedResults(), 0);
-                });
 
-                if (faceMesh) {
-                    faceMesh.onResults((faceResults) => {
-                        console.log('Face mesh results received:', {
-                            faceLandmarks: faceResults.multiFaceLandmarks ? faceResults.multiFaceLandmarks.length : 0
-                        });
-                        combinedResults.faceLandmarks = faceResults.multiFaceLandmarks ? faceResults.multiFaceLandmarks[0] : null;
-                        // Only process results after both pose and face have had a chance to update
-                        setTimeout(() => processCombinedResults(), 0);
-                    });
-                }
+                    poseLandmarks = poseResults.poseLandmarks;
 
-                function processCombinedResults() {
-                    // Debug logging
-                    console.log('processCombinedResults called', {
-                        poseLandmarks: !!combinedResults.poseLandmarks,
-                        faceLandmarks: !!combinedResults.faceLandmarks,
-                        frameSkip: frameSkip,
-                        FRAME_SKIP_RATE: FRAME_SKIP_RATE
-                    });
+                    if (poseLandmarks) {
+                        // Frame skipping for performance optimization
+                        if (frameSkip++ % FRAME_SKIP_RATE !== 0) {
+                            return;
+                        }
 
-                    // Only process if we have pose landmarks (face is optional)
-                    if (!combinedResults.poseLandmarks) {
-                        console.log('No pose landmarks, clearing canvas');
+                        console.log('Drawing skeleton with', poseLandmarks.length, 'pose landmarks');
+
+                        // Clear canvas with transparency
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        // Draw skeleton (body only)
+                        drawCustomSkeleton(ctx, poseLandmarks);
+
+                        // Non-blocking exercise analysis
+                        if (isExerciseActive) {
+                            // Use microtask for non-blocking analysis
+                            Promise.resolve().then(() => {
+                                analyzeExerciseMediaPipe(poseLandmarks);
+                            });
+                        }
+                    } else {
                         // Clear canvas if no pose landmarks
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        return;
                     }
-
-                    // Frame skipping for performance optimization
-                    if (frameSkip++ % FRAME_SKIP_RATE !== 0) {
-                        return;
-                    }
-
-                    console.log('Drawing skeleton with', combinedResults.poseLandmarks.length, 'pose landmarks');
-
-                    // Clear canvas with transparency
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    // Always draw skeleton first
-                    drawCustomSkeleton(ctx, combinedResults.poseLandmarks);
-
-                    // Draw face overlay if available (optional)
-                    if (combinedResults.faceLandmarks) {
-                        drawCustomSkeletonWithFace(ctx, combinedResults.poseLandmarks, combinedResults.faceLandmarks);
-                    }
-
-                    // Non-blocking exercise analysis
-                    if (isExerciseActive) {
-                        // Use microtask for non-blocking analysis
-                        Promise.resolve().then(() => {
-                            analyzeExerciseMediaPipe(combinedResults.poseLandmarks);
-                        });
-                    }
-                }
+                });
 
                 // Different constraints for Telegram
                 const constraints = isTelegram ? {
@@ -1213,20 +1150,11 @@
                     canvas.height = video.videoHeight;
                 });
 
-                // Start processing without MediaPipe Camera (more compatible)
+                // Start processing loop
                 const processFrame = async () => {
                     if (pose && video.readyState === 4) {
-                        // Always process pose
+                        // Process pose only
                         await pose.send({ image: video });
-
-                        // Process face mesh if available (optional)
-                        if (faceMesh) {
-                            try {
-                                await faceMesh.send({ image: video });
-                            } catch (error) {
-                                console.warn('Face mesh processing error:', error);
-                            }
-                        }
                     }
                     requestAnimationFrame(processFrame);
                 };
@@ -1686,121 +1614,8 @@
             29: 'LEFT_LEG', 30: 'RIGHT_LEG', 31: 'LEFT_LEG', 32: 'RIGHT_LEG'
         };
 
-        // Eye landmarks indices for MediaPipe Pose
-        const LEFT_EYE_INDICES = [0]; // Using face center as approximation
-        const RIGHT_EYE_INDICES = [0]; // Using face center as approximation
-
-        // Face overlay drawing function (only draws face landmarks, not skeleton)
-        function drawCustomSkeletonWithFace(ctx, poseLandmarks, faceLandmarks) {
-            const canvas = ctx.canvas;
-            const width = canvas.width;
-            const height = canvas.height;
-
-            // Apply mirror transformation for selfie view
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.translate(-width, 0);
-
-            // Draw face landmarks (optimized - only 1/10 of points)
-            if (faceLandmarks) {
-                // Use only every 10th point for performance (468 -> ~47 points)
-                const useEveryNth = 10;
-                const reducedFaceLandmarks = [];
-
-                for (let i = 0; i < faceLandmarks.length; i += useEveryNth) {
-                    reducedFaceLandmarks.push(faceLandmarks[i]);
-                }
-
-                // Face mesh eye indices (from reduced set)
-                const LEFT_EYE_CENTER = [3];  // Approximate index in reduced set
-                const RIGHT_EYE_CENTER = [26]; // Approximate index in reduced set
-
-                // Draw reduced face points
-                ctx.fillStyle = '#FFFFFF';
-                ctx.globalAlpha = 0.8;
-                ctx.shadowColor = 'transparent';
-                ctx.shadowBlur = 0;
-
-                // Draw only the reduced landmark points
-                reducedFaceLandmarks.forEach((landmark, index) => {
-                    // Draw eyes slightly larger
-                    const isEyePoint = index === LEFT_EYE_CENTER[0] || index === RIGHT_EYE_CENTER[0];
-                    const radius = isEyePoint ? 6 : 2;
-
-                    ctx.fillStyle = isEyePoint ? '#FFFFFF' : '#00FFFF';
-                    ctx.globalAlpha = isEyePoint ? 1.0 : 0.5;
-
-                    ctx.beginPath();
-                    ctx.arc(landmark.x * width, landmark.y * height, radius, 0, 2 * Math.PI);
-                    ctx.fill();
-                });
-
-                // Restore defaults
-                ctx.fillStyle = '#FFFFFF';
-                ctx.globalAlpha = 1.0;
-            }
-
-            // Draw body landmarks (11 and above only)
-            posePositions.forEach((pos, index) => {
-                if (index >= 11 && pos.visibility > 0.5) {
-                    const bodyPart = BODY_PARTS[index];
-                    const color = BODY_PART_COLORS[bodyPart] || '#FFFFFF';
-                    const opacity = Math.max(0.6, pos.visibility);
-
-                    const baseRadius = 6;
-                    const radius = baseRadius * (1.0 + Math.min(0.4, Math.abs(pos.z) * 2));
-
-                    if (pos.visibility > 0.85) {
-                        const glowGradient = ctx.createRadialGradient(
-                            pos.x, pos.y, radius,
-                            pos.x, pos.y, radius + 8
-                        );
-                        glowGradient.addColorStop(0, color);
-                        glowGradient.addColorStop(1, 'transparent');
-
-                        ctx.fillStyle = glowGradient;
-                        ctx.globalAlpha = opacity * 0.3;
-                        ctx.beginPath();
-                        ctx.arc(pos.x, pos.y, radius + 8, 0, 2 * Math.PI);
-                        ctx.fill();
-                    }
-
-                    const landmarkGradient = ctx.createRadialGradient(
-                        pos.x - radius/3, pos.y - radius/3, 0,
-                        pos.x, pos.y, radius
-                    );
-                    landmarkGradient.addColorStop(0, '#FFFFFF');
-                    landmarkGradient.addColorStop(0.4, color);
-                    landmarkGradient.addColorStop(1, color);
-
-                    ctx.fillStyle = landmarkGradient;
-                    ctx.globalAlpha = opacity;
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    ctx.strokeStyle = '#FFFFFF';
-                    ctx.lineWidth = 2;
-                    ctx.globalAlpha = opacity * 0.9;
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
-                    ctx.stroke();
-
-                    if (pos.visibility > 0.95) {
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.globalAlpha = opacity;
-                        ctx.beginPath();
-                        ctx.arc(pos.x, pos.y, Math.max(2, radius * 0.3), 0, 2 * Math.PI);
-                        ctx.fill();
-                    }
-                }
-            });
-
-            // Reset all context states
-            ctx.globalAlpha = 1.0;
-            ctx.restore();
-        }
-
+        
+        
         // Enhanced skeleton drawing with 3D depth effects and performance optimizations (legacy)
         function drawCustomSkeleton(ctx, landmarks) {
             console.log('drawCustomSkeleton called with', landmarks ? landmarks.length : 0, 'landmarks');
@@ -1837,6 +1652,9 @@
             ctx.save();
 
             POSE_CONNECTIONS.forEach(([start, end]) => {
+                // Skip face connections (landmarks 0-10)
+                if (start <= 10 || end <= 10) return;
+
                 const startPoint = positions[start];
                 const endPoint = positions[end];
 
@@ -1851,34 +1669,23 @@
                     // Dynamic line width based on depth
                     const lineWidth = Math.max(2, Math.min(4, 3 * (1.0 + Math.abs(avgZ))));
 
-                    // Check if this is a face connection (involves landmarks 0-10)
-                    const isFaceConnection = (start <= 10 || end <= 10);
+                    // Dynamic color intensity based on depth for body
+                    const brightness = Math.max(0.6, Math.min(1.0, 1.0 + avgZ * 1.5));
+                    const green = Math.floor(255 * brightness);
+                    const blue = Math.floor(120 * brightness);
 
-                    if (isFaceConnection) {
-                        // Use subtle color for face connections (don't draw them, just keep structure)
-                        ctx.strokeStyle = `rgba(100, 100, 100, 0.2)`;
-                        ctx.lineWidth = 1;
-                        ctx.shadowColor = 'transparent';
-                        ctx.shadowBlur = 0;
-                    } else {
-                        // Dynamic color intensity based on depth for body
-                        const brightness = Math.max(0.6, Math.min(1.0, 1.0 + avgZ * 1.5));
-                        const green = Math.floor(255 * brightness);
-                        const blue = Math.floor(120 * brightness);
+                    ctx.strokeStyle = `rgba(0, ${green}, ${blue}, ${opacity})`;
+                    ctx.lineWidth = lineWidth;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
 
-                        ctx.strokeStyle = `rgba(0, ${green}, ${blue}, ${opacity})`;
-                        ctx.lineWidth = lineWidth;
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-
-                        // Enhanced glow effect for high confidence
-                        if (avgVisibility > 0.8) {
-                            ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.4)`;
-                            ctx.shadowBlur = 8;
-                        } else if (avgVisibility > 0.6) {
-                            ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.2)`;
-                            ctx.shadowBlur = 4;
-                        }
+                    // Enhanced glow effect for high confidence
+                    if (avgVisibility > 0.8) {
+                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.4)`;
+                        ctx.shadowBlur = 8;
+                    } else if (avgVisibility > 0.6) {
+                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.2)`;
+                        ctx.shadowBlur = 4;
                     }
 
                     // Draw smooth connection line
@@ -1893,58 +1700,9 @@
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
 
-            // Draw face landmarks - eyes only, no outline
-            const NOSE_TIP = 0;
-            const LEFT_EYE_INNER = 1;
-            const LEFT_EYE_CENTER = 2;
-            const LEFT_EYE_OUTER = 3;
-            const RIGHT_EYE_INNER = 4;
-            const RIGHT_EYE_CENTER = 5;
-            const RIGHT_EYE_OUTER = 6;
-            const LEFT_EAR = 7;
-            const RIGHT_EAR = 8;
-            const MOUTH_LEFT = 9;
-            const MOUTH_RIGHT = 10;
-
-            // Draw bright white dots for eyes only
-            if (positions[LEFT_EYE_CENTER] && positions[RIGHT_EYE_CENTER]) {
-                const leftEye = positions[LEFT_EYE_CENTER];
-                const rightEye = positions[RIGHT_EYE_CENTER];
-
-                if (leftEye.visibility > 0.5 && rightEye.visibility > 0.5) {
-                    // Draw eye points as bright white circles
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.globalAlpha = 1.0;
-
-                    // Left eye
-                    ctx.beginPath();
-                    ctx.arc(leftEye.x, leftEye.y, 5, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Right eye
-                    ctx.beginPath();
-                    ctx.arc(rightEye.x, rightEye.y, 5, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Add subtle glow effect for eyes
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-                    ctx.lineWidth = 2;
-
-                    // Left eye glow
-                    ctx.beginPath();
-                    ctx.arc(leftEye.x, leftEye.y, 8, 0, 2 * Math.PI);
-                    ctx.stroke();
-
-                    // Right eye glow
-                    ctx.beginPath();
-                    ctx.arc(rightEye.x, rightEye.y, 8, 0, 2 * Math.PI);
-                    ctx.stroke();
-                }
-            }
-
-            // Draw landmarks with enhanced 3D effects (excluding face landmarks except for connections)
+            // Draw landmarks with enhanced 3D effects (body only)
             positions.forEach((pos, index) => {
-                // Only draw body landmarks, face landmarks are handled separately
+                // Only draw body landmarks (skip face landmarks 0-10)
                 if (index >= 11 && pos.visibility > 0.5) {
                     const bodyPart = BODY_PARTS[index];
                     const color = BODY_PART_COLORS[bodyPart] || '#FFFFFF';
