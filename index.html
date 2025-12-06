@@ -1005,6 +1005,105 @@
                 font-size: 14px;
             }
         }
+    /* Congratulations Popup Styles */
+    .congratulations-popup {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .congratulations-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(145deg, #6ECB63, #4CAF50);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        width: 90%;
+        border: 5px solid #2E7D32;
+    }
+
+    .congratulations-icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        animation: bounce 1s infinite;
+    }
+
+    .congratulations-title {
+        font-family: 'Bebas Neue', cursive;
+        font-size: 48px;
+        color: white;
+        text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+        margin: 0 0 20px 0;
+    }
+
+    .congratulations-message {
+        font-family: 'Rubik', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 15px 0;
+    }
+
+    .congratulations-message #completed-reps {
+        color: #FFE66D;
+        font-size: 32px;
+        font-weight: 900;
+    }
+
+    .congratulations-subtitle {
+        font-family: 'Rubik', sans-serif;
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0 0 30px 0;
+    }
+
+    .congratulations-btn {
+        background: #FF6B35;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 20px;
+        font-weight: 700;
+        font-family: 'Rubik', sans-serif;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 6px 0px #D84315;
+        transition: all 0.1s ease;
+        text-transform: uppercase;
+    }
+
+    .congratulations-btn:hover {
+        transform: translateY(2px);
+        box-shadow: 0 4px 0px #D84315;
+    }
+
+    .congratulations-btn:active {
+        transform: translateY(6px);
+        box-shadow: none;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-20px); }
+        60% { transform: translateY(-10px); }
+    }
+
     </style>
 </head>
 
@@ -1118,7 +1217,23 @@
                     <div id="rep-count">0</div>
                     <div style="font-size: 14px; margin-top: 5px;">повторений</div>
                 </div>
+                <!-- Exercise Feedback -->
+                <div id="exercise-feedback" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 50px; font-family: 'Rubik', sans-serif; font-size: 18px; font-weight: 700; display: none; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                </div>
                             </div>
+        </div>
+    </div>
+
+    <!-- Congratulations Popup -->
+    <div class="congratulations-popup" id="congratulations-popup">
+        <div class="congratulations-content">
+            <div class="congratulations-icon">🎉</div>
+            <h2 class="congratulations-title">Поздравляем!</h2>
+            <p class="congratulations-message" id="congratulations-message">
+                Вы выполнили <span id="completed-reps">0</span> отжиманий!
+            </p>
+            <p class="congratulations-subtitle">Отличная работа! Продолжайте в том же духе.</p>
+            <button class="congratulations-btn" onclick="closeCongratulations()">Закрыть</button>
         </div>
     </div>
 
@@ -1135,6 +1250,9 @@
         let exerciseTimer = null;
         let startTime = null;
         let repCount = 0;
+        let lastExercisePosition = 'up'; // Track last position for state transitions
+        let isInPushupPosition = false;
+        let pushupDownCount = 0;
         let pose = null;
         let webcamStream = null;
         let aiStreamController = null;
@@ -1560,6 +1678,11 @@
             startTime = Date.now();
             repCount = 0;
 
+            // Reset state tracking variables
+            lastExercisePosition = 'up';
+            isInPushupPosition = false;
+            pushupDownCount = 0;
+
             // Hide status
             document.getElementById('exercise-status').style.display = 'none';
 
@@ -1717,7 +1840,7 @@
                 return null;
             }
 
-            // Calculate average elbow position
+            // Calculate average positions
             const avgElbowY = (leftElbow.y + rightElbow.y) / 2;
             const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
             const avgWristY = (leftWrist.y + rightWrist.y) / 2;
@@ -1727,15 +1850,58 @@
             const rightElbowAngle = calculateAngle3D(rightShoulder, rightElbow, rightWrist);
             const avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
 
-            // Determine pushup position
-            const isDown = avgElbowY > avgShoulderY && avgElbowAngle < 90;
-            const isUp = avgWristY < avgShoulderY && avgElbowAngle > 160;
+            // Enhanced pushup detection with better thresholds
+            const isDownPosition = avgElbowAngle < 100 && avgWristY > avgElbowY;
+            const isUpPosition = avgElbowAngle > 150 && avgWristY < avgShoulderY * 1.1;
+
+            // Determine current position
+            let currentPosition = 'middle';
+            if (isDownPosition) {
+                currentPosition = 'down';
+            } else if (isUpPosition) {
+                currentPosition = 'up';
+            }
+
+            // Track state transitions for rep counting
+            let repDetected = false;
+
+            // Detect transition: up -> down -> up completes one rep
+            if (lastExercisePosition === 'up' && currentPosition === 'down') {
+                pushupDownCount++;
+                isInPushupPosition = true;
+            } else if (lastExercisePosition === 'down' && currentPosition === 'up' && isInPushupPosition) {
+                // Complete rep detected
+                repDetected = true;
+                isInPushupPosition = false;
+            }
+
+            // Update last position
+            lastExercisePosition = currentPosition;
+
+            // Form quality assessment
+            const isGoodForm = isDownPosition ?
+                avgElbowAngle > 70 && avgElbowAngle < 110 : // More lenient when down
+                avgElbowAngle > 140; // Straighter arms when up
+
+            // Feedback messages
+            let feedback = '';
+            if (currentPosition === 'down' && !isGoodForm) {
+                feedback = 'Опуститесь ниже - сгибайте руки больше';
+            } else if (currentPosition === 'up' && !isGoodForm) {
+                feedback = 'Полностью выпрямите руки в верхнем положении';
+            } else if (currentPosition === 'down') {
+                feedback = 'Хорошо! Теперь поднимитесь';
+            } else if (currentPosition === 'up') {
+                feedback = 'Отлично! Следующее отжимание';
+            }
 
             return {
                 elbowAngle: avgElbowAngle,
-                position: isDown ? 'down' : (isUp ? 'up' : 'middle'),
-                isGoodForm: avgElbowAngle > 80 && avgElbowAngle < 100,
-                repDetected: false // Will be set based on state transitions
+                position: currentPosition,
+                isGoodForm: isGoodForm,
+                repDetected: repDetected,
+                feedback: feedback,
+                downCount: pushupDownCount
             };
         }
 
@@ -2218,9 +2384,25 @@
         }
 
         function updateExerciseFeedback(exerciseData) {
-            // Exercise feedback disabled in simplified interface
+            // Exercise feedback
             if (!exerciseData) return;
             console.log('Exercise data:', exerciseData);
+
+            // Show real-time feedback for push-ups
+            if (currentExercise && currentExercise.id === 'pushups' && exerciseData.feedback) {
+                const feedbackElement = document.getElementById('exercise-feedback');
+                if (feedbackElement) {
+                    feedbackElement.textContent = exerciseData.feedback;
+                    feedbackElement.style.display = 'block';
+
+                    // Color code based on form quality
+                    if (exerciseData.isGoodForm) {
+                        feedbackElement.style.color = '#4CAF50';
+                    } else {
+                        feedbackElement.style.color = '#FF6B35';
+                    }
+                }
+            }
         }
 
         function completeExercise() {
@@ -2230,13 +2412,34 @@
             // Save to progress
             saveExerciseProgress();
 
-            // Update UI
-            renderWorkoutWindow();
+            // Show congratulations popup
+            showCongratulationsPopup();
 
-            // Close modal after delay
-            setTimeout(() => {
-                closeExerciseModal();
-            }, 2000);
+            // Update UI in background
+            renderWorkoutWindow();
+        }
+
+        function showCongratulationsPopup() {
+            const popup = document.getElementById('congratulations-popup');
+            const completedReps = document.getElementById('completed-reps');
+            const message = document.getElementById('congratulations-message');
+
+            // Update the message with exercise name and count
+            if (currentExercise) {
+                const exerciseName = currentExercise.name;
+                message.innerHTML = `Вы выполнили <span id="completed-reps">${repCount}</span> ${exerciseName.toLowerCase()}!`;
+            }
+
+            // Show the popup
+            popup.style.display = 'block';
+        }
+
+        function closeCongratulations() {
+            const popup = document.getElementById('congratulations-popup');
+            popup.style.display = 'none';
+
+            // Close exercise modal after closing congratulations
+            closeExerciseModal();
         }
 
         function saveExerciseProgress() {
