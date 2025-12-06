@@ -92,53 +92,59 @@
             background: transparent;
         }
 
-        /* НЕОБРУТАЛИЗМ НАВИГАЦИЯ */
+        /* НЕОБРУТАЛИЗМ НАВИГАЦИЯ - ОПТИМИЗИРОВАНА ПОД МОБИЛЬНЫЕ */
         .nav-tabs {
             display: flex;
             background: var(--neobrut-yellow);
-            border-bottom: 8px solid var(--neobrut-black);
+            border-bottom: 4px solid var(--neobrut-black);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 8px 0px var(--neobrut-black);
+            box-shadow: 0 4px 0px var(--neobrut-black);
+            height: 60px;
         }
 
         .nav-tab {
             flex: 1;
-            padding: 20px 10px;
+            padding: 10px 4px;
             text-align: center;
             background: var(--neobrut-white);
-            border: 4px solid var(--neobrut-black);
-            font-size: 18px;
+            border: 3px solid var(--neobrut-black);
+            font-size: 12px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.03em;
             color: var(--neobrut-gray);
             cursor: pointer;
             transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
-            box-shadow: 4px 4px 0px var(--neobrut-black);
-            margin: 8px;
+            box-shadow: 3px 3px 0px var(--neobrut-black);
+            margin: 4px 3px;
             font-family: 'Bebas Neue', 'Archivo Black', 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 45px;
+            line-height: 1.1;
         }
 
         .nav-tab:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px var(--neobrut-black);
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px var(--neobrut-black);
             background: var(--neobrut-orange);
             color: var(--neobrut-black);
         }
 
         .nav-tab:active {
-            transform: translate(2px, 2px);
+            transform: translate(1px, 1px);
             box-shadow: 2px 2px 0px var(--neobrut-black);
         }
 
         .nav-tab.active {
             background: var(--neobrut-orange);
             color: var(--neobrut-black);
-            transform: translate(-1px, -1px);
-            box-shadow: 5px 5px 0px var(--neobrut-black);
+            transform: translate(-0.5px, -0.5px);
+            box-shadow: 3.5px 3.5px 0px var(--neobrut-black);
         }
 
         /* НЕОБРУТАЛИЗМ ОКНА */
@@ -164,32 +170,32 @@
             }
         }
 
-        /* НЕОБРУТАЛИЗМ ОКНО ТРЕНИРОВОК */
+        /* НЕОБРУТАЛИЗМ ОКНО ТРЕНИРОВОК - ОПТИМИЗИРОВАНО ПОД МОБИЛЬНЫЕ */
         .week-container {
-            padding: 20px;
+            padding: 10px;
         }
 
         .day-card {
             background: var(--neobrut-white);
-            border: 6px solid var(--neobrut-black);
-            padding: 25px;
-            margin-bottom: 20px;
+            border: 4px solid var(--neobrut-black);
+            padding: 15px;
+            margin-bottom: 12px;
             transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
-            box-shadow: 10px 10px 0px var(--neobrut-black);
+            box-shadow: 6px 6px 0px var(--neobrut-black);
             transform: rotate(0deg);
             font-family: 'Bebas Neue', 'Archivo Black', 'Courier New', monospace;
         }
 
         .day-card:hover {
-            transform: translate(-3px, -3px) rotate(-0.5deg);
-            box-shadow: 13px 13px 0px var(--neobrut-black);
+            transform: translate(-2px, -2px) rotate(-0.5deg);
+            box-shadow: 8px 8px 0px var(--neobrut-black);
             background: var(--neobrut-pink);
         }
 
         .day-card:active {
-            transform: translate(3px, 3px) rotate(0.5deg);
-            box-shadow: 7px 7px 0px var(--neobrut-black);
+            transform: translate(2px, 2px) rotate(0.5deg);
+            box-shadow: 4px 4px 0px var(--neobrut-black);
         }
 
         .day-card.today {
@@ -211,22 +217,22 @@
         }
 
         .day-title {
-            font-size: 28px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--neobrut-black);
-            text-shadow: 3px 3px 0px var(--neobrut-yellow);
-        }
-
-        .day-status {
-            padding: 8px 20px;
-            border: 4px solid var(--neobrut-black);
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.08em;
-            box-shadow: 5px 5px 0px var(--neobrut-black);
+            color: var(--neobrut-black);
+            text-shadow: 2px 2px 0px var(--neobrut-yellow);
+        }
+
+        .day-status {
+            padding: 6px 12px;
+            border: 3px solid var(--neobrut-black);
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 3px 3px 0px var(--neobrut-black);
             font-family: 'Bebas Neue', 'Courier New', monospace;
         }
 
@@ -252,83 +258,87 @@
 
         .exercise-list {
             display: grid;
-            gap: 15px;
+            gap: 8px;
         }
 
         .exercise-item {
             background: var(--neobrut-lightgray);
-            border: 4px solid var(--neobrut-black);
-            padding: 20px;
+            border: 3px solid var(--neobrut-black);
+            padding: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
             transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
-            box-shadow: 6px 6px 0px var(--neobrut-black);
+            box-shadow: 4px 4px 0px var(--neobrut-black);
             transform: rotate(0deg);
         }
 
         .exercise-item:hover {
-            transform: translate(-3px, -3px) rotate(-1deg);
-            box-shadow: 9px 9px 0px var(--neobrut-black);
+            transform: translate(-2px, -2px) rotate(-0.5deg);
+            box-shadow: 6px 6px 0px var(--neobrut-black);
             background: var(--neobrut-yellow);
         }
 
         .exercise-item:active {
-            transform: translate(2px, 2px) rotate(1deg);
-            box-shadow: 4px 4px 0px var(--neobrut-black);
+            transform: translate(1px, 1px) rotate(0.5deg);
+            box-shadow: 2px 2px 0px var(--neobrut-black);
         }
 
         .exercise-info {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
         }
 
         .exercise-icon {
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
             background: var(--neobrut-blue);
-            border: 4px solid var(--neobrut-black);
+            border: 3px solid var(--neobrut-black);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            box-shadow: 4px 4px 0px var(--neobrut-black);
-            transform: rotate(-5deg);
+            font-size: 18px;
+            box-shadow: 3px 3px 0px var(--neobrut-black);
+            transform: rotate(-3deg);
+            flex-shrink: 0;
         }
 
         .exercise-details h3 {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 5px;
+            letter-spacing: 0.04em;
+            margin-bottom: 3px;
             color: var(--neobrut-black);
+            line-height: 1.1;
         }
 
         .exercise-details p {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--neobrut-gray);
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.02em;
+            line-height: 1;
         }
 
         .exercise-target {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
             color: var(--neobrut-black);
             background: var(--neobrut-yellow);
-            padding: 8px 15px;
-            border: 3px solid var(--neobrut-black);
-            box-shadow: 3px 3px 0px var(--neobrut-black);
+            padding: 6px 10px;
+            border: 2px solid var(--neobrut-black);
+            box-shadow: 2px 2px 0px var(--neobrut-black);
+            white-space: nowrap;
         }
 
-        /* НЕОБРУТАЛИЗМ МОДАЛЬНОЕ ОКНО УПРАЖНЕНИЯ */
+        /* НЕОБРУТАЛИЗМ МОДАЛЬНОЕ ОКНО УПРАЖНЕНИЯ - ОПТИМИЗИРОВАНО ПОД МОБИЛЬНЫЕ */
         .exercise-modal {
             position: fixed;
             top: 0;
@@ -339,7 +349,7 @@
             z-index: 1000;
             display: none;
             flex-direction: column;
-            border: 8px solid var(--neobrut-black);
+            border: 4px solid var(--neobrut-black);
         }
 
         .exercise-modal.active {
@@ -359,37 +369,38 @@
         }
 
         .modal-header {
-            padding: 25px;
+            padding: 15px;
             background: var(--neobrut-yellow);
-            border-bottom: 8px solid var(--neobrut-black);
+            border-bottom: 4px solid var(--neobrut-black);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 8px 0px var(--neobrut-black);
+            box-shadow: 0 4px 0px var(--neobrut-black);
         }
 
         .modal-title {
-            font-size: 28px;
+            font-size: 18px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.06em;
             color: var(--neobrut-black);
             font-family: 'Bebas Neue', 'Courier New', monospace;
+            line-height: 1.1;
         }
 
         .close-btn {
             background: var(--neobrut-red);
-            border: 4px solid var(--neobrut-black);
-            font-size: 24px;
+            border: 3px solid var(--neobrut-black);
+            font-size: 16px;
             font-weight: 900;
             cursor: pointer;
             color: var(--neobrut-white);
-            padding: 15px 20px;
-            box-shadow: 4px 4px 0px var(--neobrut-black);
+            padding: 10px 15px;
+            box-shadow: 3px 3px 0px var(--neobrut-black);
             transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             font-family: 'Bebas Neue', 'Courier New', monospace;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
         }
 
         .close-btn:hover {
@@ -413,9 +424,9 @@
         .video-container {
             position: relative;
             width: 100%;
-            height: 50vh;
+            height: 45vh;
             background: var(--neobrut-black);
-            border-bottom: 8px solid var(--neobrut-black);
+            border-bottom: 4px solid var(--neobrut-black);
         }
 
         #webcam {
@@ -423,8 +434,8 @@
             height: 100%;
             object-fit: cover;
             transform: scaleX(-1);
-            border: 8px solid var(--neobrut-black);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            border: 4px solid var(--neobrut-black);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
 
         .pose-overlay {
@@ -439,24 +450,26 @@
         }
 
         .exercise-stats {
-            padding: 30px;
+            padding: 15px;
             background: var(--neobrut-white);
-            border-top: 8px solid var(--neobrut-black);
+            border-top: 4px solid var(--neobrut-black);
+            flex: 1;
+            overflow-y: auto;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .stat-box {
             background: var(--neobrut-lightgray);
-            border: 6px solid var(--neobrut-black);
-            padding: 25px 15px;
+            border: 3px solid var(--neobrut-black);
+            padding: 15px 8px;
             text-align: center;
-            box-shadow: 8px 8px 0px var(--neobrut-black);
+            box-shadow: 4px 4px 0px var(--neobrut-black);
             transform: rotate(-1deg);
             transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
@@ -488,33 +501,35 @@
         }
 
         .stat-value {
-            font-size: 42px;
+            font-size: 24px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
             color: var(--neobrut-black);
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-family: 'Bebas Neue', 'Courier New', monospace;
-            text-shadow: 2px 2px 0px var(--neobrut-yellow);
+            text-shadow: 1px 1px 0px var(--neobrut-yellow);
+            line-height: 1;
         }
 
         .stat-label {
-            font-size: 16px;
+            font-size: 12px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.04em;
             color: var(--neobrut-gray);
             font-family: 'Bebas Neue', 'Courier New', monospace;
+            line-height: 1;
         }
 
         .ai-feedback {
             background: var(--neobrut-white);
-            border: 6px solid var(--neobrut-black);
-            padding: 25px;
-            min-height: 120px;
-            margin-bottom: 30px;
-            border-left: 12px solid var(--neobrut-orange);
-            box-shadow: 8px 8px 0px var(--neobrut-black);
+            border: 4px solid var(--neobrut-black);
+            padding: 15px;
+            min-height: 80px;
+            margin-bottom: 20px;
+            border-left: 8px solid var(--neobrut-orange);
+            box-shadow: 4px 4px 0px var(--neobrut-black);
             transform: rotate(0.5deg);
             font-family: 'Bebas Neue', 'Courier New', monospace;
         }
@@ -525,31 +540,32 @@
         }
 
         .ai-feedback-text {
-            font-size: 18px;
-            line-height: 1.4;
+            font-size: 14px;
+            line-height: 1.3;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.02em;
             color: var(--neobrut-black);
         }
 
         .control-buttons {
             display: flex;
-            gap: 15px;
+            gap: 10px;
         }
 
         .btn {
             flex: 1;
-            padding: 20px;
-            border: 6px solid var(--neobrut-black);
-            font-size: 20px;
+            padding: 15px 10px;
+            border: 4px solid var(--neobrut-black);
+            font-size: 16px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
             cursor: pointer;
             transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             font-family: 'Bebas Neue', 'Courier New', monospace;
-            box-shadow: 8px 8px 0px var(--neobrut-black);
+            box-shadow: 4px 4px 0px var(--neobrut-black);
+            line-height: 1.1;
         }
 
         .btn-primary {
@@ -586,90 +602,93 @@
             box-shadow: 5px 5px 0px var(--neobrut-black);
         }
 
-        /* НЕОБРУТАЛИЗМ ОКНО СТАТИСТИКИ */
+        /* НЕОБРУТАЛИЗМ ОКНО СТАТИСТИКИ - ОПТИМИЗИРОВАНО ПОД МОБИЛЬНЫЕ */
         .stats-container {
-            padding: 20px;
+            padding: 10px;
         }
 
         .stats-overview {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 40px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .overview-card {
             background: var(--neobrut-white);
-            border: 8px solid var(--neobrut-black);
-            padding: 30px 20px;
+            border: 4px solid var(--neobrut-black);
+            padding: 20px 15px;
             text-align: center;
-            box-shadow: 12px 12px 0px var(--neobrut-black);
-            transform: rotate(-2deg);
+            box-shadow: 6px 6px 0px var(--neobrut-black);
+            transform: rotate(-1deg);
             transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .overview-card:hover {
-            transform: translate(-5px, -5px) rotate(-2.5deg);
-            box-shadow: 16px 16px 0px var(--neobrut-black);
+            transform: translate(-2px, -2px) rotate(-1.5deg);
+            box-shadow: 8px 8px 0px var(--neobrut-black);
             background: var(--neobrut-blue);
         }
 
         .overview-card:nth-child(2) {
-            transform: rotate(2deg);
+            transform: rotate(1deg);
             background: var(--neobrut-green);
         }
 
         .overview-card:nth-child(2):hover {
-            transform: translate(-5px, -5px) rotate(2.5deg);
+            transform: translate(-2px, -2px) rotate(1.5deg);
             background: var(--neobrut-orange);
         }
 
         .overview-value {
-            font-size: 56px;
+            font-size: 32px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
             color: var(--neobrut-black);
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             font-family: 'Bebas Neue', 'Courier New', monospace;
-            text-shadow: 3px 3px 0px var(--neobrut-yellow);
+            text-shadow: 2px 2px 0px var(--neobrut-yellow);
+            line-height: 1;
         }
 
         .overview-label {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
             color: var(--neobrut-gray);
             font-family: 'Bebas Neue', 'Courier New', monospace;
+            line-height: 1;
         }
 
         .progress-chart {
             background: var(--neobrut-yellow);
-            border: 8px solid var(--neobrut-black);
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 10px 10px 0px var(--neobrut-black);
+            border: 4px solid var(--neobrut-black);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 6px 6px 0px var(--neobrut-black);
             transform: rotate(1deg);
         }
 
         .chart-title {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 25px;
+            letter-spacing: 0.06em;
+            margin-bottom: 15px;
             color: var(--neobrut-black);
             font-family: 'Bebas Neue', 'Courier New', monospace;
             text-shadow: 2px 2px 0px var(--neobrut-white);
+            line-height: 1.1;
         }
 
         .chart-container {
-            height: 250px;
+            height: 200px;
             position: relative;
             background: var(--neobrut-white);
-            border: 6px solid var(--neobrut-black);
-            box-shadow: inset 4px 4px 0px var(--neobrut-black);
+            border: 4px solid var(--neobrut-black);
+            box-shadow: inset 2px 2px 0px var(--neobrut-black);
         }
 
         .week-progress {
@@ -1015,34 +1034,111 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* НЕОБРУТАЛИЗМ РЕСПОНСИВ */
+        /* НЕОБРУТАЛИЗМ РЕСПОНСИВ - ОПТИМИЗИРОВАНО ПОД МОБИЛЬНЫЕ */
         @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+
+            .container {
+                padding: 0;
+            }
+
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+                gap: 8px;
             }
 
             .stats-overview {
                 grid-template-columns: 1fr;
-                gap: 15px;
+                gap: 10px;
             }
 
             .nav-tab {
-                font-size: 16px;
-                padding: 15px 8px;
-                margin: 6px;
+                font-size: 12px;
+                padding: 10px 4px;
+                margin: 4px 3px;
+                min-height: 45px;
             }
 
             .day-title {
-                font-size: 24px;
+                font-size: 18px;
             }
 
             .overview-value {
-                font-size: 42px;
+                font-size: 28px;
             }
 
             .stat-value {
+                font-size: 20px;
+            }
+
+            .modal-title {
+                font-size: 16px;
+            }
+
+            .close-btn {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+
+            .ai-feedback-text {
+                font-size: 13px;
+            }
+
+            .btn {
+                font-size: 14px;
+                padding: 12px 8px;
+            }
+
+            .week-progress {
+                height: 150px;
+                padding: 0 10px;
+            }
+
+            .bar {
+                width: 30px;
+            }
+
+            .bar-value {
+                font-size: 12px;
+                top: -20px;
+            }
+
+            .bar-label {
+                font-size: 10px;
+            }
+
+            .achievement-list {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 10px;
+            }
+
+            .achievement-icon {
                 font-size: 32px;
+            }
+
+            .achievement-name {
+                font-size: 10px;
+            }
+
+            .settings-section {
+                padding: 20px;
+                margin-bottom: 15px;
+            }
+
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 36px;
+            }
+
+            .profile-name {
+                font-size: 20px;
+            }
+
+            .profile-level {
+                font-size: 14px;
             }
         }
     </style>
