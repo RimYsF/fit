@@ -424,9 +424,9 @@
         .video-container {
             position: relative;
             width: 100%;
-            height: 45vh;
+            height: calc(100vh - 70px);
             background: var(--neobrut-black);
-            border-bottom: 4px solid var(--neobrut-black);
+            flex: 1;
         }
 
         #webcam {
@@ -434,8 +434,8 @@
             height: 100%;
             object-fit: cover;
             transform: scaleX(-1);
-            border: 4px solid var(--neobrut-black);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            border: none;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
 
         .pose-overlay {
@@ -449,159 +449,7 @@
             height: 100%;
         }
 
-        .exercise-stats {
-            padding: 15px;
-            background: var(--neobrut-white);
-            border-top: 4px solid var(--neobrut-black);
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .stat-box {
-            background: var(--neobrut-lightgray);
-            border: 3px solid var(--neobrut-black);
-            padding: 15px 8px;
-            text-align: center;
-            box-shadow: 4px 4px 0px var(--neobrut-black);
-            transform: rotate(-1deg);
-            transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .stat-box:hover {
-            transform: translate(-3px, -3px) rotate(-1.5deg);
-            box-shadow: 11px 11px 0px var(--neobrut-black);
-            background: var(--neobrut-yellow);
-        }
-
-        .stat-box:nth-child(2) {
-            transform: rotate(1deg);
-            background: var(--neobrut-blue);
-        }
-
-        .stat-box:nth-child(2):hover {
-            transform: translate(-3px, -3px) rotate(1.5deg);
-            background: var(--neobrut-orange);
-        }
-
-        .stat-box:nth-child(3) {
-            transform: rotate(-0.5deg);
-            background: var(--neobrut-green);
-        }
-
-        .stat-box:nth-child(3):hover {
-            transform: translate(-3px, -3px) rotate(-1deg);
-            background: var(--neobrut-pink);
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--neobrut-black);
-            margin-bottom: 5px;
-            font-family: 'Bebas Neue', 'Courier New', monospace;
-            text-shadow: 1px 1px 0px var(--neobrut-yellow);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--neobrut-gray);
-            font-family: 'Bebas Neue', 'Courier New', monospace;
-            line-height: 1;
-        }
-
-        .ai-feedback {
-            background: var(--neobrut-white);
-            border: 4px solid var(--neobrut-black);
-            padding: 15px;
-            min-height: 80px;
-            margin-bottom: 20px;
-            border-left: 8px solid var(--neobrut-orange);
-            box-shadow: 4px 4px 0px var(--neobrut-black);
-            transform: rotate(0.5deg);
-            font-family: 'Bebas Neue', 'Courier New', monospace;
-        }
-
-        .ai-feedback:hover {
-            transform: rotate(0deg);
-            border-left-color: var(--neobrut-red);
-        }
-
-        .ai-feedback-text {
-            font-size: 14px;
-            line-height: 1.3;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-            color: var(--neobrut-black);
-        }
-
-        .control-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px 10px;
-            border: 4px solid var(--neobrut-black);
-            font-size: 16px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            font-family: 'Bebas Neue', 'Courier New', monospace;
-            box-shadow: 4px 4px 0px var(--neobrut-black);
-            line-height: 1.1;
-        }
-
-        .btn-primary {
-            background: var(--neobrut-orange);
-            color: var(--neobrut-black);
-            transform: rotate(-1deg);
-        }
-
-        .btn-primary:hover {
-            transform: translate(-3px, -3px) rotate(-1.5deg);
-            box-shadow: 11px 11px 0px var(--neobrut-black);
-            background: var(--neobrut-red);
-        }
-
-        .btn-primary:active {
-            transform: translate(3px, 3px) rotate(-0.5deg);
-            box-shadow: 5px 5px 0px var(--neobrut-black);
-        }
-
-        .btn-secondary {
-            background: var(--neobrut-gray);
-            color: var(--neobrut-white);
-            transform: rotate(1deg);
-        }
-
-        .btn-secondary:hover {
-            transform: translate(-3px, -3px) rotate(1.5deg);
-            box-shadow: 11px 11px 0px var(--neobrut-black);
-            background: var(--neobrut-purple);
-        }
-
-        .btn-secondary:active {
-            transform: translate(3px, 3px) rotate(0.5deg);
-            box-shadow: 5px 5px 0px var(--neobrut-black);
-        }
-
+        
         /* НЕОБРУТАЛИЗМ ОКНО СТАТИСТИКИ - ОПТИМИЗИРОВАНО ПОД МОБИЛЬНЫЕ */
         .stats-container {
             padding: 10px;
@@ -1082,18 +930,21 @@
                 padding: 8px 12px;
             }
 
-            .ai-feedback-text {
-                font-size: 13px;
+            .video-container {
+                height: calc(100vh - 60px);
             }
 
-            .btn {
+            .modal-header {
+                padding: 12px;
+            }
+
+            .modal-title {
+                font-size: 16px;
+            }
+
+            .close-btn {
                 font-size: 14px;
-                padding: 12px 8px;
-            }
-
-            .week-progress {
-                height: 150px;
-                padding: 0 10px;
+                padding: 8px 12px;
             }
 
             .bar {
@@ -1245,29 +1096,6 @@
             <div class="video-container">
                 <video id="webcam" autoplay playsinline></video>
                 <canvas class="pose-overlay" id="pose-canvas"></canvas>
-            </div>
-            <div class="exercise-stats">
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-value" id="rep-count">0</div>
-                        <div class="stat-label">Повторения</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="time-elapsed">0:00</div>
-                        <div class="stat-label">Время</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="calories">0</div>
-                        <div class="stat-label">Калории</div>
-                    </div>
-                </div>
-                <div class="ai-feedback">
-                    <div class="ai-feedback-text" id="ai-feedback">Готовьтесь начать упражнение...</div>
-                </div>
-                <div class="control-buttons">
-                    <button class="btn btn-primary" id="start-btn" onclick="startExercise()">Начать</button>
-                    <button class="btn btn-secondary" id="pause-btn" onclick="pauseExercise()" style="display: none;">Пауза</button>
-                </div>
             </div>
         </div>
     </div>
