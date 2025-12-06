@@ -11,6 +11,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
     <!-- MediaPipe for pose detection - using umd bundle -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <!-- Initialize MediaPipe after scripts load -->
@@ -796,6 +797,7 @@
         let startTime = null;
         let repCount = 0;
         let pose = null;
+        let faceMesh = null;
         let webcamStream = null;
         let aiStreamController = null;
 
@@ -1040,6 +1042,14 @@
                     }
                 });
 
+                // Initialize MediaPipe Face Mesh
+                console.log('Creating MediaPipe Face Mesh instance...');
+                faceMesh = new FaceMesh({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+                    }
+                });
+
                 // Configure MediaPipe Pose for Telegram Mini App optimization
                 pose.setOptions({
                     modelComplexity: 1,  // Balanced performance
@@ -1050,11 +1060,42 @@
                     minTrackingConfidence: 0.5
                 });
 
+                // Configure MediaPipe Face Mesh
+                faceMesh.setOptions({
+                    maxNumFaces: 1,
+                    refineLandmarks: true,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+
+                // Combined results storage
+                let combinedResults = {
+                    poseLandmarks: null,
+                    faceLandmarks: null
+                };
+
                 // Optimized MediaPipe callback with frame skipping for better performance
                 let frameSkip = 0;
                 const FRAME_SKIP_RATE = 1; // Process every frame (set to 2+ for lower end devices)
 
-                pose.onResults((results) => {
+                pose.onResults((poseResults) => {
+                    combinedResults.poseLandmarks = poseResults.poseLandmarks;
+                    processCombinedResults();
+                });
+
+                faceMesh.onResults((faceResults) => {
+                    combinedResults.faceLandmarks = faceResults.multiFaceLandmarks ? faceResults.multiFaceLandmarks[0] : null;
+                    processCombinedResults();
+                });
+
+                function processCombinedResults() {
+                    // Only process if we have both results
+                    if (!combinedResults.poseLandmarks) {
+                        // Clear canvas if no pose landmarks
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        return;
+                    }
+
                     // Frame skipping for performance optimization
                     if (frameSkip++ % FRAME_SKIP_RATE !== 0) {
                         return;
@@ -1063,20 +1104,17 @@
                     // Clear canvas with transparency
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Draw pose landmarks and connections with optimizations
-                    if (results.poseLandmarks) {
-                        // Direct drawing for better real-time performance
-                        drawCustomSkeleton(ctx, results.poseLandmarks);
+                    // Draw combined skeleton with face landmarks
+                    drawCustomSkeletonWithFace(ctx, combinedResults.poseLandmarks, combinedResults.faceLandmarks);
 
-                        // Non-blocking exercise analysis
-                        if (isExerciseActive) {
-                            // Use microtask for non-blocking analysis
-                            Promise.resolve().then(() => {
-                                analyzeExerciseMediaPipe(results.poseLandmarks);
-                            });
-                        }
+                    // Non-blocking exercise analysis
+                    if (isExerciseActive) {
+                        // Use microtask for non-blocking analysis
+                        Promise.resolve().then(() => {
+                            analyzeExerciseMediaPipe(combinedResults.poseLandmarks);
+                        });
                     }
-                });
+                }
 
                 // Different constraints for Telegram
                 const constraints = isTelegram ? {
@@ -1139,8 +1177,12 @@
 
                 // Start processing without MediaPipe Camera (more compatible)
                 const processFrame = async () => {
-                    if (pose && video.readyState === 4) {
-                        await pose.send({ image: video });
+                    if (pose && faceMesh && video.readyState === 4) {
+                        // Send to both pose and face mesh models
+                        await Promise.all([
+                            pose.send({ image: video }),
+                            faceMesh.send({ image: video })
+                        ]);
                     }
                     requestAnimationFrame(processFrame);
                 };
@@ -1604,7 +1646,189 @@
         const LEFT_EYE_INDICES = [0]; // Using face center as approximation
         const RIGHT_EYE_INDICES = [0]; // Using face center as approximation
 
-        // Enhanced skeleton drawing with 3D depth effects and performance optimizations
+        // Enhanced skeleton drawing with face mesh integration
+        function drawCustomSkeletonWithFace(ctx, poseLandmarks, faceLandmarks) {
+            const canvas = ctx.canvas;
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Set rendering optimizations
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // Apply mirror transformation for selfie view
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.translate(-width, 0);
+
+            // Pre-calculate pose landmark positions
+            const posePositions = poseLandmarks.map(landmark => ({
+                x: landmark.x * width,
+                y: landmark.y * height,
+                visibility: landmark.visibility || 0,
+                z: landmark.z || 0
+            }));
+
+            // Draw pose connections (body only)
+            ctx.save();
+            POSE_CONNECTIONS.forEach(([start, end]) => {
+                // Skip face connections (0-10)
+                if (start <= 10 || end <= 10) return;
+
+                const startPoint = posePositions[start];
+                const endPoint = posePositions[end];
+
+                if (startPoint && endPoint &&
+                    startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
+
+                    const avgVisibility = (startPoint.visibility + endPoint.visibility) / 2;
+                    const avgZ = (startPoint.z + endPoint.z) / 2;
+                    const opacity = Math.max(0.3, avgVisibility);
+                    const lineWidth = Math.max(2, Math.min(4, 3 * (1.0 + Math.abs(avgZ))));
+
+                    // Dynamic color based on depth
+                    const brightness = Math.max(0.6, Math.min(1.0, 1.0 + avgZ * 1.5));
+                    const green = Math.floor(255 * brightness);
+                    const blue = Math.floor(120 * brightness);
+
+                    ctx.strokeStyle = `rgba(0, ${green}, ${blue}, ${opacity})`;
+                    ctx.lineWidth = lineWidth;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+
+                    if (avgVisibility > 0.8) {
+                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.4)`;
+                        ctx.shadowBlur = 8;
+                    } else if (avgVisibility > 0.6) {
+                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.2)`;
+                        ctx.shadowBlur = 4;
+                    }
+
+                    ctx.beginPath();
+                    ctx.moveTo(startPoint.x, startPoint.y);
+                    ctx.lineTo(endPoint.x, endPoint.y);
+                    ctx.stroke();
+                }
+            });
+            ctx.restore();
+
+            // Draw face landmarks (eyes only)
+            if (faceLandmarks) {
+                // Face mesh eye indices (simplified for the most visible points)
+                const LEFT_EYE_CENTER = [33];
+                const RIGHT_EYE_CENTER = [263];
+                const LEFT_EYE_IRIS = [468];
+                const RIGHT_EYE_IRIS = [473];
+
+                // Draw eyes from face mesh
+                ctx.fillStyle = '#FFFFFF';
+                ctx.globalAlpha = 1.0;
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+
+                // Left eye
+                if (faceLandmarks[LEFT_EYE_CENTER[0]]) {
+                    const leftEye = faceLandmarks[LEFT_EYE_CENTER[0]];
+                    ctx.beginPath();
+                    ctx.arc(leftEye.x * width, leftEye.y * height, 6, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Iris for more precision
+                    if (faceLandmarks[LEFT_EYE_IRIS[0]]) {
+                        const leftIris = faceLandmarks[LEFT_EYE_IRIS[0]];
+                        ctx.fillStyle = '#00FFFF';
+                        ctx.globalAlpha = 0.8;
+                        ctx.beginPath();
+                        ctx.arc(leftIris.x * width, leftIris.y * height, 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+
+                // Right eye
+                if (faceLandmarks[RIGHT_EYE_CENTER[0]]) {
+                    const rightEye = faceLandmarks[RIGHT_EYE_CENTER[0]];
+                    ctx.beginPath();
+                    ctx.arc(rightEye.x * width, rightEye.y * height, 6, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Iris for more precision
+                    if (faceLandmarks[RIGHT_EYE_IRIS[0]]) {
+                        const rightIris = faceLandmarks[RIGHT_EYE_IRIS[0]];
+                        ctx.fillStyle = '#00FFFF';
+                        ctx.globalAlpha = 0.8;
+                        ctx.beginPath();
+                        ctx.arc(rightIris.x * width, rightIris.y * height, 3, 0, 2 * Math.PI);
+                        ctx.fill();
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+
+            // Draw body landmarks (11 and above only)
+            posePositions.forEach((pos, index) => {
+                if (index >= 11 && pos.visibility > 0.5) {
+                    const bodyPart = BODY_PARTS[index];
+                    const color = BODY_PART_COLORS[bodyPart] || '#FFFFFF';
+                    const opacity = Math.max(0.6, pos.visibility);
+
+                    const baseRadius = 6;
+                    const radius = baseRadius * (1.0 + Math.min(0.4, Math.abs(pos.z) * 2));
+
+                    if (pos.visibility > 0.85) {
+                        const glowGradient = ctx.createRadialGradient(
+                            pos.x, pos.y, radius,
+                            pos.x, pos.y, radius + 8
+                        );
+                        glowGradient.addColorStop(0, color);
+                        glowGradient.addColorStop(1, 'transparent');
+
+                        ctx.fillStyle = glowGradient;
+                        ctx.globalAlpha = opacity * 0.3;
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, radius + 8, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+
+                    const landmarkGradient = ctx.createRadialGradient(
+                        pos.x - radius/3, pos.y - radius/3, 0,
+                        pos.x, pos.y, radius
+                    );
+                    landmarkGradient.addColorStop(0, '#FFFFFF');
+                    landmarkGradient.addColorStop(0.4, color);
+                    landmarkGradient.addColorStop(1, color);
+
+                    ctx.fillStyle = landmarkGradient;
+                    ctx.globalAlpha = opacity;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 2;
+                    ctx.globalAlpha = opacity * 0.9;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+
+                    if (pos.visibility > 0.95) {
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.globalAlpha = opacity;
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, Math.max(2, radius * 0.3), 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                }
+            });
+
+            // Reset all context states
+            ctx.globalAlpha = 1.0;
+            ctx.restore();
+        }
+
+        // Enhanced skeleton drawing with 3D depth effects and performance optimizations (legacy)
         function drawCustomSkeleton(ctx, landmarks) {
             const canvas = ctx.canvas;
             const width = canvas.width;
