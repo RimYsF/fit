@@ -1089,7 +1089,7 @@
                 });
 
                 function processCombinedResults() {
-                    // Only process if we have both results
+                    // Only process if we have pose landmarks (face is optional)
                     if (!combinedResults.poseLandmarks) {
                         // Clear canvas if no pose landmarks
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1104,8 +1104,13 @@
                     // Clear canvas with transparency
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Draw combined skeleton with face landmarks
-                    drawCustomSkeletonWithFace(ctx, combinedResults.poseLandmarks, combinedResults.faceLandmarks);
+                    // Always draw skeleton first
+                    drawCustomSkeleton(ctx, combinedResults.poseLandmarks);
+
+                    // Draw face overlay if available (optional)
+                    if (combinedResults.faceLandmarks) {
+                        drawCustomSkeletonWithFace(ctx, combinedResults.poseLandmarks, combinedResults.faceLandmarks);
+                    }
 
                     // Non-blocking exercise analysis
                     if (isExerciseActive) {
@@ -1646,125 +1651,54 @@
         const LEFT_EYE_INDICES = [0]; // Using face center as approximation
         const RIGHT_EYE_INDICES = [0]; // Using face center as approximation
 
-        // Enhanced skeleton drawing with face mesh integration
+        // Face overlay drawing function (only draws face landmarks, not skeleton)
         function drawCustomSkeletonWithFace(ctx, poseLandmarks, faceLandmarks) {
             const canvas = ctx.canvas;
             const width = canvas.width;
             const height = canvas.height;
-
-            // Set rendering optimizations
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
 
             // Apply mirror transformation for selfie view
             ctx.save();
             ctx.scale(-1, 1);
             ctx.translate(-width, 0);
 
-            // Pre-calculate pose landmark positions
-            const posePositions = poseLandmarks.map(landmark => ({
-                x: landmark.x * width,
-                y: landmark.y * height,
-                visibility: landmark.visibility || 0,
-                z: landmark.z || 0
-            }));
-
-            // Draw pose connections (body only)
-            ctx.save();
-            POSE_CONNECTIONS.forEach(([start, end]) => {
-                // Skip face connections (0-10)
-                if (start <= 10 || end <= 10) return;
-
-                const startPoint = posePositions[start];
-                const endPoint = posePositions[end];
-
-                if (startPoint && endPoint &&
-                    startPoint.visibility > 0.5 && endPoint.visibility > 0.5) {
-
-                    const avgVisibility = (startPoint.visibility + endPoint.visibility) / 2;
-                    const avgZ = (startPoint.z + endPoint.z) / 2;
-                    const opacity = Math.max(0.3, avgVisibility);
-                    const lineWidth = Math.max(2, Math.min(4, 3 * (1.0 + Math.abs(avgZ))));
-
-                    // Dynamic color based on depth
-                    const brightness = Math.max(0.6, Math.min(1.0, 1.0 + avgZ * 1.5));
-                    const green = Math.floor(255 * brightness);
-                    const blue = Math.floor(120 * brightness);
-
-                    ctx.strokeStyle = `rgba(0, ${green}, ${blue}, ${opacity})`;
-                    ctx.lineWidth = lineWidth;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-
-                    if (avgVisibility > 0.8) {
-                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.4)`;
-                        ctx.shadowBlur = 8;
-                    } else if (avgVisibility > 0.6) {
-                        ctx.shadowColor = `rgba(0, ${green}, ${blue}, 0.2)`;
-                        ctx.shadowBlur = 4;
-                    }
-
-                    ctx.beginPath();
-                    ctx.moveTo(startPoint.x, startPoint.y);
-                    ctx.lineTo(endPoint.x, endPoint.y);
-                    ctx.stroke();
-                }
-            });
-            ctx.restore();
-
-            // Draw face landmarks (eyes only)
+            // Draw face landmarks (optimized - only 1/10 of points)
             if (faceLandmarks) {
-                // Face mesh eye indices (simplified for the most visible points)
-                const LEFT_EYE_CENTER = [33];
-                const RIGHT_EYE_CENTER = [263];
-                const LEFT_EYE_IRIS = [468];
-                const RIGHT_EYE_IRIS = [473];
+                // Use only every 10th point for performance (468 -> ~47 points)
+                const useEveryNth = 10;
+                const reducedFaceLandmarks = [];
 
-                // Draw eyes from face mesh
+                for (let i = 0; i < faceLandmarks.length; i += useEveryNth) {
+                    reducedFaceLandmarks.push(faceLandmarks[i]);
+                }
+
+                // Face mesh eye indices (from reduced set)
+                const LEFT_EYE_CENTER = [3];  // Approximate index in reduced set
+                const RIGHT_EYE_CENTER = [26]; // Approximate index in reduced set
+
+                // Draw reduced face points
                 ctx.fillStyle = '#FFFFFF';
-                ctx.globalAlpha = 1.0;
+                ctx.globalAlpha = 0.8;
                 ctx.shadowColor = 'transparent';
                 ctx.shadowBlur = 0;
 
-                // Left eye
-                if (faceLandmarks[LEFT_EYE_CENTER[0]]) {
-                    const leftEye = faceLandmarks[LEFT_EYE_CENTER[0]];
+                // Draw only the reduced landmark points
+                reducedFaceLandmarks.forEach((landmark, index) => {
+                    // Draw eyes slightly larger
+                    const isEyePoint = index === LEFT_EYE_CENTER[0] || index === RIGHT_EYE_CENTER[0];
+                    const radius = isEyePoint ? 6 : 2;
+
+                    ctx.fillStyle = isEyePoint ? '#FFFFFF' : '#00FFFF';
+                    ctx.globalAlpha = isEyePoint ? 1.0 : 0.5;
+
                     ctx.beginPath();
-                    ctx.arc(leftEye.x * width, leftEye.y * height, 6, 0, 2 * Math.PI);
+                    ctx.arc(landmark.x * width, landmark.y * height, radius, 0, 2 * Math.PI);
                     ctx.fill();
+                });
 
-                    // Iris for more precision
-                    if (faceLandmarks[LEFT_EYE_IRIS[0]]) {
-                        const leftIris = faceLandmarks[LEFT_EYE_IRIS[0]];
-                        ctx.fillStyle = '#00FFFF';
-                        ctx.globalAlpha = 0.8;
-                        ctx.beginPath();
-                        ctx.arc(leftIris.x * width, leftIris.y * height, 3, 0, 2 * Math.PI);
-                        ctx.fill();
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.globalAlpha = 1.0;
-                    }
-                }
-
-                // Right eye
-                if (faceLandmarks[RIGHT_EYE_CENTER[0]]) {
-                    const rightEye = faceLandmarks[RIGHT_EYE_CENTER[0]];
-                    ctx.beginPath();
-                    ctx.arc(rightEye.x * width, rightEye.y * height, 6, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    // Iris for more precision
-                    if (faceLandmarks[RIGHT_EYE_IRIS[0]]) {
-                        const rightIris = faceLandmarks[RIGHT_EYE_IRIS[0]];
-                        ctx.fillStyle = '#00FFFF';
-                        ctx.globalAlpha = 0.8;
-                        ctx.beginPath();
-                        ctx.arc(rightIris.x * width, rightIris.y * height, 3, 0, 2 * Math.PI);
-                        ctx.fill();
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.globalAlpha = 1.0;
-                    }
-                }
+                // Restore defaults
+                ctx.fillStyle = '#FFFFFF';
+                ctx.globalAlpha = 1.0;
             }
 
             // Draw body landmarks (11 and above only)
