@@ -1295,8 +1295,6 @@
 
             // Update modal
             document.getElementById('modal-exercise-name').textContent = exercise.name;
-            document.getElementById('rep-count').textContent = '0';
-            document.getElementById('ai-feedback').textContent = 'Нажмите "Начать" для запуска упражнения';
 
             // Show modal
             document.getElementById('exercise-modal').classList.add('active');
@@ -1482,9 +1480,7 @@
 
                 console.log('Camera and MediaPipe initialized successfully');
 
-                // Update feedback
-                document.getElementById('ai-feedback').textContent =
-                    'Камера готова! Распознавание поз активно.';
+                // Camera ready - no feedback needed in simplified interface
 
             } catch (error) {
                 console.error('Camera initialization error:', error);
@@ -1507,14 +1503,8 @@
                     window.Telegram.WebApp.showAlert(errorMessage);
                 }
 
-                document.getElementById('ai-feedback').textContent = errorMessage;
-
-                // Enable manual retry
-                const startBtn = document.getElementById('start-btn');
-                if (startBtn) {
-                    startBtn.textContent = 'Повторить';
-                    startBtn.onclick = initializeCamera;
-                }
+                // Show alert instead of updating non-existent feedback
+                console.error(errorMessage);
             }
         }
 
@@ -1524,24 +1514,12 @@
             startTime = Date.now();
             repCount = 0;
 
-            // Update UI
-            document.getElementById('start-btn').style.display = 'none';
-            document.getElementById('pause-btn').style.display = 'block';
-            document.getElementById('ai-feedback').textContent = 'Начинаем упражнение!';
-
-            // Start timer
-            startTimer();
-
             // Start AI analysis
             await startAIAnalysis();
         }
 
         function pauseExercise() {
             isExerciseActive = false;
-
-            // Update UI
-            document.getElementById('start-btn').style.display = 'block';
-            document.getElementById('pause-btn').style.display = 'none';
 
             // Stop timer
             if (exerciseTimer) {
@@ -1552,25 +1530,10 @@
             saveExerciseProgress();
         }
 
-        function startTimer() {
-            exerciseTimer = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                document.getElementById('time-elapsed').textContent =
-                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-                // Update calories
-                const calories = Math.floor(elapsed * 0.1);
-                document.getElementById('calories').textContent = calories;
-            }, 1000);
-        }
-
         async function startAIAnalysis() {
             // Initialize OpenRouter connection
             if (!API_KEY) {
                 console.error('API key not available');
-                document.getElementById('ai-feedback').textContent = 'Ошибка: API ключ недоступен';
                 return;
             }
 
@@ -1631,8 +1594,7 @@
                 }
             } catch (error) {
                 console.error('AI Analysis error:', error);
-                document.getElementById('ai-feedback').textContent =
-                    'AI недоступен. Продолжайте упражнение самостоятельно.';
+                // AI feedback disabled in simplified interface
             }
         }
 
@@ -1668,9 +1630,7 @@
                 // Update rep count if new rep detected
                 if (exerciseData.repDetected) {
                     repCount++;
-                    document.getElementById('rep-count').textContent = repCount;
-                    document.getElementById('ai-feedback').textContent =
-                        `Отлично! ${repCount} из ${currentExercise.target}`;
+                    console.log(`Rep detected: ${repCount} of ${currentExercise.target}`);
 
                     // Check if target reached
                     if (repCount >= currentExercise.target) {
@@ -2194,68 +2154,19 @@
         }
 
         function updateAIFeedback(feedback) {
-            const feedbackElement = document.getElementById('ai-feedback');
-            feedbackElement.textContent = feedback;
+            // AI feedback disabled in simplified interface
+            console.log('AI Feedback:', feedback);
         }
 
         function updateExerciseFeedback(exerciseData) {
-            const feedbackElement = document.getElementById('ai-feedback');
-
+            // Exercise feedback disabled in simplified interface
             if (!exerciseData) return;
-
-            // Provide feedback based on exercise type and form
-            switch (currentExercise.id) {
-                case 'pushups':
-                    if (!exerciseData.isGoodForm) {
-                        if (exerciseData.elbowAngle < 80) {
-                            feedbackElement.textContent = 'Сгибайте руки больше! Опускайтесь ниже.';
-                        } else if (exerciseData.elbowAngle > 100) {
-                            feedbackElement.textContent = 'Выпрямляйте руки полностью в верхней точке.';
-                        }
-                    } else if (exerciseData.position === 'down') {
-                        feedbackElement.textContent = 'Отлично! Теперь поднимайтесь.';
-                    }
-                    break;
-
-                case 'squats':
-                    if (!exerciseData.isGoodForm) {
-                        if (exerciseData.kneeAngle > 120) {
-                            feedbackElement.textContent = 'Приседайте глубже! Колени должны быть согнуты.';
-                        } else if (exerciseData.kneeAngle < 80) {
-                            feedbackElement.textContent = 'Не слишком глубоко! Выпрямляйтесь.';
-                        }
-                    } else if (exerciseData.depth === 'deep') {
-                        feedbackElement.textContent = 'Хорошая глубина! Поднимайтесь.';
-                    }
-                    break;
-
-                case 'plank':
-                    const seconds = Math.floor((Date.now() - startTime) / 1000);
-                    if (!exerciseData.isGoodForm) {
-                        if (exerciseData.hipDrop > 0.1) {
-                            feedbackElement.textContent = 'Таз не должен провисать! Напрягите пресс.';
-                        }
-                    } else {
-                        feedbackElement.textContent = `Отличная планка! Удерживайте: ${seconds}с`;
-                    }
-                    break;
-
-                case 'jumping_jacks':
-                    if (!exerciseData.armsUp && exerciseData.legsSpread) {
-                        feedbackElement.textContent = 'Поднимайте руки выше!';
-                    } else if (exerciseData.armsUp && !exerciseData.legsSpread) {
-                        feedbackElement.textContent = 'Раздвигайте ноги шире!';
-                    }
-                    break;
-            }
+            console.log('Exercise data:', exerciseData);
         }
 
         function completeExercise() {
             pauseExercise();
-
-            // Show completion message
-            document.getElementById('ai-feedback').textContent =
-                `Отлично! Выполнено ${repCount} повторений!`;
+            console.log(`Exercise completed! ${repCount} repetitions`);
 
             // Save to progress
             saveExerciseProgress();
