@@ -77,6 +77,16 @@
             filter: contrast(110%) brightness(105%) saturate(120%);
         }
 
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
         body::-webkit-scrollbar {
             display: none;
         }
@@ -350,6 +360,9 @@
             display: none;
             flex-direction: column;
             border: 4px solid var(--neobrut-black);
+            overflow: hidden;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
         }
 
         .exercise-modal.active {
@@ -1105,13 +1118,7 @@
                     <div id="rep-count">0</div>
                     <div style="font-size: 14px; margin-top: 5px;">повторений</div>
                 </div>
-                <!-- Start Button Overlay -->
-                <div id="start-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 100;">
-                    <button id="start-exercise-btn" class="neobrutalism-btn" style="font-size: 20px; padding: 20px 40px; display: none;" onclick="startExercise()">
-                        НАЧАТЬ УПРАЖНЕНИЕ
-                    </button>
-                </div>
-            </div>
+                            </div>
         </div>
     </div>
 
@@ -1314,11 +1321,12 @@
             // Show modal
             document.getElementById('exercise-modal').classList.add('active');
 
-            // Show status and start button
+            // Prevent body scroll
+            document.body.classList.add('modal-open');
+
+            // Show status
             const statusDiv = document.getElementById('exercise-status');
-            const startBtn = document.getElementById('start-exercise-btn');
             statusDiv.style.display = 'block';
-            startBtn.style.display = 'block';
 
             // Reset exercise state
             isExerciseActive = false;
@@ -1327,8 +1335,12 @@
             // Initialize camera
             await initializeCamera();
 
-            // Hide status after camera is ready, show ready message
-            statusDiv.innerHTML = '<div>Камера готова! Нажмите "НАЧАТЬ УПРАЖНЕНИЕ"</div>';
+            // Hide status after camera is ready
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+                // Auto-start exercise
+                startExercise();
+            }, 1000);
         }
 
         async function initializeCamera() {
@@ -1511,10 +1523,8 @@
             } catch (error) {
                 console.error('Camera initialization error:', error);
 
-                // Hide start button on error
-                const startBtn = document.getElementById('start-exercise-btn');
+                // Show error message
                 const statusDiv = document.getElementById('exercise-status');
-                if (startBtn) startBtn.style.display = 'none';
                 if (statusDiv) {
                     statusDiv.style.display = 'block';
                     statusDiv.innerHTML = '<div>Ошибка: Не удалось получить доступ к камере</div>';
@@ -1550,8 +1560,7 @@
             startTime = Date.now();
             repCount = 0;
 
-            // Hide start button and status
-            document.getElementById('start-overlay').style.display = 'none';
+            // Hide status
             document.getElementById('exercise-status').style.display = 'none';
 
             // Show counter
@@ -2377,6 +2386,9 @@
             // Hide modal
             document.getElementById('exercise-modal').classList.remove('active');
 
+            // Restore body scroll
+            document.body.classList.remove('modal-open');
+
             // Reset state
             isExerciseActive = false;
             currentExercise = null;
@@ -2394,8 +2406,6 @@
             }
 
             // Reset UI elements
-            document.getElementById('start-overlay').style.display = 'block';
-            document.getElementById('start-exercise-btn').style.display = 'none';
             document.getElementById('exercise-status').style.display = 'none';
             document.getElementById('exercise-counter').style.display = 'none';
         }
