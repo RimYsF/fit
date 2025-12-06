@@ -306,30 +306,15 @@
             transform: scaleX(-1);
         }
 
-        .video-container {
-            position: relative;
+        .pose-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
             width: 100%;
-            height: 50vh;
-            background: #000;
-        }
-
-        .pose-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            transform: scaleX(-1);
-        }
-
-        .pose-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
+            height: 100%;
         }
 
         .exercise-stats {
@@ -1075,13 +1060,6 @@
                         return;
                     }
 
-                    // Save context state
-                    ctx.save();
-
-                    // Apply mirror transformation for selfie view
-                    ctx.scale(-1, 1);
-                    ctx.translate(-canvas.width, 0);
-
                     // Clear canvas with transparency
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -1098,9 +1076,6 @@
                             });
                         }
                     }
-
-                    // Restore context state
-                    ctx.restore();
                 });
 
                 // Different constraints for Telegram
@@ -1618,12 +1593,14 @@
             const width = canvas.width;
             const height = canvas.height;
 
-            // Clear canvas with transparency
-            ctx.clearRect(0, 0, width, height);
-
             // Set rendering optimizations
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
+
+            // Apply mirror transformation for selfie view
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.translate(-width, 0);
 
             // Pre-calculate landmark positions for better performance
             const positions = landmarks.map(landmark => ({
@@ -1795,6 +1772,9 @@
 
             // Reset all context states
             ctx.globalAlpha = 1.0;
+            ctx.restore(); // Restore inner save
+
+            // Restore mirror transformation
             ctx.restore();
         }
 
