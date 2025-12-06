@@ -1005,105 +1005,7 @@
                 font-size: 14px;
             }
         }
-    /* Congratulations Popup Styles */
-    .congratulations-popup {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 10000;
-        animation: fadeIn 0.3s ease-in-out;
-    }
-
-    .congratulations-content {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: linear-gradient(145deg, #6ECB63, #4CAF50);
-        padding: 40px;
-        border-radius: 20px;
-        text-align: center;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        max-width: 400px;
-        width: 90%;
-        border: 5px solid #2E7D32;
-    }
-
-    .congratulations-icon {
-        font-size: 80px;
-        margin-bottom: 20px;
-        animation: bounce 1s infinite;
-    }
-
-    .congratulations-title {
-        font-family: 'Bebas Neue', cursive;
-        font-size: 48px;
-        color: white;
-        text-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
-        margin: 0 0 20px 0;
-    }
-
-    .congratulations-message {
-        font-family: 'Rubik', sans-serif;
-        font-size: 24px;
-        font-weight: 700;
-        color: white;
-        margin: 0 0 15px 0;
-    }
-
-    .congratulations-message #completed-reps {
-        color: #FFE66D;
-        font-size: 32px;
-        font-weight: 900;
-    }
-
-    .congratulations-subtitle {
-        font-family: 'Rubik', sans-serif;
-        font-size: 18px;
-        color: rgba(255, 255, 255, 0.9);
-        margin: 0 0 30px 0;
-    }
-
-    .congratulations-btn {
-        background: #FF6B35;
-        color: white;
-        border: none;
-        padding: 15px 40px;
-        font-size: 20px;
-        font-weight: 700;
-        font-family: 'Rubik', sans-serif;
-        border-radius: 50px;
-        cursor: pointer;
-        box-shadow: 0 6px 0px #D84315;
-        transition: all 0.1s ease;
-        text-transform: uppercase;
-    }
-
-    .congratulations-btn:hover {
-        transform: translateY(2px);
-        box-shadow: 0 4px 0px #D84315;
-    }
-
-    .congratulations-btn:active {
-        transform: translateY(6px);
-        box-shadow: none;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-20px); }
-        60% { transform: translateY(-10px); }
-    }
-
+    
     </style>
 </head>
 
@@ -1217,26 +1119,11 @@
                     <div id="rep-count">0</div>
                     <div style="font-size: 14px; margin-top: 5px;">повторений</div>
                 </div>
-                <!-- Exercise Feedback -->
-                <div id="exercise-feedback" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 15px 30px; border-radius: 50px; font-family: 'Rubik', sans-serif; font-size: 18px; font-weight: 700; display: none; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-                </div>
                             </div>
         </div>
     </div>
 
-    <!-- Congratulations Popup -->
-    <div class="congratulations-popup" id="congratulations-popup">
-        <div class="congratulations-content">
-            <div class="congratulations-icon">🎉</div>
-            <h2 class="congratulations-title">Поздравляем!</h2>
-            <p class="congratulations-message" id="congratulations-message">
-                Вы выполнили <span id="completed-reps">0</span> отжиманий!
-            </p>
-            <p class="congratulations-subtitle">Отличная работа! Продолжайте в том же духе.</p>
-            <button class="congratulations-btn" onclick="closeCongratulations()">Закрыть</button>
-        </div>
-    </div>
-
+  
     <script>
         // Initialize Telegram WebApp
         const webApp = window.Telegram.WebApp;
@@ -1250,9 +1137,6 @@
         let exerciseTimer = null;
         let startTime = null;
         let repCount = 0;
-        let lastExercisePosition = 'up'; // Track last position for state transitions
-        let isInPushupPosition = false;
-        let pushupDownCount = 0;
         let pose = null;
         let webcamStream = null;
         let aiStreamController = null;
@@ -1445,13 +1329,29 @@
             // Show status
             const statusDiv = document.getElementById('exercise-status');
             statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '<div>Подготовка камеры...</div>';
 
             // Reset exercise state
             isExerciseActive = false;
             repCount = 0;
+            currentUserSequence = []; // Сбрасываем последовательность пользователя
+            lastRepState = 'unknown';
+            repStateBuffer = [];
 
             // Initialize camera
             await initializeCamera();
+
+            // Initialize template for pushups
+            if (exerciseId === 'pushups' && !templatePushupSequence) {
+                statusDiv.innerHTML = '<div>Загрузка эталона отжиманий...</div>';
+                try {
+                    await processTemplateVideo();
+                    statusDiv.innerHTML = '<div>Эталон загружен. Камера готова.</div>';
+                } catch (error) {
+                    console.error('Ошибка загрузки эталона:', error);
+                    statusDiv.innerHTML = '<div>Эталон не загружен. Используем обычный режим.</div>';
+                }
+            }
 
             // Hide status after camera is ready
             setTimeout(() => {
@@ -1678,11 +1578,6 @@
             startTime = Date.now();
             repCount = 0;
 
-            // Reset state tracking variables
-            lastExercisePosition = 'up';
-            isInPushupPosition = false;
-            pushupDownCount = 0;
-
             // Hide status
             document.getElementById('exercise-status').style.display = 'none';
 
@@ -1840,7 +1735,21 @@
                 return null;
             }
 
-            // Calculate average positions
+            // Извлекаем вектор признаков для DTW сравнения
+            const poseVector = extractPushupVector(landmarks);
+            let dtwResult = null;
+
+            // Если есть эталон, сравниваем с ним
+            if (poseVector && templatePushupSequence) {
+                dtwResult = compareWithTemplate(poseVector);
+
+                // Обновляем отображение схожести
+                if (dtwResult && dtwResult.similarity !== undefined) {
+                    updateSimilarityDisplay(dtwResult.similarity, dtwResult.quality);
+                }
+            }
+
+            // Calculate average elbow position
             const avgElbowY = (leftElbow.y + rightElbow.y) / 2;
             const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
             const avgWristY = (leftWrist.y + rightWrist.y) / 2;
@@ -1850,58 +1759,27 @@
             const rightElbowAngle = calculateAngle3D(rightShoulder, rightElbow, rightWrist);
             const avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2;
 
-            // Enhanced pushup detection with better thresholds
-            const isDownPosition = avgElbowAngle < 100 && avgWristY > avgElbowY;
-            const isUpPosition = avgElbowAngle > 150 && avgWristY < avgShoulderY * 1.1;
+            // Determine pushup position
+            const isDown = avgElbowY > avgShoulderY && avgElbowAngle < 90;
+            const isUp = avgWristY < avgShoulderY && avgElbowAngle > 160;
 
-            // Determine current position
-            let currentPosition = 'middle';
-            if (isDownPosition) {
-                currentPosition = 'down';
-            } else if (isUpPosition) {
-                currentPosition = 'up';
-            }
-
-            // Track state transitions for rep counting
-            let repDetected = false;
-
-            // Detect transition: up -> down -> up completes one rep
-            if (lastExercisePosition === 'up' && currentPosition === 'down') {
-                pushupDownCount++;
-                isInPushupPosition = true;
-            } else if (lastExercisePosition === 'down' && currentPosition === 'up' && isInPushupPosition) {
-                // Complete rep detected
-                repDetected = true;
-                isInPushupPosition = false;
-            }
-
-            // Update last position
-            lastExercisePosition = currentPosition;
-
-            // Form quality assessment
-            const isGoodForm = isDownPosition ?
-                avgElbowAngle > 70 && avgElbowAngle < 110 : // More lenient when down
-                avgElbowAngle > 140; // Straighter arms when up
-
-            // Feedback messages
-            let feedback = '';
-            if (currentPosition === 'down' && !isGoodForm) {
-                feedback = 'Опуститесь ниже - сгибайте руки больше';
-            } else if (currentPosition === 'up' && !isGoodForm) {
-                feedback = 'Полностью выпрямите руки в верхнем положении';
-            } else if (currentPosition === 'down') {
-                feedback = 'Хорошо! Теперь поднимитесь';
-            } else if (currentPosition === 'up') {
-                feedback = 'Отлично! Следующее отжимание';
+            // Определяем качество формы на основе DTW или углов
+            let isGoodForm;
+            if (dtwResult) {
+                // Используем оценку от DTW если доступна
+                isGoodForm = dtwResult.quality === 'excellent' || dtwResult.quality === 'good';
+            } else {
+                // Фallback на угловую проверку
+                isGoodForm = avgElbowAngle > 80 && avgElbowAngle < 100;
             }
 
             return {
                 elbowAngle: avgElbowAngle,
-                position: currentPosition,
+                position: isDown ? 'down' : (isUp ? 'up' : 'middle'),
                 isGoodForm: isGoodForm,
-                repDetected: repDetected,
-                feedback: feedback,
-                downCount: pushupDownCount
+                repDetected: dtwResult ? dtwResult.repDetected : false, // Используем DTW детекцию
+                similarity: dtwResult ? dtwResult.similarity : null,
+                quality: dtwResult ? dtwResult.quality : null
             };
         }
 
@@ -2373,6 +2251,412 @@
             return angle;
         }
 
+        // ==================== DTW Алгоритм и функции сравнения с эталоном ====================
+
+        // Глобальные переменные для хранения эталонных данных
+        let templatePushupSequence = null;
+        let currentUserSequence = [];
+        let lastSimilarityScore = 0;
+        let repStateBuffer = []; // Буфер для отслеживания состояний
+        let lastRepState = 'unknown';
+
+        // Извлечение вектора признаков из позы для отжиманий
+        function extractPushupVector(landmarks) {
+            if (!landmarks || landmarks.length < 33) return null;
+
+            // Ключевые точки для отжиманий
+            const leftShoulder = landmarks[11];
+            const rightShoulder = landmarks[12];
+            const leftElbow = landmarks[13];
+            const rightElbow = landmarks[14];
+            const leftWrist = landmarks[15];
+            const rightWrist = landmarks[16];
+            const leftHip = landmarks[23];
+            const rightHip = landmarks[24];
+            const leftKnee = landmarks[25];
+            const rightKnee = landmarks[26];
+            const leftAnkle = landmarks[27];
+            const rightAnkle = landmarks[28];
+
+            // Проверка видимости ключевых точек
+            if (leftElbow.visibility < 0.5 || rightElbow.visibility < 0.5 ||
+                leftShoulder.visibility < 0.5 || rightShoulder.visibility < 0.5) {
+                return null;
+            }
+
+            // Нормализация - вычитаем центр тела (середина между плечами и тазом)
+            const centerX = (leftShoulder.x + rightShoulder.x + leftHip.x + rightHip.x) / 4;
+            const centerY = (leftShoulder.y + rightShoulder.y + leftHip.y + rightHip.y) / 4;
+
+            // Нормализуем координаты
+            const normalizeX = (point) => (point.x - centerX);
+            const normalizeY = (point) => (point.y - centerY);
+
+            // Масштабируем по расстоянию между плечами
+            const shoulderDistance = Math.sqrt(
+                Math.pow(leftShoulder.x - rightShoulder.x, 2) +
+                Math.pow(leftShoulder.y - rightShoulder.y, 2)
+            );
+            const scale = shoulderDistance || 0.1;
+
+            // Извлекаем признаки:
+            const features = [
+                // Углы (нормализованные)
+                calculateAngle3D(leftShoulder, leftElbow, leftWrist) / 180, // левый локоть
+                calculateAngle3D(rightShoulder, rightElbow, rightWrist) / 180, // правый локоть
+                calculateAngle3D(leftHip, leftKnee, leftAnkle) / 180, // левое колено
+                calculateAngle3D(rightHip, rightKnee, rightAnkle) / 180, // правое колено
+
+                // Относительные положения ключевых точек
+                (leftElbow.y - leftShoulder.y) / scale, // положение локтей относительно плеч
+                (rightElbow.y - rightShoulder.y) / scale,
+                (leftWrist.y - leftElbow.y) / scale, // положение запястий относительно локтей
+                (rightWrist.y - rightElbow.y) / scale,
+
+                // Положение тела
+                (leftHip.y - leftShoulder.y) / scale, // положение таза относительно плеч
+                (rightHip.y - rightShoulder.y) / scale,
+
+                // Симметрия
+                Math.abs(leftElbow.x - rightElbow.x) / scale, // расстояние между локтями
+                Math.abs(leftWrist.x - rightWrist.x) / scale, // расстояние между запястьями
+
+                // Наклон тела
+                (leftHip.y - rightHip.y) / scale, // асимметрия таза
+            ];
+
+            return features;
+        }
+
+        // Реализация DTW алгоритма
+        function calculateDTWDistance(sequence1, sequence2) {
+            if (!sequence1.length || !sequence2.length) return Infinity;
+
+            const n = sequence1.length;
+            const m = sequence2.length;
+            const dtw = Array(n + 1).fill(null).map(() => Array(m + 1).fill(Infinity));
+            dtw[0][0] = 0;
+
+            // Функция расстояния между двумя векторами
+            const euclideanDistance = (v1, v2) => {
+                let sum = 0;
+                for (let i = 0; i < Math.min(v1.length, v2.length); i++) {
+                    sum += Math.pow(v1[i] - v2[i], 2);
+                }
+                return Math.sqrt(sum);
+            };
+
+            // Заполнение матрицы DTW
+            for (let i = 1; i <= n; i++) {
+                for (let j = 1; j <= m; j++) {
+                    const cost = euclideanDistance(sequence1[i - 1], sequence2[j - 1]);
+                    dtw[i][j] = cost + Math.min(
+                        dtw[i - 1][j],      // удаление
+                        dtw[i][j - 1],      // вставка
+                        dtw[i - 1][j - 1]   // замена
+                    );
+                }
+            }
+
+            // Нормализация расстояния на длину пути
+            const pathLength = n + m;
+            return dtw[n][m] / pathLength;
+        }
+
+        // Обработка эталонного видео
+        async function processTemplateVideo() {
+            console.log('Начинаю обработку эталонного видео...');
+
+            // Проверяем, есть ли уже закэшированные данные
+            const cached = localStorage.getItem('pushup_template');
+            if (cached) {
+                try {
+                    templatePushupSequence = JSON.parse(cached);
+                    console.log('Загружены эталонные данные из кэша:', templatePushupSequence.length, 'кадров');
+                    return true;
+                } catch (e) {
+                    console.log('Ошибка загрузки кэша, обрабатываю видео заново');
+                }
+            }
+
+            const video = document.createElement('video');
+            video.src = 'ot.mp4';
+            video.muted = true;
+            video.crossOrigin = 'anonymous';
+
+            return new Promise((resolve, reject) => {
+                video.onloadedmetadata = () => {
+                    console.log('Видео загружено:', video.videoWidth, 'x', video.videoHeight);
+
+                    // Создаем canvas для обработки
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+
+                    // Создаем экземпляр MediaPipe для обработки видео
+                    const templatePose = new Pose({
+                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+                    });
+
+                    templatePose.setOptions({
+                        modelComplexity: 1,
+                        smoothLandmarks: true,
+                        minDetectionConfidence: 0.5,
+                        minTrackingConfidence: 0.5
+                    });
+
+                    const templateSequence = [];
+                    let frameCount = 0;
+                    const maxFrames = 60; // Максимальное количество кадров для обработки
+
+                    templatePose.onResults((results) => {
+                        if (results.poseLandmarks && frameCount < maxFrames) {
+                            const vector = extractPushupVector(results.poseLandmarks);
+                            if (vector) {
+                                templateSequence.push(vector);
+                                frameCount++;
+                            }
+
+                            // Продвигаемся по видео
+                            if (video.currentTime < video.duration) {
+                                video.currentTime = Math.min(video.currentTime + 0.05, video.duration);
+                            } else {
+                                // Видео закончилось
+                                templatePose.close();
+
+                                // Сглаживаем последовательность (удаляем выбросы)
+                                templatePushupSequence = smoothSequence(templateSequence);
+
+                                // Сохраняем в кэш
+                                localStorage.setItem('pushup_template', JSON.stringify(templatePushupSequence));
+
+                                console.log('Обработка видео завершена. Сохранено', templatePushupSequence.length, 'кадров');
+                                resolve(true);
+                            }
+                        }
+                    });
+
+                    // Запускаем обработку
+                    video.play();
+                    const processFrame = () => {
+                        if (!video.paused && !video.ended) {
+                            ctx.drawImage(video, 0, 0);
+                            templatePose.send({ image: canvas });
+                            requestAnimationFrame(processFrame);
+                        }
+                    };
+                    processFrame();
+                };
+
+                video.onerror = () => reject(new Error('Не удалось загрузить видео ot.mp4'));
+            });
+        }
+
+        // Сглаживание последовательности для удаления выбросов
+        function smoothSequence(sequence, windowSize = 3) {
+            if (sequence.length < windowSize) return sequence;
+
+            const smoothed = [];
+            const halfWindow = Math.floor(windowSize / 2);
+
+            for (let i = 0; i < sequence.length; i++) {
+                const start = Math.max(0, i - halfWindow);
+                const end = Math.min(sequence.length, i + halfWindow + 1);
+                const window = sequence.slice(start, end);
+
+                // Среднее значение по окну
+                const avg = new Array(sequence[0].length).fill(0);
+                for (const frame of window) {
+                    for (let j = 0; j < frame.length; j++) {
+                        avg[j] += frame[j];
+                    }
+                }
+
+                for (let j = 0; j < avg.length; j++) {
+                    avg[j] /= window.length;
+                }
+
+                smoothed.push(avg);
+            }
+
+            return smoothed;
+        }
+
+        // Сравнение текущего движения с эталоном
+        function compareWithTemplate(currentVector) {
+            if (!templatePushupSequence || !currentVector) return null;
+
+            // Добавляем текущий вектор в последовательность пользователя
+            currentUserSequence.push(currentVector);
+
+            // Ограничиваем длину последовательности (сохраняем последние 2 повтора)
+            const maxSequenceLength = templatePushupSequence.length;
+            if (currentUserSequence.length > maxSequenceLength) {
+                currentUserSequence = currentUserSequence.slice(-maxSequenceLength);
+            }
+
+            // Если накоплено достаточно кадров для анализа
+            if (currentUserSequence.length >= maxSequenceLength * 0.3) {
+                // Выбираем окно для сравнения (ищем наилучшее совпадение)
+                let bestDistance = Infinity;
+                let bestStart = 0;
+
+                for (let start = 0; start <= currentUserSequence.length - maxSequenceLength * 0.3; start += 5) {
+                    const end = Math.min(start + maxSequenceLength * 0.5, currentUserSequence.length);
+                    const subsequence = currentUserSequence.slice(start, end);
+
+                    // Ресемплируем до длины эталона
+                    const resampled = resampleSequence(subsequence, maxSequenceLength);
+                    const distance = calculateDTWDistance(templatePushupSequence, resampled);
+
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestStart = start;
+                    }
+                }
+
+                // Преобразуем расстояние в процент схожести
+                const similarity = Math.max(0, Math.min(100, 100 * Math.exp(-bestDistance * 2)));
+
+                // Обновляем счетчик повторений на основе анализа фаз
+                const repDetected = detectRepFromTemplate(currentUserSequence.slice(bestStart));
+
+                return {
+                    similarity: similarity,
+                    distance: bestDistance,
+                    repDetected: repDetected,
+                    quality: similarity > 80 ? 'excellent' : similarity > 60 ? 'good' : similarity > 40 ? 'fair' : 'poor'
+                };
+            }
+
+            return null;
+        }
+
+        // Ресемплирование последовательности до нужной длины
+        function resampleSequence(sequence, targetLength) {
+            if (sequence.length === targetLength) return sequence;
+
+            const resampled = [];
+            const ratio = (sequence.length - 1) / (targetLength - 1);
+
+            for (let i = 0; i < targetLength; i++) {
+                const index = i * ratio;
+                const lower = Math.floor(index);
+                const upper = Math.ceil(index);
+                const weight = index - lower;
+
+                if (lower === upper) {
+                    resampled.push(sequence[lower]);
+                } else {
+                    // Линейная интерполяция
+                    const interpolated = new Array(sequence[0].length);
+                    for (let j = 0; j < sequence[0].length; j++) {
+                        interpolated[j] = sequence[lower][j] * (1 - weight) + sequence[upper][j] * weight;
+                    }
+                    resampled.push(interpolated);
+                }
+            }
+
+            return resampled;
+        }
+
+        // Определение повторения на основе сравнения с эталоном
+        function detectRepFromTemplate(sequence) {
+            if (!templatePushupSequence || sequence.length < 20) return false;
+
+            // Анализируем изменение позы для определения фазы отжимания
+            const recentFrames = sequence.slice(-10);
+            const avgElbowAngles = recentFrames.map(frame => (frame[0] + frame[1]) / 2); // Средний угол локтей
+
+            // Определяем фазы: верх (выпрямленные руки) -> низ (согнутые руки) -> верх
+            const currentAngle = avgElbowAngles[avgElbowAngles.length - 1] * 180; // Конвертируем обратно в градусы
+            const minAngle = Math.min(...avgElbowAngles) * 180;
+            const maxAngle = Math.max(...avgElbowAngles) * 180;
+
+            // Добавляем текущее состояние в буфер
+            const currentState = currentAngle < 90 ? 'down' : (currentAngle > 140 ? 'up' : 'middle');
+            repStateBuffer.push(currentState);
+
+            // Ограничиваем размер буфера
+            if (repStateBuffer.length > 15) {
+                repStateBuffer.shift();
+            }
+
+            // Ищем переход: up -> down -> up
+            if (lastRepState === 'up' && currentState === 'down') {
+                lastRepState = 'down';
+                return false;
+            }
+
+            if (lastRepState === 'down' && currentState === 'up') {
+                lastRepState = 'up';
+                // Сбрасываем буфер после обнаружения повтора
+                repStateBuffer = [];
+                return true; // Обнаружен полный повтор
+            }
+
+            lastRepState = currentState;
+            return false;
+        }
+
+        // Обновление отображения схожести
+        function updateSimilarityDisplay(similarity, quality) {
+            const statusDiv = document.getElementById('exercise-status');
+            if (!statusDiv || !similarity) return;
+
+            // Создаем или обновляем элемент для схожести
+            let similarityDiv = document.getElementById('similarity-display');
+            if (!similarityDiv) {
+                similarityDiv = document.createElement('div');
+                similarityDiv.id = 'similarity-display';
+                similarityDiv.style.cssText = `
+                    position: absolute;
+                    top: 70px;
+                    left: 20px;
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 10px;
+                    font-family: 'Bebas Neue', monospace;
+                    font-size: 16px;
+                    border: 3px solid ${getQualityColor(quality)};
+                `;
+                document.querySelector('.video-container').appendChild(similarityDiv);
+            }
+
+            similarityDiv.innerHTML = `
+                Схожесть: ${Math.round(similarity)}%
+                <div style="font-size: 12px; margin-top: 5px;">
+                    Качество: ${getQualityText(quality)}
+                </div>
+            `;
+
+            lastSimilarityScore = similarity;
+        }
+
+        // Получение цвета по качеству выполнения
+        function getQualityColor(quality) {
+            switch(quality) {
+                case 'excellent': return '#00FF00';
+                case 'good': return '#FFFF00';
+                case 'fair': return '#FFA500';
+                case 'poor': return '#FF0000';
+                default: return '#FFFFFF';
+            }
+        }
+
+        // Получение текста качества
+        function getQualityText(quality) {
+            switch(quality) {
+                case 'excellent': return 'Отлично!';
+                case 'good': return 'Хорошо';
+                case 'fair': return 'Нормально';
+                case 'poor': return 'Нужно исправить';
+                default: return 'Анализ...';
+            }
+        }
+
         function sendToAI(exerciseData) {
             // This would send the exercise data to the AI for analysis
             // The AI would respond with feedback and rep counting
@@ -2384,25 +2668,9 @@
         }
 
         function updateExerciseFeedback(exerciseData) {
-            // Exercise feedback
+            // Exercise feedback disabled in simplified interface
             if (!exerciseData) return;
             console.log('Exercise data:', exerciseData);
-
-            // Show real-time feedback for push-ups
-            if (currentExercise && currentExercise.id === 'pushups' && exerciseData.feedback) {
-                const feedbackElement = document.getElementById('exercise-feedback');
-                if (feedbackElement) {
-                    feedbackElement.textContent = exerciseData.feedback;
-                    feedbackElement.style.display = 'block';
-
-                    // Color code based on form quality
-                    if (exerciseData.isGoodForm) {
-                        feedbackElement.style.color = '#4CAF50';
-                    } else {
-                        feedbackElement.style.color = '#FF6B35';
-                    }
-                }
-            }
         }
 
         function completeExercise() {
@@ -2412,34 +2680,13 @@
             // Save to progress
             saveExerciseProgress();
 
-            // Show congratulations popup
-            showCongratulationsPopup();
-
-            // Update UI in background
+            // Update UI
             renderWorkoutWindow();
-        }
 
-        function showCongratulationsPopup() {
-            const popup = document.getElementById('congratulations-popup');
-            const completedReps = document.getElementById('completed-reps');
-            const message = document.getElementById('congratulations-message');
-
-            // Update the message with exercise name and count
-            if (currentExercise) {
-                const exerciseName = currentExercise.name;
-                message.innerHTML = `Вы выполнили <span id="completed-reps">${repCount}</span> ${exerciseName.toLowerCase()}!`;
-            }
-
-            // Show the popup
-            popup.style.display = 'block';
-        }
-
-        function closeCongratulations() {
-            const popup = document.getElementById('congratulations-popup');
-            popup.style.display = 'none';
-
-            // Close exercise modal after closing congratulations
-            closeExerciseModal();
+            // Close modal after delay
+            setTimeout(() => {
+                closeExerciseModal();
+            }, 2000);
         }
 
         function saveExerciseProgress() {
@@ -2611,6 +2858,12 @@
             // Reset UI elements
             document.getElementById('exercise-status').style.display = 'none';
             document.getElementById('exercise-counter').style.display = 'none';
+
+            // Remove similarity display if exists
+            const similarityDiv = document.getElementById('similarity-display');
+            if (similarityDiv) {
+                similarityDiv.remove();
+            }
         }
 
         function toggleSound() {
