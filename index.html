@@ -1348,19 +1348,26 @@
                     const success = await processTemplateVideo();
                     if (success) {
                         statusDiv.innerHTML = '<div>✅ Эталон загружен! Анализ формы активирован.</div>';
+                        setTimeout(() => {
+                            statusDiv.style.display = 'none';
+                            startExercise();
+                        }, 1000);
+                        return; // Выходим из функции, т.к. startExercise уже вызван
                     }
                 } catch (error) {
                     console.error('Ошибка загрузки эталона:', error);
                     statusDiv.innerHTML = `<div>⚠️ Ошибка: ${error.message}<br><small>Используем обычный режим подсчета.</small></div>`;
 
-                    // Показываем ошибку пользователю
+                    // Продолжаем без эталона через 2 секунды
                     setTimeout(() => {
-                        statusDiv.innerHTML = '<div>Продолжаем без анализа формы...</div>';
-                    }, 3000);
+                        statusDiv.style.display = 'none';
+                        startExercise();
+                    }, 2000);
+                    return;
                 }
             }
 
-            // Hide status after camera is ready
+            // Hide status after camera is ready (только если не отжимания или эталон уже загружен)
             setTimeout(() => {
                 statusDiv.style.display = 'none';
                 // Auto-start exercise
@@ -2395,9 +2402,11 @@
             return new Promise((resolve, reject) => {
                 let timeoutId = setTimeout(() => {
                     console.log('Таймаут загрузки видео');
-                    templatePose.close();
+                    if (templatePose) templatePose.close();
                     reject(new Error('Таймаут загрузки эталонного видео'));
                 }, 15000); // 15 секунд таймаут
+
+                let templatePose = null;
 
                 video.onloadedmetadata = () => {
                     console.log('Видео загружено:', video.videoWidth, 'x', video.videoHeight, 'duration:', video.duration);
@@ -2415,7 +2424,7 @@
                     const ctx = canvas.getContext('2d');
 
                     // Создаем экземпляр MediaPipe для обработки видео
-                    const templatePose = new Pose({
+                    templatePose = new Pose({
                         locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
                     });
 
@@ -2430,22 +2439,76 @@
                     let frameCount = 0;
                     const maxFrames = 30; // Уменьшаем количество кадров для быстрой обработки
                     let processingActive = true;
+                    let seekTimeout = null;
+
+                    // Функция обработки одного кадра
+                    const processFrame = () => {
+                        if (!processingActive || frameCount >= maxFrames) {
+                            if (seekTimeout) clearTimeout(seekTimeout);
+                            return;
+                        }
+
+                        // Устанавливаем время видео
+                        const timePerFrame = video.duration / maxFrames;
+                        const targetTime = timePerFrame * frameCount;
+
+                        // Проверяем, нужно ли изменять время
+                        if (Math.abs(video.currentTime - targetTime) > 0.01) {
+                            video.currentTime = targetTime;
+
+                            // Устанавливаем обработчик только один раз
+                            const handleSeeked = () => {
+                                video.removeEventListener('seeked', handleSeeked);
+
+                                if (!processingActive) return;
+
+                                // Рисуем кадр на canvas
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                                // Отправляем в MediaPipe
+                                templatePose.send({ image: canvas });
+
+                                // Планируем следующий кадр
+                                frameCount++;
+                                console.log(`Обработано кадров: ${frameCount}/${maxFrames}`);
+                                seekTimeout = setTimeout(processFrame, 200); // 5 FPS для надежности
+                            };
+
+                            video.addEventListener('seeked', handleSeeked);
+
+                            // Дополнительный таймаут на случай, если seek не сработает
+                            seekTimeout = setTimeout(() => {
+                                video.removeEventListener('seeked', handleSeeked);
+                                if (processingActive) {
+                                    console.log('Seek timeout, continuing...');
+                                    frameCount++;
+                                    processFrame();
+                                }
+                            }, 1000);
+                        } else {
+                            // Время уже правильное, обрабатываем сразу
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            templatePose.send({ image: canvas });
+                            frameCount++;
+                            console.log(`Обработано кадров: ${frameCount}/${maxFrames}`);
+                            seekTimeout = setTimeout(processFrame, 200);
+                        }
+                    };
 
                     templatePose.onResults((results) => {
                         if (!processingActive) return;
 
-                        if (results.poseLandmarks && frameCount < maxFrames) {
+                        if (results.poseLandmarks && frameCount <= maxFrames) {
                             const vector = extractPushupVector(results.poseLandmarks);
                             if (vector) {
                                 templateSequence.push(vector);
-                                frameCount++;
-                                console.log(`Обработано кадров: ${frameCount}/${maxFrames}`);
                             }
                         }
 
                         // Проверяем завершение
                         if (frameCount >= maxFrames) {
                             processingActive = false;
+                            if (seekTimeout) clearTimeout(seekTimeout);
                             clearTimeout(timeoutId);
 
                             // Закрываем MediaPipe
@@ -2466,30 +2529,9 @@
                         }
                     });
 
-                    // Обрабатываем видео покадрово с задержкой
-                    const processNextFrame = () => {
-                        if (!processingActive || frameCount >= maxFrames) return;
-
-                        // Устанавливаем время видео
-                        const timePerFrame = video.duration / maxFrames;
-                        video.currentTime = timePerFrame * frameCount;
-
-                        // Ждем загрузки кадра
-                        video.onseeked = () => {
-                            // Рисуем кадр на canvas
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                            // Отправляем в MediaPipe
-                            templatePose.send({ image: canvas });
-
-                            // Планируем следующий кадр с задержкой
-                            setTimeout(processNextFrame, 100); // 10 FPS
-                        };
-                    };
-
                     // Начинаем обработку
                     video.pause();
-                    processNextFrame();
+                    processFrame();
                 };
 
                 video.onerror = (e) => {
