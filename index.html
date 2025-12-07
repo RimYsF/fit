@@ -2377,7 +2377,7 @@
             return dtw[n][m] / pathLength;
         }
 
-        // Обработка эталонного видео
+        // Обработка эталонного видео - РАБОЧАЯ ВЕРСИЯ
         async function processTemplateVideo() {
             console.log('Начинаю обработку эталонного видео...');
 
@@ -2393,151 +2393,117 @@
                 }
             }
 
-            const video = document.createElement('video');
-            video.src = 'ot.mp4';
-            video.muted = true;
-            video.crossOrigin = 'anonymous';
-            video.playsInline = true;
-
             return new Promise((resolve, reject) => {
-                let timeoutId = setTimeout(() => {
-                    console.log('Таймаут загрузки видео');
-                    if (templatePose) templatePose.close();
-                    reject(new Error('Таймаут загрузки эталонного видео'));
-                }, 15000); // 15 секунд таймаут
+                // Создаем видео элемент
+                const video = document.createElement('video');
+                video.src = 'ot.mp4';
+                video.crossOrigin = 'anonymous';
+                video.muted = true;
 
-                let templatePose = null;
+                // Обработчики ошибок
+                const timeout = setTimeout(() => {
+                    reject(new Error('Timeout loading video'));
+                }, 20000);
 
-                video.onloadedmetadata = () => {
-                    console.log('Видео загружено:', video.videoWidth, 'x', video.videoHeight, 'duration:', video.duration);
+                video.onerror = () => {
+                    clearTimeout(timeout);
+                    reject(new Error('Не удалось загрузить видео ot.mp4'));
+                };
 
-                    if (!video.duration || video.duration === 0) {
-                        clearTimeout(timeoutId);
-                        reject(new Error('Видео имеет некорректную длительность'));
-                        return;
-                    }
+                // Когда видео загружено
+                video.onloadedmetadata = async () => {
+                    try {
+                        console.log('Видео загружено:', video.videoWidth, 'x', video.videoHeight, ', duration:', video.duration);
 
-                    // Создаем canvas для обработки
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 640; // Фиксированный размер для производительности
-                    canvas.height = 480;
-                    const ctx = canvas.getContext('2d');
-
-                    // Создаем экземпляр MediaPipe для обработки видео
-                    templatePose = new Pose({
-                        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-                    });
-
-                    templatePose.setOptions({
-                        modelComplexity: 1,
-                        smoothLandmarks: true,
-                        minDetectionConfidence: 0.5,
-                        minTrackingConfidence: 0.5
-                    });
-
-                    const templateSequence = [];
-                    let frameCount = 0;
-                    const maxFrames = 30; // Уменьшаем количество кадров для быстрой обработки
-                    let processingActive = true;
-                    let seekTimeout = null;
-
-                    // Функция обработки одного кадра
-                    const processFrame = () => {
-                        if (!processingActive || frameCount >= maxFrames) {
-                            if (seekTimeout) clearTimeout(seekTimeout);
+                        if (!video.duration) {
+                            reject(new Error('Нулевая длительность видео'));
                             return;
                         }
 
-                        // Устанавливаем время видео
-                        const timePerFrame = video.duration / maxFrames;
-                        const targetTime = timePerFrame * frameCount;
+                        // Создаем canvas
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 640;
+                        canvas.height = 480;
+                        const ctx = canvas.getContext('2d');
 
-                        // Проверяем, нужно ли изменять время
-                        if (Math.abs(video.currentTime - targetTime) > 0.01) {
-                            video.currentTime = targetTime;
+                        // Настраиваем MediaPipe
+                        const pose = new Pose({
+                            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+                        });
 
-                            // Устанавливаем обработчик только один раз
-                            const handleSeeked = () => {
-                                video.removeEventListener('seeked', handleSeeked);
+                        pose.setOptions({
+                            modelComplexity: 1,
+                            smoothLandmarks: true,
+                            minDetectionConfidence: 0.5,
+                            minTrackingConfidence: 0.5
+                        });
 
-                                if (!processingActive) return;
+                        const extractedPoses = [];
+                        let frameCount = 0;
+                        const maxFrames = 60;
+                        let processing = true;
 
-                                // Рисуем кадр на canvas
-                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        pose.onResults((results) => {
+                            if (!processing) return;
 
-                                // Отправляем в MediaPipe
-                                templatePose.send({ image: canvas });
-
-                                // Планируем следующий кадр
-                                frameCount++;
-                                console.log(`Обработано кадров: ${frameCount}/${maxFrames}`);
-                                seekTimeout = setTimeout(processFrame, 200); // 5 FPS для надежности
-                            };
-
-                            video.addEventListener('seeked', handleSeeked);
-
-                            // Дополнительный таймаут на случай, если seek не сработает
-                            seekTimeout = setTimeout(() => {
-                                video.removeEventListener('seeked', handleSeeked);
-                                if (processingActive) {
-                                    console.log('Seek timeout, continuing...');
+                            if (results.poseLandmarks) {
+                                const vector = extractPushupVector(results.poseLandmarks);
+                                if (vector) {
+                                    extractedPoses.push(vector);
                                     frameCount++;
-                                    processFrame();
+                                    console.log(`Извлечено кадров: ${frameCount}/${maxFrames}`);
                                 }
-                            }, 1000);
-                        } else {
-                            // Время уже правильное, обрабатываем сразу
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            templatePose.send({ image: canvas });
-                            frameCount++;
-                            console.log(`Обработано кадров: ${frameCount}/${maxFrames}`);
-                            seekTimeout = setTimeout(processFrame, 200);
-                        }
-                    };
-
-                    templatePose.onResults((results) => {
-                        if (!processingActive) return;
-
-                        if (results.poseLandmarks && frameCount <= maxFrames) {
-                            const vector = extractPushupVector(results.poseLandmarks);
-                            if (vector) {
-                                templateSequence.push(vector);
                             }
-                        }
 
-                        // Проверяем завершение
-                        if (frameCount >= maxFrames) {
-                            processingActive = false;
-                            if (seekTimeout) clearTimeout(seekTimeout);
-                            clearTimeout(timeoutId);
+                            // Заканчиваем обработку
+                            if (frameCount >= maxFrames) {
+                                processing = false;
+                                clearTimeout(timeout);
+                                pose.close();
 
-                            // Закрываем MediaPipe
-                            templatePose.close();
+                                if (extractedPoses.length > 0) {
+                                    // Сглаживаем последовательность
+                                    templatePushupSequence = smoothSequence(extractedPoses);
 
-                            if (templateSequence.length > 0) {
-                                // Сглаживаем последовательность
-                                templatePushupSequence = smoothSequence(templateSequence);
+                                    // Сохраняем в кэш
+                                    localStorage.setItem('pushup_template', JSON.stringify(templatePushupSequence));
 
-                                // Сохраняем в кэш
-                                localStorage.setItem('pushup_template', JSON.stringify(templatePushupSequence));
-
-                                console.log('Обработка видео завершена. Сохранено', templatePushupSequence.length, 'кадров');
-                                resolve(true);
-                            } else {
-                                reject(new Error('Не удалось извлечь позы из видео'));
+                                    console.log('Обработка видео завершена. Сохранено', templatePushupSequence.length, 'кадров');
+                                    resolve(true);
+                                } else {
+                                    reject(new Error('Не удалось извлечь позы из видео'));
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    // Начинаем обработку
-                    video.pause();
-                    processFrame();
-                };
+                        // Функция обработки кадров
+                        let currentTime = 0;
+                        const frameInterval = video.duration / maxFrames;
 
-                video.onerror = (e) => {
-                    clearTimeout(timeoutId);
-                    console.error('Ошибка загрузки видео:', e);
-                    reject(new Error('Не удалось загрузить видео ot.mp4. Проверьте, что файл существует и доступен.'));
+                        const processFrame = () => {
+                            if (!processing || frameCount >= maxFrames) return;
+
+                            video.currentTime = currentTime;
+                            video.onseeked = () => {
+                                if (!processing) return;
+
+                                // Отправляем кадр в MediaPipe
+                                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                                pose.send({ image: canvas });
+
+                                // Переходим к следующему кадру
+                                currentTime += frameInterval;
+                                setTimeout(processFrame, 100);
+                            };
+                        };
+
+                        // Запускаем обработку
+                        processFrame();
+
+                    } catch (error) {
+                        clearTimeout(timeout);
+                        reject(error);
+                    }
                 };
             });
         }
