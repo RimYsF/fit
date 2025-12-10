@@ -255,27 +255,13 @@
         .activity-grid {
             background: var(--neobrut-white);
             border: 3px solid var(--neobrut-black);
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 15px;
-            box-shadow: 5px 5px 0 var(--neobrut-black);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
             flex: 1;
             display: flex;
             flex-direction: column;
             max-height: 40vh;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .activity-grid::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, var(--neobrut-orange), var(--neobrut-purple));
-            z-index: -1;
-            border-radius: 14px;
         }
 
         /* Месячный календарь активности */
@@ -298,24 +284,21 @@
             display: flex;
             gap: 15px;
             align-items: center;
-            background: var(--neobrut-lightgray);
-            border: 2px solid var(--neobrut-black);
-            padding: 8px 15px;
-            border-radius: 8px;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
+            justify-content: center;
+            width: 100%;
         }
 
         .year-btn {
-            background: var(--neobrut-white);
+            background: var(--neobrut-lightgray);
             border: 2px solid var(--neobrut-black);
             padding: 6px 12px;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 14px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 6px;
+            transition: all 0.2s;
+            border-radius: 4px;
             box-shadow: 2px 2px 0 var(--neobrut-black);
-            min-width: 36px;
+            width: 36px;
             height: 36px;
             display: flex;
             align-items: center;
@@ -324,13 +307,8 @@
 
         .year-btn:hover {
             background: var(--neobrut-yellow);
-            transform: translate(-2px, -2px);
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-        }
-
-        .year-btn:active {
-            transform: translate(0, 0);
-            box-shadow: 2px 2px 0 var(--neobrut-black);
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
         }
 
         .current-month {
@@ -347,25 +325,24 @@
             display: flex;
             flex-direction: column;
             flex: 1;
-            background: var(--neobrut-black);
-            border: 3px solid var(--neobrut-black);
-            border-radius: 8px;
+            background: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 6px;
             overflow: hidden;
-            box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.1);
         }
 
         .calendar-weekdays {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            background: var(--neobrut-black);
-            border-bottom: 2px solid var(--neobrut-black);
+            background: var(--neobrut-lightgray);
+            border-bottom: 1px solid var(--neobrut-black);
         }
 
         .weekday-label {
-            background: var(--neobrut-darkgray);
-            color: var(--neobrut-white);
-            padding: 8px 4px;
-            font-size: 9px;
+            background: var(--neobrut-lightgray);
+            color: var(--neobrut-black);
+            padding: 6px 4px;
+            font-size: 8px;
             font-weight: 700;
             text-align: center;
             text-transform: uppercase;
@@ -380,7 +357,7 @@
         .calendar-week {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            background: var(--neobrut-black);
+            background: var(--neobrut-white);
         }
 
         .activity-cell {
@@ -389,96 +366,54 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 600;
             color: var(--neobrut-black);
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s;
             position: relative;
-            border: 1px solid var(--neobrut-black);
-            overflow: hidden;
-        }
-
-        .activity-cell::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: transparent;
-            transition: background 0.2s;
+            border: 1px solid #e0e0e0;
         }
 
         .activity-cell:hover {
-            transform: scale(1.15);
-            z-index: 20;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-            border-color: var(--neobrut-orange);
-        }
-
-        .activity-cell:hover::before {
-            background: rgba(255, 107, 53, 0.1);
-        }
-
-        .activity-cell:active {
+            background: var(--neobrut-lightgray);
+            border-color: var(--neobrut-black);
             transform: scale(1.05);
-            box-shadow: 2px 2px 0 var(--neobrut-black);
+            z-index: 10;
         }
 
         .activity-cell.other-month {
-            background: var(--neobrut-lightgray);
-            color: var(--neobrut-gray);
-            font-size: 9px;
-            opacity: 0.6;
+            background: #f5f5f5;
+            color: #999;
+            font-size: 11px;
+            opacity: 0.5;
+            border-color: #e0e0e0;
         }
 
         .activity-cell.today {
             background: var(--neobrut-white);
             color: var(--neobrut-black);
-            font-weight: 900;
-            border: 3px solid var(--neobrut-orange);
-            box-shadow: 2px 2px 0 var(--neobrut-orange);
-            z-index: 10;
-        }
-
-        .activity-cell.today::after {
-            content: '•';
-            position: absolute;
-            top: 2px;
-            right: 4px;
-            color: var(--neobrut-orange);
-            font-size: 12px;
+            font-weight: 800;
+            border: 2px solid var(--neobrut-orange);
         }
 
         .activity-cell.low {
-            background: linear-gradient(135deg, var(--warning-yellow) 0%, #FFD700 100%);
+            background: var(--warning-yellow);
             color: var(--neobrut-black);
-            font-weight: 700;
         }
 
         .activity-cell.medium {
-            background: linear-gradient(135deg, #FFB000 0%, #FF8C00 100%);
+            background: #FFB000;
             color: var(--neobrut-white);
         }
 
         .activity-cell.high {
-            background: linear-gradient(135deg, #FF8C00 0%, #FF6B35 100%);
+            background: #FF8C00;
             color: var(--neobrut-white);
         }
 
         .activity-cell.very-high {
-            background: linear-gradient(135deg, var(--success-green) 0%, #00D084 100%);
-            color: var(--neobrut-white);
-            position: relative;
-        }
-
-        .activity-cell.very-high::after {
-            content: '★';
-            position: absolute;
-            top: 1px;
-            right: 3px;
-            font-size: 8px;
+            background: var(--success-green);
             color: var(--neobrut-white);
         }
 
@@ -893,23 +828,6 @@
             opacity: 1;
             transform: translateX(-50%) translateY(-3px);
         }
-
-        /* Анимация пульсации для сегодняшнего дня */
-        @keyframes pulse-glow {
-            0% {
-                box-shadow: 2px 2px 0 var(--neobrut-orange);
-            }
-            50% {
-                box-shadow: 2px 2px 0 var(--neobrut-orange), 0 0 0 3px rgba(255, 107, 53, 0.3);
-            }
-            100% {
-                box-shadow: 2px 2px 0 var(--neobrut-orange);
-            }
-        }
-
-        .activity-cell.today {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
     </style>
 </head>
 <body>
@@ -1305,25 +1223,32 @@
         // Установка обработчиков событий
         function setupEventListeners() {
             // Навигация по месяцам (и годам при переключении)
-            document.getElementById('prev-month').addEventListener('click', () => {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                }
-                renderActivityGrid();
-                updateStats();
-            });
+            const prevBtn = document.getElementById('prev-month');
+            const nextBtn = document.getElementById('next-month');
 
-            document.getElementById('next-month').addEventListener('click', () => {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                }
-                renderActivityGrid();
-                updateStats();
-            });
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    currentMonth--;
+                    if (currentMonth < 0) {
+                        currentMonth = 11;
+                        currentYear--;
+                    }
+                    renderActivityGrid();
+                    updateStats();
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    currentMonth++;
+                    if (currentMonth > 11) {
+                        currentMonth = 0;
+                        currentYear++;
+                    }
+                    renderActivityGrid();
+                    updateStats();
+                });
+            }
 
             // Прокрутка с клавиатуры
             document.addEventListener('keydown', (e) => {
