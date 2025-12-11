@@ -124,12 +124,12 @@
 
         /* Блоки тренировок */
         .workout-block {
-            flex: 0 0 300px;
+            flex: 0 0 180px;
             background: var(--neobrut-white);
-            border: 4px solid var(--neobrut-black);
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 8px 8px 0 var(--neobrut-black);
+            border: 3px solid var(--neobrut-black);
+            padding: 16px;
+            border-radius: 10px;
+            box-shadow: 6px 6px 0 var(--neobrut-black);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
@@ -142,46 +142,46 @@
         .workout-block.focused {
             opacity: 1;
             transform: scale(1) rotate(0deg);
-            box-shadow: 12px 12px 0 var(--neobrut-black);
+            box-shadow: 8px 8px 0 var(--neobrut-black);
             z-index: 10;
             border-color: var(--neobrut-orange);
         }
 
         .workout-block:hover {
             background: var(--neobrut-cream);
-            transform: translateY(-4px) rotate(-1deg);
-            box-shadow: 10px 10px 0 var(--neobrut-black);
+            transform: translateY(-2px) rotate(-1deg);
+            box-shadow: 8px 8px 0 var(--neobrut-black);
         }
 
         .workout-block.focused:hover {
-            transform: translateY(-6px) rotate(0deg);
-            box-shadow: 16px 16px 0 var(--neobrut-black);
+            transform: translateY(-3px) rotate(0deg);
+            box-shadow: 10px 10px 0 var(--neobrut-black);
         }
 
         .workout-number {
             position: absolute;
-            top: -12px;
-            left: -12px;
-            width: 48px;
-            height: 48px;
+            top: -10px;
+            left: -10px;
+            width: 36px;
+            height: 36px;
             background: var(--neobrut-orange);
-            border: 3px solid var(--neobrut-black);
+            border: 2px solid var(--neobrut-black);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 900;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
             color: var(--neobrut-white);
             border-radius: 50%;
             transform: rotate(-5deg);
         }
 
         .workout-day {
-            font-size: 22px;
+            font-size: 16px;
             font-weight: 900;
             text-transform: uppercase;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             color: var(--neobrut-black);
             letter-spacing: 0.05em;
         }
@@ -189,48 +189,48 @@
         .workout-exercises {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 16px;
+            gap: 6px;
+            margin-top: 10px;
         }
 
         .exercise-tag {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 16px;
+            gap: 6px;
+            padding: 6px 10px;
             background: var(--neobrut-lightgray);
-            border: 3px solid var(--neobrut-black);
-            font-size: 14px;
+            border: 2px solid var(--neobrut-black);
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-            border-radius: 8px;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+            border-radius: 6px;
             transition: all 0.2s;
         }
 
         .exercise-tag:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0 var(--neobrut-black);
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
             background: var(--neobrut-cream);
         }
 
         .exercise-icon {
-            font-size: 20px;
-            filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
+            font-size: 14px;
+            filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.2));
         }
 
         .workout-status {
-            margin-top: 16px;
-            padding: 12px;
+            margin-top: 10px;
+            padding: 8px;
             background: var(--neobrut-lightgray);
-            border: 3px solid var(--neobrut-black);
+            border: 2px solid var(--neobrut-black);
             text-align: center;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
-            border-radius: 8px;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
+            border-radius: 6px;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
             transition: all 0.2s;
         }
 
@@ -709,7 +709,7 @@
             }
 
             .workout-block {
-                flex: 0 0 280px;
+                flex: 0 0 160px;
             }
 
             .stat-value {
