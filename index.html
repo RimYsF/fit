@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="format-detection" content="telephone=no" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="MobileOptimized" content="176" />
@@ -12,22 +14,22 @@
     <title>FitTracker AI</title>
     <style>
         :root {
-            --neobrut-black: #0A0A0A;
-            --neobrut-white: #e8f075c2;
-            --neobrut-orange: #FF6B35;
-            --neobrut-red: #DC2626;
-            --neobrut-yellow: #FDE047;
-            --neobrut-blue: #1E40AF;
-            --neobrut-green: #15803D;
-            --neobrut-purple: #9333EA;
-            --neobrut-pink: #EC4899;
-            --neobrut-gray: #6B7280;
-            --neobrut-lightgray: #E5E7EB;
-            --neobrut-darkgray: #1F2937;
-            --neobrut-cream: #FEF3C7;
-            --success-green: #00A86B;
-            --warning-yellow: #FFD700;
-            --bg-grid: #F8F9FA;
+            --neobrut-black: #2D3436;
+            --neobrut-white: #FFFFFF;
+            --neobrut-orange: #E17055;
+            --neobrut-red: #E74C3C;
+            --neobrut-yellow: #FDCB6E;
+            --neobrut-blue: #74B9FF;
+            --neobrut-green: #55A3FF;
+            --neobrut-purple: #A29BFE;
+            --neobrut-pink: #FD79A8;
+            --neobrut-gray: #636E72;
+            --neobrut-lightgray: #F5F6FA;
+            --neobrut-darkgray: #2D3436;
+            --neobrut-cream: #FFF8E1;
+            --success-green: #55EFC4;
+            --warning-yellow: #FFEAA7;
+            --bg-grid: #F0F3F7;
         }
 
         * {
@@ -38,8 +40,8 @@
 
         body {
             font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-grid);
-            color: var(--neobrut-black);
+            background: linear-gradient(135deg, #F0F3F7 0%, #E8EBF0 100%);
+            color: var(--neobrut-darkgray);
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
@@ -57,10 +59,10 @@
         /* Верхняя секция с прокруткой тренировок */
         .workout-section {
             background: var(--neobrut-white);
-            border-bottom: 3px solid var(--neobrut-black);
+            border-bottom: 3px solid var(--neobrut-darkgray);
             padding: 15px 0;
             position: relative;
-            box-shadow: 0 2px 0 var(--neobrut-black);
+            box-shadow: 0 4px 12px rgba(45, 52, 54, 0.08);
             flex-shrink: 0;
         }
 
@@ -81,11 +83,13 @@
 
         .workout-counter {
             background: var(--neobrut-yellow);
-            border: 2px solid var(--neobrut-black);
+            border: 2px solid rgba(45, 52, 54, 0.3);
             padding: 4px 10px;
             font-size: 11px;
             font-weight: 700;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
+            box-shadow: 2px 2px 0 rgba(45, 52, 54, 0.2);
+            border-radius: 4px;
+            color: var(--neobrut-darkgray);
         }
 
         /* Контейнер с горизонтальной прокруткой */
@@ -113,33 +117,34 @@
         .workout-block {
             flex: 0 0 260px;
             background: var(--neobrut-white);
-            border: 3px solid var(--neobrut-black);
+            border: 3px solid var(--neobrut-darkgray);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
+            box-shadow: 4px 4px 0 rgba(45, 52, 54, 0.2);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
-            opacity: 0.6;
-            transform: scale(0.9) rotate(-1deg);
+            opacity: 0.7;
+            transform: scale(0.92) rotate(-0.5deg);
         }
 
         .workout-block.focused {
             opacity: 1;
             transform: scale(1) rotate(0deg);
-            box-shadow: 6px 6px 0 var(--neobrut-black);
+            box-shadow: 6px 6px 0 rgba(45, 52, 54, 0.3);
             z-index: 10;
+            border-color: var(--neobrut-orange);
         }
 
         .workout-block:hover {
             background: var(--neobrut-cream);
-            transform: translateY(-2px) rotate(-0.5deg);
-            box-shadow: 5px 5px 0 var(--neobrut-black);
+            transform: translateY(-2px) rotate(-0.3deg);
+            box-shadow: 5px 5px 0 rgba(45, 52, 54, 0.25);
         }
 
         .workout-block.focused:hover {
             transform: translateY(-3px) rotate(0deg);
-            box-shadow: 8px 8px 0 var(--neobrut-black);
+            box-shadow: 8px 8px 0 rgba(45, 52, 54, 0.35);
         }
 
         .workout-number {
@@ -149,13 +154,14 @@
             width: 32px;
             height: 32px;
             background: var(--neobrut-orange);
-            border: 2px solid var(--neobrut-black);
+            border: 2px solid var(--neobrut-darkgray);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             font-weight: 800;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
+            box-shadow: 2px 2px 0 rgba(45, 52, 54, 0.3);
+            color: var(--neobrut-white);
         }
 
         .workout-day {
@@ -179,12 +185,13 @@
             gap: 6px;
             padding: 4px 8px;
             background: var(--neobrut-lightgray);
-            border: 2px solid var(--neobrut-black);
+            border: 2px solid rgba(45, 52, 54, 0.3);
             font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.02em;
-            box-shadow: 1px 1px 0 var(--neobrut-black);
+            box-shadow: 1px 1px 0 rgba(45, 52, 54, 0.2);
+            border-radius: 4px;
         }
 
         .exercise-icon {
@@ -195,16 +202,19 @@
             margin-top: 10px;
             padding: 6px;
             background: var(--neobrut-lightgray);
-            border: 2px solid var(--neobrut-black);
+            border: 2px solid rgba(45, 52, 54, 0.3);
             text-align: center;
             font-size: 9px;
             font-weight: 700;
             text-transform: uppercase;
+            border-radius: 4px;
         }
 
         .workout-status.completed {
-            background: var(--neobrut-green);
-            color: var(--neobrut-white);
+            background: var(--success-green);
+            color: var(--neobrut-darkgray);
+            border-color: var(--success-green);
+            font-weight: 800;
         }
 
         /* Нижняя секция с активностью */
@@ -214,6 +224,7 @@
             display: flex;
             flex-direction: column;
             flex: 1;
+            box-shadow: 0 -2px 8px rgba(45, 52, 54, 0.05);
         }
 
         .activity-header {
@@ -254,300 +265,209 @@
         /* Сетка активности - месячный формат */
         .activity-grid {
             background: var(--neobrut-white);
-            border: 3px solid var(--neobrut-black);
+            border: 3px solid rgba(45, 52, 54, 0.3);
             border-radius: 8px;
-            padding: 15px;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            flex: 1;
+            padding: 12px;
+            box-shadow: 4px 4px 0 rgba(45, 52, 54, 0.15);
             display: flex;
             flex-direction: column;
-            max-height: 40vh;
-        }
-
-        /* Месячный календарь активности */
-        .activity-calendar {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 280px;
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 0 5px;
-        }
-
-        .month-nav {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .year-btn {
-            background: var(--neobrut-lightgray);
-            border: 2px solid var(--neobrut-black);
-            padding: 6px 12px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 4px;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .year-btn:hover {
-            background: var(--neobrut-yellow);
-            transform: translate(-1px, -1px);
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-        }
-
-        .current-month {
-            font-size: 14px;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: var(--neobrut-black);
-            letter-spacing: 0.5px;
-            min-width: 140px;
-            text-align: center;
-        }
-
-        .calendar-grid {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            background: var(--neobrut-white);
-            border: 2px solid var(--neobrut-black);
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .calendar-weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            background: var(--neobrut-lightgray);
-            border-bottom: 1px solid var(--neobrut-black);
-        }
-
-        .weekday-label {
-            background: var(--neobrut-lightgray);
-            color: var(--neobrut-black);
-            padding: 6px 4px;
-            font-size: 8px;
-            font-weight: 700;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-right: 1px solid var(--neobrut-black);
-        }
-
-        .weekday-label:last-child {
-            border-right: none;
-        }
-
-        .calendar-week {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            background: var(--neobrut-white);
-        }
-
-        .activity-cell {
-            background: var(--neobrut-white);
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--neobrut-black);
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            border: 1px solid #e0e0e0;
-        }
-
-        .activity-cell:hover {
-            background: var(--neobrut-lightgray);
-            border-color: var(--neobrut-black);
-            transform: scale(1.05);
-            z-index: 10;
-        }
-
-        .activity-cell.other-month {
-            background: #f5f5f5;
-            color: #999;
-            font-size: 11px;
-            opacity: 0.5;
-            border-color: #e0e0e0;
-        }
-
-        .activity-cell.today {
-            background: var(--neobrut-white);
-            color: var(--neobrut-black);
-            font-weight: 800;
-            border: 2px solid var(--neobrut-orange);
-        }
-
-        .activity-cell.low {
-            background: var(--warning-yellow);
-            color: var(--neobrut-black);
-        }
-
-        .activity-cell.medium {
-            background: #FFB000;
-            color: var(--neobrut-white);
-        }
-
-        .activity-cell.high {
-            background: #FF8C00;
-            color: var(--neobrut-white);
-        }
-
-        .activity-cell.very-high {
-            background: var(--success-green);
-            color: var(--neobrut-white);
-        }
-
-        /* Статистика - адаптивная */
-        .stats-summary {
-            margin-top: 15px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .stat-card {
-            background: var(--neobrut-white);
-            border: 2px solid var(--neobrut-black);
-            padding: 10px;
-            text-align: center;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-            transition: all 0.2s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            background: var(--neobrut-cream);
-        }
-
-        .stat-value {
-            font-size: 20px;
-            font-weight: 900;
-            color: var(--neobrut-black);
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--neobrut-gray);
+            height: 220px;
         }
 
         .year-selector {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .year-btn {
             background: var(--neobrut-lightgray);
-            border: 2px solid var(--neobrut-black);
-            padding: 5px 10px;
+            border: 2px solid rgba(45, 52, 54, 0.3);
+            padding: 4px 8px;
             font-weight: 600;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.2s;
+            border-radius: 4px;
+            color: var(--neobrut-darkgray);
         }
 
         .year-btn:hover {
             background: var(--neobrut-yellow);
             transform: translate(-1px, -1px);
-            box-shadow: 2px 2px 0 var(--neobrut-black);
+            box-shadow: 2px 2px 0 rgba(45, 52, 54, 0.2);
         }
 
-        .month-labels {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 3px;
-            margin-bottom: 10px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--neobrut-gray);
-        }
-
-        .weeks-grid {
-            display: grid;
-            grid-template-rows: repeat(7, 1fr);
-            gap: 3px;
-        }
-
-        .week-row {
-            display: grid;
-            grid-template-columns: repeat(53, 1fr);
-            gap: 2px;
-        }
-
-        .day-cell {
-            aspect-ratio: 1;
-            background: var(--neobrut-lightgray);
-            border: 1px solid var(--neobrut-black);
-            border-radius: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .day-cell:hover {
-            transform: scale(1.2);
-            border-color: var(--neobrut-black);
-            z-index: 10;
-        }
-
-        .day-cell.low {
-            background: var(--warning-yellow);
-        }
-
-        .day-cell.medium {
-            background: #FFB000;
-        }
-
-        .day-cell.high {
-            background: #FF8C00;
-        }
-
-        .day-cell.very-high {
-            background: var(--success-green);
-        }
-
-        .day-labels {
+        /* Календарь активности - GitHub стиль */
+        .activity-calendar {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            position: absolute;
-            left: -25px;
-            top: 25px;
+            height: 100%;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .year-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .current-year {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--neobrut-darkgray);
+        }
+
+        /* Контейнер для GitHub-стиль таблицы */
+        .year-activity-container {
+            background: var(--neobrut-white);
+            border: 2px solid rgba(45, 52, 54, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neobrut-gray) transparent;
+            max-width: 100%;
+        }
+
+        .year-activity-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .year-activity-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .year-activity-container::-webkit-scrollbar-thumb {
+            background-color: var(--neobrut-gray);
+            border-radius: 3px;
+        }
+
+        /* Стили для SVG элементов */
+        .month-label, .day-label, .legend-text {
+            font-size: 10px;
+            fill: var(--neobrut-gray);
+            font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .month-label {
+            font-weight: 600;
         }
 
         .day-label {
-            height: 12px;
-            font-size: 9px;
-            font-weight: 600;
-            color: var(--neobrut-gray);
+            font-weight: 500;
         }
 
+        .legend-text {
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        .legend-rect {
+            width: 10px;
+            height: 10px;
+            rx: 2;
+            ry: 2;
+        }
+
+        /* Активность квадраты */
+        .activity-day {
+            width: 10px;
+            height: 10px;
+            rx: 2;
+            ry: 2;
+            fill: #161b22;
+            stroke: #0d1117;
+            stroke-width: 1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .activity-day:hover {
+            stroke-width: 2;
+            stroke: var(--neobrut-blue);
+        }
+
+        .activity-day.level-1 {
+            fill: #0e4429;
+        }
+
+        .activity-day.level-2 {
+            fill: #006d32;
+        }
+
+        .activity-day.level-3 {
+            fill: #26a641;
+        }
+
+        .activity-day.level-4 {
+            fill: #39d353;
+        }
+
+        .activity-day.today {
+            stroke: var(--neobrut-orange);
+            stroke-width: 2;
+        }
+
+        /* Tooltip для активности */
+        .activity-tooltip {
+            position: absolute;
+            background: var(--neobrut-darkgray);
+            color: var(--neobrut-white);
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Адаптивность для мобильных - GitHub стиль */
+        @media (max-width: 768px) {
+            .year-activity-container {
+                padding: 10px;
+            }
+
+            .activity-day {
+                width: 8px;
+                height: 8px;
+            }
+
+            .month-label, .day-label {
+                font-size: 9px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .year-activity-container {
+                padding: 8px;
+            }
+
+            .activity-day {
+                width: 6px;
+                height: 6px;
+            }
+
+            .month-label, .day-label {
+                font-size: 8px;
+            }
+
+            .legend-text {
+                font-size: 8px;
+            }
+        }
+
+        
         /* Статистика */
         .stats-summary {
             margin-top: 20px;
@@ -558,16 +478,17 @@
 
         .stat-card {
             background: var(--neobrut-white);
-            border: 2px solid var(--neobrut-black);
+            border: 2px solid rgba(45, 52, 54, 0.3);
             padding: 15px;
             text-align: center;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
+            box-shadow: 3px 3px 0 rgba(45, 52, 54, 0.15);
             transition: all 0.2s;
+            border-radius: 6px;
         }
 
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 4px 4px 0 var(--neobrut-black);
+            box-shadow: 4px 4px 0 rgba(45, 52, 54, 0.2);
             background: var(--neobrut-cream);
         }
 
@@ -590,11 +511,26 @@
         @media (max-width: 768px) {
             body {
                 font-size: 13px;
+                background: linear-gradient(135deg, #F5F6FA 0%, #E8EBF0 100%);
+            }
+
+            .workout-section {
+                padding: 12px 0;
+                box-shadow: 0 2px 8px rgba(45, 52, 54, 0.05);
+            }
+
+            .activity-section {
+                padding: 12px;
             }
 
             .workout-block {
                 flex: 0 0 220px;
                 padding: 12px;
+                box-shadow: 3px 3px 0 rgba(45, 52, 54, 0.15);
+            }
+
+            .workout-block.focused {
+                box-shadow: 5px 5px 0 rgba(45, 52, 54, 0.25);
             }
 
             .workout-number {
@@ -612,56 +548,16 @@
                 padding: 3px 6px;
             }
 
-            .activity-grid {
-                padding: 12px;
-                max-height: 38vh;
-            }
-
-            .activity-calendar {
-                min-height: 250px;
-            }
-
-            .calendar-header {
-                margin-bottom: 12px;
-            }
-
-            .month-nav {
-                padding: 6px 12px;
-                gap: 12px;
-            }
-
-            .year-btn {
-                min-width: 32px;
-                height: 32px;
-                font-size: 11px;
-                padding: 4px 8px;
-            }
-
-            .current-month {
-                font-size: 12px;
-                min-width: 120px;
-            }
-
-            .weekday-label {
-                font-size: 8px;
-                padding: 6px 2px;
-            }
-
-            .activity-cell {
-                font-size: 9px;
-            }
-
-            .activity-cell.today::after {
-                font-size: 10px;
-                top: 1px;
-                right: 2px;
-            }
-
-            .activity-cell.very-high::after {
-                font-size: 7px;
+            .day-cell {
+                min-width: 8px;
+                min-height: 8px;
             }
 
             .month-label {
+                font-size: 7px;
+            }
+
+            .weekday-label {
                 font-size: 7px;
             }
 
@@ -671,6 +567,10 @@
 
             .stat-label {
                 font-size: 7px;
+            }
+
+            .activity-grid {
+                box-shadow: 3px 3px 0 rgba(45, 52, 54, 0.1);
             }
         }
 
@@ -699,59 +599,6 @@
                 padding: 3px 8px;
                 font-size: 10px;
             }
-
-            .activity-grid {
-                padding: 10px;
-                max-height: 35vh;
-            }
-
-            .calendar-header {
-                margin-bottom: 10px;
-            }
-
-            .month-nav {
-                padding: 5px 10px;
-                gap: 10px;
-            }
-
-            .year-btn {
-                min-width: 30px;
-                height: 30px;
-                font-size: 10px;
-            }
-
-            .current-month {
-                font-size: 11px;
-                min-width: 100px;
-                letter-spacing: 0.2px;
-            }
-
-            .weekday-label {
-                font-size: 7px;
-                padding: 5px 1px;
-            }
-
-            .activity-cell {
-                font-size: 8px;
-            }
-
-            .activity-cell:hover {
-                transform: scale(1.1);
-            }
-
-            .activity-cell.today {
-                border-width: 2px;
-            }
-
-            .activity-cell.today::after {
-                font-size: 9px;
-            }
-
-            .activity-cell.very-high::after {
-                font-size: 6px;
-                top: 0;
-                right: 2px;
-            }
         }
 
         /* Анимация появления */
@@ -760,13 +607,15 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        .workout-section, .activity-section {
+        .workout-section,
+        .activity-section {
             animation: slideIn 0.5s ease-out;
         }
 
@@ -777,59 +626,39 @@
         /* Tooltip для дня активности */
         .tooltip {
             position: absolute;
-            bottom: calc(100% + 8px);
+            bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--neobrut-black);
+            background: var(--neobrut-darkgray);
             color: var(--neobrut-white);
             padding: 8px 12px;
-            border-radius: 6px;
+            border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.2s;
             z-index: 1000;
-            border: 2px solid var(--neobrut-black);
-            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
-            max-width: 200px;
-            text-align: center;
+            box-shadow: 0 2px 8px rgba(45, 52, 54, 0.2);
         }
 
         .tooltip::after {
             content: '';
             position: absolute;
-            top: calc(100% - 2px);
+            top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 6px solid var(--neobrut-black);
+            border: 4px solid transparent;
+            border-top-color: var(--neobrut-darkgray);
         }
 
-        .tooltip::before {
-            content: '';
-            position: absolute;
-            top: calc(100% - 2px);
-            left: 50%;
-            transform: translateX(-50%) translateY(2px);
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 6px solid var(--neobrut-black);
-            z-index: -1;
-        }
-
-        .activity-cell:hover .tooltip {
+        .day-cell:hover .tooltip {
             opacity: 1;
-            transform: translateX(-50%) translateY(-3px);
         }
     </style>
 </head>
+
 <body>
     <!-- Верхняя секция с тренировками -->
     <div class="workout-section">
@@ -870,26 +699,55 @@
         <div class="activity-grid">
             <div class="activity-calendar">
                 <div class="calendar-header">
-                    <div class="month-nav">
-                        <button class="year-btn" id="prev-month">←</button>
-                        <span class="current-month" id="current-month">Декабрь 2024</span>
-                        <button class="year-btn" id="next-month">→</button>
+                    <div class="year-nav">
+                        <button class="year-btn" id="prev-year">←</button>
+                        <span class="current-year" id="current-year">2024</span>
+                        <button class="year-btn" id="next-year">→</button>
                     </div>
                 </div>
 
-                <div class="calendar-grid">
-                    <div class="calendar-weekdays">
-                        <div class="weekday-label">Пн</div>
-                        <div class="weekday-label">Вт</div>
-                        <div class="weekday-label">Ср</div>
-                        <div class="weekday-label">Чт</div>
-                        <div class="weekday-label">Пт</div>
-                        <div class="weekday-label">Сб</div>
-                        <div class="weekday-label">Вс</div>
-                    </div>
-                    <div id="calendar-month">
-                        <!-- Дни месяца будут сгенерированы JavaScript -->
-                    </div>
+                <!-- GitHub-стиль таблицы активности -->
+                <div class="year-activity-container">
+                    <svg width="1100" height="160" viewBox="0 0 1100 160" xmlns="http://www.w3.org/2000/svg" id="activity-svg">
+                        <!-- Метки месяцев -->
+                        <g class="months-labels" transform="translate(40, 10)">
+                            <text x="0"   y="10" class="month-label">Янв</text>
+                            <text x="78"  y="10" class="month-label">Фев</text>
+                            <text x="156" y="10" class="month-label">Мар</text>
+                            <text x="234" y="10" class="month-label">Апр</text>
+                            <text x="312" y="10" class="month-label">Май</text>
+                            <text x="390" y="10" class="month-label">Июн</text>
+                            <text x="468" y="10" class="month-label">Июл</text>
+                            <text x="546" y="10" class="month-label">Авг</text>
+                            <text x="624" y="10" class="month-label">Сен</text>
+                            <text x="702" y="10" class="month-label">Окт</text>
+                            <text x="780" y="10" class="month-label">Ноя</text>
+                            <text x="858" y="10" class="month-label">Дек</text>
+                        </g>
+
+                        <!-- Метки дней -->
+                        <g class="days-labels" transform="translate(10, 40)">
+                            <text x="0" y="7" class="day-label">Пн</text>
+                            <text x="0" y="27" class="day-label">Ср</text>
+                            <text x="0" y="47" class="day-label">Пт</text>
+                        </g>
+
+                        <!-- Сетка активности будет сгенерирована JavaScript -->
+                        <g transform="translate(40, 20)" id="activity-grid">
+                            <!-- Квадраты активности -->
+                        </g>
+
+                        <!-- Легенда -->
+                        <g transform="translate(40, 130)">
+                            <text x="0" y="10" class="legend-text">Меньше</text>
+                            <rect class="legend-rect" x="40" y="0" fill="#161b22" />
+                            <rect class="legend-rect" x="53" y="0" fill="#0e4429" />
+                            <rect class="legend-rect" x="66" y="0" fill="#006d32" />
+                            <rect class="legend-rect" x="79" y="0" fill="#26a641" />
+                            <rect class="legend-rect" x="92" y="0" fill="#39d353" />
+                            <text x="108" y="10" class="legend-text">Больше</text>
+                        </g>
+                    </svg>
                 </div>
             </div>
         </div>
@@ -961,13 +819,10 @@
 
         // Загрузка данных активности
         function loadActivityData() {
-            const stored = localStorage.getItem('fitTrackerActivity');
-            if (stored) {
-                activityData = JSON.parse(stored);
-            } else {
-                // Инициализация пустыми данными
-                activityData = {};
-            }
+            // Полностью очищаем данные активности для демонстрации
+            activityData = {};
+            // Очищаем localStorage
+            localStorage.removeItem('fitTrackerActivity');
         }
 
         // Сохранение данных активности
@@ -1033,117 +888,106 @@
             return day <= currentDay && getActivityForDate(new Date()) > 0;
         }
 
-        // Рендеринг месячного календаря
+        // Рендеринг годового календаря активности в стиле GitHub
         function renderActivityGrid() {
-            const container = document.getElementById('calendar-month');
-            const monthElement = document.getElementById('current-month');
+            const gridContainer = document.getElementById('activity-grid');
+            const yearElement = document.getElementById('current-year');
 
-            // Обновляем отображение месяца и года
-            const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-            monthElement.textContent = `${months[currentMonth]} ${currentYear}`;
+            // Обновляем отображение года
+            yearElement.textContent = currentYear;
 
-            container.innerHTML = '';
-
-            // Получаем данные о месяце
-            const firstDay = new Date(currentYear, currentMonth, 1);
-            const lastDay = new Date(currentYear, currentMonth + 1, 0);
-            const daysInMonth = lastDay.getDate();
-
-            // День недели первого числа (0=Вс, 1=Пн, ...)
-            let firstWeekday = firstDay.getDay() || 7;
-
-            // Предыдущий месяц
-            const prevMonth = new Date(currentYear, currentMonth, 0);
-            const daysInPrevMonth = prevMonth.getDate();
+            // Очищаем контейнер
+            gridContainer.innerHTML = '';
 
             const today = new Date();
-            const isCurrentMonth = today.getFullYear() === currentYear &&
-                                  today.getMonth() === currentMonth;
-            const todayDate = today.getDate();
+            const startOfYear = new Date(currentYear, 0, 1);
+            const endOfYear = new Date(currentYear, 11, 31);
 
-            // Количество недель для отображения (обычно 6)
-            const totalWeeks = Math.ceil((firstWeekday + daysInMonth - 1) / 7);
+            // Создаем массив для хранения данных по неделям
+            const weeks = [];
+            let currentWeek = [];
+            let currentDay = new Date(startOfYear);
 
-            // Создаем недели
-            for (let week = 0; week < totalWeeks; week++) {
-                const weekRow = document.createElement('div');
-                weekRow.className = 'calendar-week';
+            // Добавляем пустые дни до начала недели (если 1 января не понедельник)
+            const startDayOfWeek = currentDay.getDay() || 7; // Воскресенье = 7
+            for (let i = 1; i < startDayOfWeek; i++) {
+                currentWeek.push(null);
+            }
 
-                // Создаем 7 дней недели
-                for (let dayOfWeek = 1; dayOfWeek <= 7; dayOfWeek++) {
-                    const dayCell = document.createElement('div');
-                    dayCell.className = 'activity-cell';
+            // Заполняем дни года
+            while (currentDay <= endOfYear) {
+                if (currentWeek.length === 7) {
+                    weeks.push(currentWeek);
+                    currentWeek = [];
+                }
+                currentWeek.push(new Date(currentDay));
+                currentDay.setDate(currentDay.getDate() + 1);
+            }
 
-                    const dayIndex = week * 7 + dayOfWeek - firstWeekday + 1;
+            // Добавляем последнюю неделю если она не пустая
+            if (currentWeek.length > 0) {
+                while (currentWeek.length < 7) {
+                    currentWeek.push(null);
+                }
+                weeks.push(currentWeek);
+            }
 
-                    if (dayIndex < 1) {
-                        // Дни из предыдущего месяца
-                        const prevDay = daysInPrevMonth + dayIndex;
-                        dayCell.textContent = prevDay;
-                        dayCell.classList.add('other-month');
-                    } else if (dayIndex > daysInMonth) {
-                        // Дни из следующего месяца
-                        const nextDay = dayIndex - daysInMonth;
-                        dayCell.textContent = nextDay;
-                        dayCell.classList.add('other-month');
-                    } else {
-                        // Дни текущего месяца
-                        dayCell.textContent = dayIndex;
+            // Создаем SVG элементы для каждого дня
+            weeks.forEach((week, weekIndex) => {
+                week.forEach((day, dayIndex) => {
+                    if (day) {
+                        const dateKey = formatDateKey(day);
+                        const activity = getActivityForDate(day);
+                        const isToday = formatDateKey(today) === dateKey;
 
-                        // Подсветка сегодняшнего дня (без цвета, только жирная рамка)
-                        if (isCurrentMonth && dayIndex === todayDate) {
-                            dayCell.classList.add('today');
+                        // Создаем элемент rect для дня
+                        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        rect.setAttribute('x', weekIndex * 14);
+                        rect.setAttribute('y', dayIndex * 13);
+                        rect.setAttribute('width', '10');
+                        rect.setAttribute('height', '10');
+                        rect.setAttribute('rx', '2');
+                        rect.setAttribute('ry', '2');
+                        rect.setAttribute('class', 'activity-day');
+
+                        // Устанавливаем цвет в зависимости от активности
+                        if (activity > 0) {
+                            if (activity < 30) {
+                                rect.classList.add('level-1');
+                            } else if (activity < 60) {
+                                rect.classList.add('level-2');
+                            } else if (activity < 90) {
+                                rect.classList.add('level-3');
+                            } else {
+                                rect.classList.add('level-4');
+                            }
                         }
 
-                        // Активность (пока отключена)
-                        // const currentDate = new Date(currentYear, currentMonth, dayIndex);
-                        // const activity = getActivityForDate(currentDate);
-                        // if (activity > 0) {
-                        //     if (activity < 30) dayCell.classList.add('low');
-                        //     else if (activity < 60) dayCell.classList.add('medium');
-                        //     else if (activity < 90) dayCell.classList.add('high');
-                        //     else dayCell.classList.add('very-high');
-                        // }
+                        // Выделяем сегодняшний день
+                        if (isToday) {
+                            rect.classList.add('today');
+                        }
 
-                        // Добавляем tooltip с улучшенным форматом
-                        const tooltip = document.createElement('div');
-                        tooltip.className = 'tooltip';
-                        const dayOfWeek = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][(week * 7 + dayOfWeek - 1) % 7];
-                        tooltip.textContent = `${dayIndex} ${months[currentMonth]}, ${dayOfWeek}`;
-                        dayCell.appendChild(tooltip);
+                        // Добавляем tooltip
+                        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+                        const dateString = day.toLocaleDateString('ru-RU', options);
+                        const activityText = activity > 0 ? `, ${activity} минут активности` : ', нет активности';
+                        title.textContent = `${dateString}${activityText}`;
+                        rect.appendChild(title);
 
-                        // Добавляем обработчик клика для визуальной обратной связи
-                        dayCell.addEventListener('click', function() {
-                            // Анимация клика
-                            this.style.transform = 'scale(0.95)';
-                            setTimeout(() => {
-                                this.style.transform = '';
-                            }, 150);
-
-                            // Временно изменяем цвет
-                            const originalBg = window.getComputedStyle(this).background;
-                            this.style.background = 'var(--neobrut-yellow)';
-                            setTimeout(() => {
-                                this.style.background = originalBg;
-                            }, 300);
+                        // Добавляем обработчик клика
+                        rect.addEventListener('click', () => {
+                            recordActivity(day);
                         });
+
+                        gridContainer.appendChild(rect);
                     }
-
-                    weekRow.appendChild(dayCell);
-                }
-
-                container.appendChild(weekRow);
-            }
+                });
+            });
         }
 
-        // Получение даты из номера недели и дня
-        function getDateFromWeekAndDay(week, dayOfWeek) {
-            const firstDayOfYear = new Date(currentYear, 0, 1);
-            const daysOffset = (week * 7) + (dayOfWeek - firstDayOfYear.getDay());
-            return new Date(firstDayOfYear.getTime() + daysOffset * 24 * 60 * 60 * 1000);
-        }
-
+        
         // Получение активности для даты
         function getActivityForDate(date) {
             const key = formatDateKey(date);
@@ -1222,33 +1066,18 @@
 
         // Установка обработчиков событий
         function setupEventListeners() {
-            // Навигация по месяцам (и годам при переключении)
-            const prevBtn = document.getElementById('prev-month');
-            const nextBtn = document.getElementById('next-month');
+            // Навигация по годам
+            document.getElementById('prev-year').addEventListener('click', () => {
+                currentYear--;
+                renderActivityGrid();
+                updateStats();
+            });
 
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => {
-                    currentMonth--;
-                    if (currentMonth < 0) {
-                        currentMonth = 11;
-                        currentYear--;
-                    }
-                    renderActivityGrid();
-                    updateStats();
-                });
-            }
-
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => {
-                    currentMonth++;
-                    if (currentMonth > 11) {
-                        currentMonth = 0;
-                        currentYear++;
-                    }
-                    renderActivityGrid();
-                    updateStats();
-                });
-            }
+            document.getElementById('next-year').addEventListener('click', () => {
+                currentYear++;
+                renderActivityGrid();
+                updateStats();
+            });
 
             // Прокрутка с клавиатуры
             document.addEventListener('keydown', (e) => {
@@ -1282,4 +1111,5 @@
         }
     </script>
 </body>
+
 </html>
