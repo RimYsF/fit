@@ -122,125 +122,410 @@
             display: none;
         }
 
-        /* Блоки тренировок */
+        /* Блоки тренировок - Квадратные пустые в стиле необрутализма */
         .workout-block {
-            flex: 0 0 180px;
+            flex: 0 0 150px;
+            width: 150px;
+            height: 150px;
             background: var(--neobrut-white);
-            border: 3px solid var(--neobrut-black);
-            padding: 16px;
-            border-radius: 10px;
-            box-shadow: 6px 6px 0 var(--neobrut-black);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 4px solid var(--neobrut-black);
+            border-radius: 16px;
+            box-shadow:
+                8px 8px 0 var(--neobrut-black),
+                inset 2px 2px 0 rgba(0,0,0,0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
-            opacity: 0.7;
-            transform: scale(0.9) rotate(-3deg);
+            opacity: 0.8;
+            transform: scale(0.95) rotate(-2deg);
             scroll-snap-align: center;
             touch-action: manipulation;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
+        /* 3D-эффект при фокусе */
         .workout-block.focused {
             opacity: 1;
-            transform: scale(1) rotate(0deg);
-            box-shadow: 8px 8px 0 var(--neobrut-black);
+            transform: scale(1.05) rotate(0deg) translateZ(20px);
+            box-shadow:
+                12px 12px 0 var(--neobrut-black),
+                inset 2px 2px 0 rgba(0,0,0,0.1);
             z-index: 10;
-            border-color: var(--neobrut-orange);
         }
 
         .workout-block:hover {
+            transform: scale(0.98) rotate(-1deg) translateY(-2px);
+            box-shadow:
+                10px 10px 0 var(--neobrut-black),
+                inset 2px 2px 0 rgba(0,0,0,0.1);
             background: var(--neobrut-cream);
-            transform: translateY(-2px) rotate(-1deg);
-            box-shadow: 8px 8px 0 var(--neobrut-black);
         }
 
         .workout-block.focused:hover {
-            transform: translateY(-3px) rotate(0deg);
-            box-shadow: 10px 10px 0 var(--neobrut-black);
+            transform: scale(1.08) rotate(1deg) translateY(-4px) translateZ(30px);
+            box-shadow:
+                16px 16px 0 var(--neobrut-black),
+                inset 2px 2px 0 rgba(0,0,0,0.1);
         }
 
         .workout-number {
             position: absolute;
-            top: -10px;
-            left: -10px;
-            width: 36px;
-            height: 36px;
+            top: 12px;
+            left: 12px;
+            width: 40px;
+            height: 40px;
             background: var(--neobrut-orange);
-            border: 2px solid var(--neobrut-black);
+            border: 3px solid var(--neobrut-black);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 900;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
             color: var(--neobrut-white);
-            border-radius: 50%;
-            transform: rotate(-5deg);
+            border-radius: 12px;
+            transform: rotate(-8deg);
+            z-index: 2;
         }
 
         .workout-day {
-            font-size: 16px;
+            position: absolute;
+            bottom: 20px;
+            font-size: 18px;
             font-weight: 900;
             text-transform: uppercase;
-            margin-bottom: 8px;
             color: var(--neobrut-black);
             letter-spacing: 0.05em;
+            text-align: center;
+            width: 100%;
         }
 
-        .workout-exercises {
+        /* Декоративные элементы для пустых блоков */
+        .workout-block::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            background: var(--neobrut-pink);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 50%;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+            opacity: 0.8;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-container {
+            background: var(--neobrut-white);
+            border: 5px solid var(--neobrut-black);
+            border-radius: 20px;
+            box-shadow:
+                12px 12px 0 var(--neobrut-black),
+                0 0 0 2px var(--neobrut-black);
+            width: 80%;
+            height: 80%;
+            max-width: 900px;
+            max-height: 700px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-top: 10px;
+            overflow: hidden;
+            transform: scale(0.9) rotate(-2deg);
+            animation: modalAppear 0.3s ease-out forwards;
         }
 
-        .exercise-tag {
-            display: inline-flex;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes modalAppear {
+            to {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .modal-header {
+            background: var(--neobrut-yellow);
+            border-bottom: 5px solid var(--neobrut-black);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            background: var(--neobrut-lightgray);
-            border: 2px solid var(--neobrut-black);
-            font-size: 11px;
-            font-weight: 700;
+            position: relative;
+        }
+
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            width: 60px;
+            height: 20px;
+            background: var(--neobrut-pink);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 10px;
+            transform: rotate(-5deg);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-
-        .exercise-tag:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-            background: var(--neobrut-cream);
-        }
-
-        .exercise-icon {
-            font-size: 14px;
-            filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.2));
-        }
-
-        .workout-status {
-            margin-top: 10px;
-            padding: 8px;
-            background: var(--neobrut-lightgray);
-            border: 2px solid var(--neobrut-black);
-            text-align: center;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            border-radius: 6px;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-            transition: all 0.2s;
-        }
-
-        .workout-status.completed {
-            background: var(--success-green);
             color: var(--neobrut-black);
-            border-color: var(--neobrut-black);
+        }
+
+        .modal-close {
+            width: 50px;
+            height: 50px;
+            background: var(--neobrut-red);
+            border: 4px solid var(--neobrut-black);
+            border-radius: 15px;
+            font-size: 32px;
             font-weight: 900;
-            transform: rotate(1deg);
+            color: var(--neobrut-white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             box-shadow: 4px 4px 0 var(--neobrut-black);
+            transition: all 0.2s;
+            transform: rotate(0deg);
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: var(--neobrut-orange);
+        }
+
+        .modal-close:active {
+            transform: rotate(90deg) scale(0.95) translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .modal-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: var(--neobrut-white);
+        }
+
+        /* Todo-список в стиле необрутализма */
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--neobrut-lightgray);
+            border: 3px solid var(--neobrut-black);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .todo-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--neobrut-black);
+        }
+
+        .todo-item.completed {
+            opacity: 0.7;
+            background: var(--success-green);
+        }
+
+        .todo-checkbox {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            margin-right: 15px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .todo-checkbox input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .checkbox-visual {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .todo-checkbox input:checked ~ .checkbox-visual {
+            background: var(--neobrut-yellow);
+            transform: rotate(-5deg);
+        }
+
+        .checkbox-checkmark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 14px;
+            height: 10px;
+            border-left: 3px solid var(--neobrut-black);
+            border-bottom: 3px solid var(--neobrut-black);
+            transition: transform 0.2s;
+        }
+
+        .todo-checkbox input:checked ~ .checkbox-checkmark {
+            transform: translate(-50%, -50%) rotate(-45deg) scale(1);
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--neobrut-darkgray);
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+
+        /* Подпункты */
+        .todo-sublist {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 39px;
+        }
+
+        .todo-subitem {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: var(--neobrut-white);
+            border: 2px solid var(--neobrut-gray);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .todo-subitem:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        .todo-subitem .todo-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            margin-top: 1px;
+        }
+
+        .todo-subitem .checkbox-visual {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+        }
+
+        .todo-subitem .checkbox-checkmark {
+            width: 10px;
+            height: 8px;
+            border-width: 2px;
+        }
+
+        .todo-subitem .todo-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Маркер для подпунктов */
+        .todo-bullet {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--neobrut-gray);
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+            margin-top: 6px;
+        }
+
+        /* Сообщение об отсутствии заданий */
+        .no-tasks {
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--neobrut-gray);
+            background: var(--neobrut-lightgray);
+            border: 3px dashed var(--neobrut-gray);
+            border-radius: 12px;
+        }
+
+        /* Мобильная адаптация модального окна */
+        @media (max-width: 768px) {
+            .modal-container {
+                width: 95%;
+                height: 90%;
+                border-width: 3px;
+            }
+
+            .modal-title {
+                font-size: 20px;
+            }
+
+            .modal-close {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
         }
 
         /* Нижняя секция с активностью */
@@ -709,7 +994,9 @@
             }
 
             .workout-block {
-                flex: 0 0 160px;
+                flex: 0 0 130px;
+                width: 130px;
+                height: 130px;
             }
 
             .stat-value {
@@ -860,6 +1147,19 @@
         </div>
     </div>
 
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="workout-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">День 1 - Понедельник</div>
+                <button class="modal-close" id="modal-close">×</button>
+            </div>
+            <div class="modal-content" id="modal-content">
+                <!-- Здесь будет контент -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // Программа тренировок
         const workoutProgram = [
@@ -887,6 +1187,209 @@
         let currentMonth = new Date().getMonth(); // 0 = Январь, 11 = Декабрь
         let activityData = {};
         let selectedWorkout = 1;
+        let todoData = {}; // Хранение состояния todo-списков
+
+        // Загрузка всех todo-файлов при инициализации
+        async function loadAllTodoFiles() {
+            // Пытаемся загрузить файлы с сервера
+            for (let day = 1; day <= 7; day++) {
+                try {
+                    const response = await fetch(`forjson/${day}day.txt`);
+                    if (response.ok) {
+                        const text = await response.text();
+                        todoData[day] = parseTodoFile(text);
+                    } else {
+                        todoData[day] = null; // Файл не найден
+                    }
+                } catch (error) {
+                    todoData[day] = null; // Ошибка загрузки
+                }
+            }
+            // Загружаем сохраненные состояния из localStorage
+            loadTodoStates();
+        }
+
+        // Парсинг текстового файла с заданиями
+        function parseTodoFile(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const todos = [];
+            let currentMainTask = null;
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                if (line.startsWith('*')) {
+                    // Подпункт
+                    const taskText = line.substring(1).trim();
+                    if (currentMainTask) {
+                        currentMainTask.subtasks.push({
+                            id: `${currentMainTask.id}-sub${currentMainTask.subtasks.length + 1}`,
+                            text: taskText,
+                            completed: false
+                        });
+                    }
+                } else {
+                    // Основное задание
+                    const match = line.match(/^(\d+)\)\s*(.+)$/);
+                    if (match) {
+                        const taskNumber = match[1];
+                        const taskText = match[2];
+
+                        currentMainTask = {
+                            id: `task-${taskNumber}`,
+                            text: taskText,
+                            completed: false,
+                            subtasks: []
+                        };
+                        todos.push(currentMainTask);
+                    }
+                }
+            });
+
+            return todos;
+        }
+
+        // Загрузка состояний todo из localStorage
+        function loadTodoStates() {
+            const saved = localStorage.getItem('fitTrackerTodos');
+            if (saved) {
+                try {
+                    const states = JSON.parse(saved);
+                    Object.keys(states).forEach(day => {
+                        if (todoData[day]) {
+                            // Применяем сохраненные состояния
+                            todoData[day].forEach(task => {
+                                const taskState = states[day][task.id];
+                                if (taskState) {
+                                    task.completed = taskState.completed;
+                                    if (taskState.subtasks) {
+                                        task.subtasks.forEach(subtask => {
+                                            if (taskState.subtasks[subtask.id]) {
+                                                subtask.completed = taskState.subtasks[subtask.id];
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error loading todo states:', e);
+                }
+            }
+        }
+
+        // Сохранение состояний todo в localStorage
+        function saveTodoStates() {
+            const states = {};
+            Object.keys(todoData).forEach(day => {
+                if (todoData[day]) {
+                    states[day] = {};
+                    todoData[day].forEach(task => {
+                        states[day][task.id] = {
+                            completed: task.completed,
+                            subtasks: {}
+                        };
+                        task.subtasks.forEach(subtask => {
+                            states[day][task.id].subtasks[subtask.id] = subtask.completed;
+                        });
+                    });
+                }
+            });
+            localStorage.setItem('fitTrackerTodos', JSON.stringify(states));
+        }
+
+        // Создание HTML для todo-списка
+        function createTodoHtml(todos) {
+            if (!todos || todos.length === 0) {
+                return '<div class="no-tasks">Задания не найдены</div>';
+            }
+
+            let html = '<ul class="todo-list">';
+
+            todos.forEach(task => {
+                const taskCompletedClass = task.completed ? 'completed' : '';
+                html += `
+                    <li class="todo-item ${taskCompletedClass}">
+                        <div class="todo-checkbox">
+                            <input type="checkbox"
+                                   id="${task.id}"
+                                   data-task-id="${task.id}"
+                                   ${task.completed ? 'checked' : ''}
+                                   onchange="toggleTask('${task.id}')">
+                            <div class="checkbox-visual"></div>
+                            <div class="checkbox-checkmark"></div>
+                        </div>
+                        <div class="todo-text" onclick="toggleTask('${task.id}')">${task.text}</div>
+                    </li>
+                `;
+
+                // Добавляем подпункты если есть
+                if (task.subtasks && task.subtasks.length > 0) {
+                    html += '<ul class="todo-sublist">';
+                    task.subtasks.forEach(subtask => {
+                        const subtaskCompletedClass = subtask.completed ? 'completed' : '';
+                        html += `
+                            <li class="todo-subitem ${subtaskCompletedClass}">
+                                <div class="todo-checkbox">
+                                    <input type="checkbox"
+                                           id="${subtask.id}"
+                                           data-task-id="${subtask.id}"
+                                           ${subtask.completed ? 'checked' : ''}
+                                           onchange="toggleTask('${subtask.id}')">
+                                    <div class="checkbox-visual"></div>
+                                    <div class="checkbox-checkmark"></div>
+                                </div>
+                                <div class="todo-text" onclick="toggleTask('${subtask.id}')">${subtask.text}</div>
+                            </li>
+                        `;
+                    });
+                    html += '</ul>';
+                }
+            });
+
+            html += '</ul>';
+            return html;
+        }
+
+        // Переключение состояния задачи
+        function toggleTask(taskId) {
+            // Ищем задачу по ID
+            Object.keys(todoData).forEach(day => {
+                if (todoData[day]) {
+                    todoData[day].forEach(task => {
+                        if (task.id === taskId) {
+                            task.completed = !task.completed;
+                            const checkbox = document.getElementById(taskId);
+                            if (checkbox) {
+                                checkbox.checked = task.completed;
+                            }
+                            const todoItem = checkbox.closest('.todo-item');
+                            if (todoItem) {
+                                todoItem.classList.toggle('completed', task.completed);
+                            }
+                        } else if (task.subtasks) {
+                            task.subtasks.forEach(subtask => {
+                                if (subtask.id === taskId) {
+                                    subtask.completed = !subtask.completed;
+                                    const checkbox = document.getElementById(taskId);
+                                    if (checkbox) {
+                                        checkbox.checked = subtask.completed;
+                                    }
+                                    const todoSubitem = checkbox.closest('.todo-subitem');
+                                    if (todoSubitem) {
+                                        todoSubitem.classList.toggle('completed', subtask.completed);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            saveTodoStates();
+        }
 
         // Инициализация при загрузке
         window.addEventListener('load', () => {
@@ -899,10 +1402,12 @@
 
         function initializeApp() {
             loadActivityData();
-            renderWorkoutBlocks();
-            renderActivityGrid();
-            updateStats();
-            setupEventListeners();
+            loadAllTodoFiles().then(() => {
+                renderWorkoutBlocks();
+                renderActivityGrid();
+                updateStats();
+                setupEventListeners();
+            });
         }
 
         // Загрузка данных активности
@@ -930,29 +1435,22 @@
             workoutProgram.forEach((workout, index) => {
                 const block = document.createElement('div');
                 block.className = 'workout-block';
+
+                // Добавляем класс focused для выбранного блока
                 if (index === selectedWorkout - 1) {
                     block.classList.add('focused');
                 }
 
-                const isCompleted = checkWorkoutCompleted(workout.day);
-
+                // Создаем пустой блок с номером и названием дня
                 block.innerHTML = `
                     <div class="workout-number">${workout.day}</div>
                     <div class="workout-day">${workout.name}</div>
-                    <div class="workout-exercises">
-                        ${workout.exercises.map(ex => `
-                            <div class="exercise-tag">
-                                <span class="exercise-icon">${exerciseIcons[ex]}</span>
-                                <span>${ex}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="workout-status ${isCompleted ? 'completed' : ''}">
-                        ${isCompleted ? '✓ Выполнено' : 'Не выполнено'}
-                    </div>
                 `;
 
-                block.addEventListener('click', () => selectWorkout(workout.day));
+                block.addEventListener('click', () => {
+                    selectWorkout(workout.day);
+                    openWorkoutModal(workout);
+                });
                 track.appendChild(block);
             });
 
@@ -1191,9 +1689,58 @@
             document.getElementById('longest-streak').textContent = longestStreak;
             document.getElementById('total-workouts').textContent = totalWorkouts;
 
-            // Обновление выполненных тренировок
-            const completedCount = workoutProgram.filter(w => checkWorkoutCompleted(w.day)).length;
-            document.getElementById('completed-count').textContent = completedCount;
+            // Обновление выполненных тренировок (всегда 0)
+            // const completedCount = workoutProgram.filter(w => checkWorkoutCompleted(w.day)).length;
+            // document.getElementById('completed-count').textContent = completedCount;
+            document.getElementById('completed-count').textContent = '0';
+        }
+
+  
+        // Функции для модального окна
+        function openWorkoutModal(workout) {
+            const modal = document.getElementById('workout-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+
+            // Устанавливаем заголовок
+            modalTitle.textContent = `День ${workout.day} - ${workout.name}`;
+
+            // Отображаем todo-список для этого дня
+            const dayTodos = todoData[workout.day];
+            modalContent.innerHTML = createTodoHtml(dayTodos);
+
+            // Показываем модальное окно
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Блокируем прокрутку фона
+        }
+
+        function closeWorkoutModal() {
+            const modal = document.getElementById('workout-modal');
+            modal.classList.remove('show');
+            document.body.style.overflow = ''; // Возвращаем прокрутку
+        }
+
+        // Добавим обработчики для модального окна в setupEventListeners
+        function setupModalListeners() {
+            const modal = document.getElementById('workout-modal');
+            const modalClose = document.getElementById('modal-close');
+
+            // Закрытие по клику на крестик
+            modalClose.addEventListener('click', closeWorkoutModal);
+
+            // Закрытие по клику на оверлей
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeWorkoutModal();
+                }
+            });
+
+            // Закрытие по клавише Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    closeWorkoutModal();
+                }
+            });
         }
 
         // Установка обработчиков событий
@@ -1240,6 +1787,9 @@
                     }
                 }
             });
+
+            // Устанавливаем обработчики для модального окна
+            setupModalListeners();
         }
     </script>
 </body>
