@@ -34,6 +34,11 @@
             --accent-blue: #4ECDC4;
             --accent-purple: #C77DFF;
             --accent-coral: #FF6B9D;
+            /* Новая цветовая схема для активности */
+            --lime-green: #D4ED4A;
+            --light-green: #98D98E;
+            --medium-green: #3CB371;
+            --swamp-green: #2F5233;
         }
 
         * {
@@ -167,17 +172,16 @@
         }
 
         .workout-block:hover {
-            transform: translateY(-2px) rotate(-1deg);
+            background: var(--accent-blue);
             box-shadow:
-                10px 10px 0 var(--neobrut-black),
+                4px 4px 0 var(--neobrut-black),
                 inset 2px 2px 0 rgba(0,0,0,0.1);
-            background: var(--neobrut-cream);
         }
 
         .workout-block.focused:hover {
-            transform: translateY(-4px) rotate(1deg);
+            background: var(--accent-purple);
             box-shadow:
-                16px 16px 0 var(--neobrut-black),
+                4px 4px 0 var(--neobrut-black),
                 inset 2px 2px 0 rgba(0,0,0,0.1);
         }
 
@@ -799,25 +803,25 @@
             box-shadow: none;
         }
 
-        /* Уровни активности - Яркие цвета */
+        /* Уровни активности - Зеленая градация */
         .activity-cell[data-activity="0"] {
             background: var(--neobrut-lightgray);
         }
 
         .activity-cell[data-activity="30"] {
-            background: var(--warning-yellow);
+            background: var(--lime-green);
         }
 
         .activity-cell[data-activity="60"] {
-            background: var(--neobrut-orange);
+            background: var(--light-green);
         }
 
         .activity-cell[data-activity="90"] {
-            background: var(--neobrut-pink);
+            background: var(--medium-green);
         }
 
         .activity-cell[data-activity="120"] {
-            background: var(--accent-purple);
+            background: var(--swamp-green);
         }
 
         .activity-cell.today {
@@ -1153,6 +1157,23 @@
             }
         }
 
+        /* Отключаем hover-эффекты на мобильных устройствах при свайпе */
+        @media (hover: none) and (pointer: coarse) {
+            .workout-block:hover {
+                background: var(--neobrut-white);
+                box-shadow:
+                    6px 6px 0 var(--neobrut-black),
+                    inset 2px 2px 0 rgba(0,0,0,0.1);
+            }
+
+            .workout-block.focused:hover {
+                background: var(--neobrut-white);
+                box-shadow:
+                    8px 8px 0 var(--neobrut-black),
+                    inset 2px 2px 0 rgba(0,0,0,0.1);
+            }
+        }
+
         /* Анимация появления */
         @keyframes slideIn {
             from {
@@ -1255,16 +1276,16 @@
                     <div class="legend-color" style="background: var(--neobrut-lightgray);"></div>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--warning-yellow);"></div>
+                    <div class="legend-color" style="background: var(--lime-green);"></div>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--neobrut-orange);"></div>
+                    <div class="legend-color" style="background: var(--light-green);"></div>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--neobrut-pink);"></div>
+                    <div class="legend-color" style="background: var(--medium-green);"></div>
                 </div>
                 <div class="legend-item">
-                    <div class="legend-color" style="background: var(--accent-purple);"></div>
+                    <div class="legend-color" style="background: var(--swamp-green);"></div>
                 </div>
                 <span>Больше</span>
             </div>
@@ -2192,17 +2213,36 @@
                 }
             });
 
-            // Свайп для мобильных
+            // Свайп для мобильных с предотвращением hover-эффектов
             let touchStartX = 0;
+            let isSwiping = false;
             const track = document.getElementById('workout-track');
 
             track.addEventListener('touchstart', (e) => {
                 touchStartX = e.touches[0].clientX;
-            });
+                isSwiping = false;
+                const workoutBlocks = document.querySelectorAll('.workout-block');
+
+                // Временно отключаем hover-эффекты
+                workoutBlocks.forEach(block => {
+                    block.style.transition = 'none';
+                });
+            }, { passive: true });
+
+            track.addEventListener('touchmove', (e) => {
+                isSwiping = true;
+            }, { passive: true });
 
             track.addEventListener('touchend', (e) => {
                 const touchEndX = e.changedTouches[0].clientX;
                 const diff = touchStartX - touchEndX;
+
+                // Возвращаем hover-эффекты
+                setTimeout(() => {
+                    workoutBlocks.forEach(block => {
+                        block.style.transition = '';
+                    });
+                }, 100);
 
                 if (Math.abs(diff) > 50) { // Минимальная дистанция свайпа
                     if (diff > 0 && selectedWorkout < 7) {
