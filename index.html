@@ -85,7 +85,13 @@
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--neobrut-black);
-            text-shadow: 3px 3px 0 var(--neobrut-yellow);
+            text-shadow:
+                1px 1px 0 rgba(255, 255, 255, 0.1),
+                2px 2px 0 rgba(0, 0, 0, 0.05),
+                3px 3px 0 rgba(0, 0, 0, 0.05),
+                4px 4px 0 rgba(0, 0, 0, 0.05);
+            position: relative;
+            display: inline-block;
         }
 
         .workout-counter {
@@ -110,7 +116,7 @@
         .workout-track {
             display: flex;
             gap: 20px;
-            padding: 0 20px;
+            padding: 20px 40px; /* Увеличиваем padding по бокам для места под масштаб */
             overflow-x: auto;
             scroll-behavior: smooth;
             scrollbar-width: none;
@@ -147,10 +153,13 @@
             overflow: hidden;
         }
 
-        /* 3D-эффект при фокусе */
+        /* 3D-эффект при фокусе - используем изменения размера вместо scale */
         .workout-block.focused {
             opacity: 1;
-            transform: scale(1.05) rotate(0deg) translateZ(20px);
+            width: 170px; /* Увеличиваем размер вместо scale */
+            height: 170px;
+            margin: -10px; /* Компенсируем увеличение размера */
+            transform: rotate(0deg) translateY(-2px);
             box-shadow:
                 12px 12px 0 var(--neobrut-black),
                 inset 2px 2px 0 rgba(0,0,0,0.1);
@@ -158,7 +167,7 @@
         }
 
         .workout-block:hover {
-            transform: scale(0.98) rotate(-1deg) translateY(-2px);
+            transform: translateY(-2px) rotate(-1deg);
             box-shadow:
                 10px 10px 0 var(--neobrut-black),
                 inset 2px 2px 0 rgba(0,0,0,0.1);
@@ -166,7 +175,7 @@
         }
 
         .workout-block.focused:hover {
-            transform: scale(1.08) rotate(1deg) translateY(-4px) translateZ(30px);
+            transform: translateY(-4px) rotate(1deg);
             box-shadow:
                 16px 16px 0 var(--neobrut-black),
                 inset 2px 2px 0 rgba(0,0,0,0.1);
@@ -174,21 +183,21 @@
 
         .workout-number {
             position: absolute;
-            top: 12px;
-            left: 12px;
-            width: 40px;
-            height: 40px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-8deg);
+            width: 60px;
+            height: 60px;
             background: var(--neobrut-orange);
             border: 3px solid var(--neobrut-black);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 28px;
             font-weight: 900;
             box-shadow: 4px 4px 0 var(--neobrut-black);
             color: var(--neobrut-white);
             border-radius: 12px;
-            transform: rotate(-8deg);
             z-index: 2;
         }
 
@@ -345,6 +354,44 @@
             margin: 0;
         }
 
+        /* Убираем синюю подсветку для всех интерактивных элементов */
+        .todo-list * {
+            outline: none !important;
+        }
+
+        .todo-list *:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Отключаем выделение текста при клике */
+        .todo-item,
+        .todo-subitem,
+        .todo-text,
+        .todo-expand,
+        .todo-checkbox {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Дополнительно отключаем подсветку при клике на мобильных */
+        @media (hover: none) and (pointer: coarse) {
+            .todo-item:active,
+            .todo-subitem:active,
+            .todo-expand:active {
+                -webkit-tap-highlight-color: transparent;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+        }
+
         .todo-item {
             display: flex;
             align-items: flex-start;
@@ -384,6 +431,7 @@
             height: 100%;
             cursor: pointer;
             z-index: 2;
+            outline: none; /* Убираем синюю рамку при клике */
         }
 
         .checkbox-visual {
@@ -426,6 +474,7 @@
             color: var(--neobrut-darkgray);
             user-select: none;
             cursor: pointer;
+            outline: none; /* Убираем синюю рамку при клике */
         }
 
         .todo-item.completed .todo-text {
@@ -437,7 +486,12 @@
         .todo-sublist {
             list-style: none;
             padding: 0;
-            margin: 10px 0 0 39px;
+            margin: 10px 0 0 0;
+            display: none; /* Скрыты по умолчанию */
+        }
+
+        .todo-sublist.expanded {
+            display: block;
         }
 
         .todo-subitem {
@@ -479,6 +533,17 @@
         .todo-subitem .todo-text {
             font-size: 14px;
             font-weight: 500;
+            outline: none; /* Убираем синюю рамку при клике */
+        }
+
+        .todo-subitem.completed {
+            opacity: 0.7;
+            background: var(--success-green) !important;
+        }
+
+        .todo-subitem.completed .todo-text {
+            text-decoration: line-through;
+            opacity: 0.8;
         }
 
         /* Маркер для подпунктов */
@@ -491,6 +556,50 @@
             margin-right: 8px;
             flex-shrink: 0;
             margin-top: 6px;
+        }
+
+        /* Кнопка раскрытия */
+        .todo-expand {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            margin-left: 10px;
+            background: var(--neobrut-yellow);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .todo-expand:hover {
+            transform: scale(1.05);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        .todo-expand:active {
+            transform: scale(0.95) rotate(180deg);
+        }
+
+        .todo-expand svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .todo-expand.expanded svg {
+            transform: rotate(180deg);
+        }
+
+        /* Обертка для текста с кнопкой */
+        .todo-text-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
         }
 
         /* Сообщение об отсутствии заданий */
@@ -547,12 +656,18 @@
         }
 
         .activity-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--neobrut-black);
-            text-shadow: 2px 2px 0 var(--neobrut-blue);
+            text-shadow:
+                1px 1px 0 rgba(255, 255, 255, 0.1),
+                2px 2px 0 rgba(0, 0, 0, 0.05),
+                3px 3px 0 rgba(0, 0, 0, 0.05),
+                4px 4px 0 rgba(0, 0, 0, 0.05);
+            position: relative;
+            display: inline-block;
         }
 
         .activity-legend {
@@ -1189,67 +1304,53 @@
         let selectedWorkout = 1;
         let todoData = {}; // Хранение состояния todo-списков
 
-        // Загрузка всех todo-файлов при инициализации
-        async function loadAllTodoFiles() {
-            // Пытаемся загрузить файлы с сервера
-            for (let day = 1; day <= 7; day++) {
-                try {
-                    const response = await fetch(`forjson/${day}day.txt`);
-                    if (response.ok) {
-                        const text = await response.text();
-                        todoData[day] = parseTodoFile(text);
-                    } else {
-                        todoData[day] = null; // Файл не найден
+        // Инициализация todo-списков
+        function initializeTodoLists() {
+            todoData = {
+                1: [
+                    {
+                        id: 'task-1',
+                        text: 'покушать',
+                        completed: false,
+                        subtasks: []
+                    },
+                    {
+                        id: 'task-2',
+                        text: 'пробежка',
+                        completed: false,
+                        subtasks: [
+                            {
+                                id: 'task-2-sub1',
+                                text: '2км',
+                                completed: false
+                            },
+                            {
+                                id: 'task-2-sub2',
+                                text: '3км',
+                                completed: false
+                            }
+                        ]
+                    },
+                    {
+                        id: 'task-3',
+                        text: 'спать',
+                        completed: false,
+                        subtasks: []
                     }
-                } catch (error) {
-                    todoData[day] = null; // Ошибка загрузки
-                }
-            }
+                ],
+                2: null, // Можно добавить позже
+                3: null,
+                4: null,
+                5: null,
+                6: null,
+                7: null
+            };
+
             // Загружаем сохраненные состояния из localStorage
             loadTodoStates();
         }
 
-        // Парсинг текстового файла с заданиями
-        function parseTodoFile(text) {
-            const lines = text.split('\n').filter(line => line.trim());
-            const todos = [];
-            let currentMainTask = null;
-
-            lines.forEach(line => {
-                line = line.trim();
-                if (!line) return;
-
-                if (line.startsWith('*')) {
-                    // Подпункт
-                    const taskText = line.substring(1).trim();
-                    if (currentMainTask) {
-                        currentMainTask.subtasks.push({
-                            id: `${currentMainTask.id}-sub${currentMainTask.subtasks.length + 1}`,
-                            text: taskText,
-                            completed: false
-                        });
-                    }
-                } else {
-                    // Основное задание
-                    const match = line.match(/^(\d+)\)\s*(.+)$/);
-                    if (match) {
-                        const taskNumber = match[1];
-                        const taskText = match[2];
-
-                        currentMainTask = {
-                            id: `task-${taskNumber}`,
-                            text: taskText,
-                            completed: false,
-                            subtasks: []
-                        };
-                        todos.push(currentMainTask);
-                    }
-                }
-            });
-
-            return todos;
-        }
-
+        
         // Загрузка состояний todo из localStorage
         function loadTodoStates() {
             const saved = localStorage.getItem('fitTrackerTodos');
@@ -1310,6 +1411,8 @@
 
             todos.forEach(task => {
                 const taskCompletedClass = task.completed ? 'completed' : '';
+                const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+
                 html += `
                     <li class="todo-item ${taskCompletedClass}">
                         <div class="todo-checkbox">
@@ -1321,13 +1424,22 @@
                             <div class="checkbox-visual"></div>
                             <div class="checkbox-checkmark"></div>
                         </div>
-                        <div class="todo-text" onclick="toggleTask('${task.id}')">${task.text}</div>
+                        <div class="todo-text-wrapper">
+                            <div class="todo-text" onclick="toggleTask('${task.id}')">${task.text}</div>
+                            ${hasSubtasks ? `
+                                <div class="todo-expand" onclick="toggleSublist('${task.id}')" id="expand-${task.id}">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <path d="M6 9l6 6 6-6"/>
+                                    </svg>
+                                </div>
+                            ` : ''}
+                        </div>
                     </li>
                 `;
 
                 // Добавляем подпункты если есть
-                if (task.subtasks && task.subtasks.length > 0) {
-                    html += '<ul class="todo-sublist">';
+                if (hasSubtasks) {
+                    html += `<ul class="todo-sublist" id="sublist-${task.id}">`;
                     task.subtasks.forEach(subtask => {
                         const subtaskCompletedClass = subtask.completed ? 'completed' : '';
                         html += `
@@ -1391,6 +1503,17 @@
             saveTodoStates();
         }
 
+        // Переключение видимости подпунктов
+        function toggleSublist(taskId) {
+            const sublist = document.getElementById(`sublist-${taskId}`);
+            const expandBtn = document.getElementById(`expand-${taskId}`);
+
+            if (sublist && expandBtn) {
+                sublist.classList.toggle('expanded');
+                expandBtn.classList.toggle('expanded');
+            }
+        }
+
         // Инициализация при загрузке
         window.addEventListener('load', () => {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -1402,12 +1525,11 @@
 
         function initializeApp() {
             loadActivityData();
-            loadAllTodoFiles().then(() => {
-                renderWorkoutBlocks();
-                renderActivityGrid();
-                updateStats();
-                setupEventListeners();
-            });
+            initializeTodoLists();
+            renderWorkoutBlocks();
+            renderActivityGrid();
+            updateStats();
+            setupEventListeners();
         }
 
         // Загрузка данных активности
@@ -1441,10 +1563,9 @@
                     block.classList.add('focused');
                 }
 
-                // Создаем пустой блок с номером и названием дня
+                // Создаем пустой блок только с номером дня
                 block.innerHTML = `
                     <div class="workout-number">${workout.day}</div>
-                    <div class="workout-day">${workout.name}</div>
                 `;
 
                 block.addEventListener('click', () => {
@@ -1703,7 +1824,7 @@
             const modalContent = document.getElementById('modal-content');
 
             // Устанавливаем заголовок
-            modalTitle.textContent = `День ${workout.day} - ${workout.name}`;
+            modalTitle.textContent = `День ${workout.day}`;
 
             // Отображаем todo-список для этого дня
             const dayTodos = todoData[workout.day];
