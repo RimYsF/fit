@@ -670,14 +670,14 @@
         }
 
         .activity-header {
-            margin-bottom: 10px;
+            margin-bottom: 0;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
         }
 
         .activity-title {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.1em;
@@ -689,6 +689,9 @@
                 4px 4px 0 rgba(0, 0, 0, 0.05);
             position: relative;
             display: inline-block;
+            margin: 0 0 -25px 0;
+            padding: 8px 16px;
+            z-index: 1;
         }
 
         .activity-legend {
@@ -723,8 +726,8 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 400px;
-            max-height: calc(100vh - 450px);
+            min-height: 500px;
+            max-height: calc(100vh - 350px);
         }
 
         .calendar-container {
@@ -797,17 +800,21 @@
             touch-action: manipulation;
         }
 
-        /* Удалены hover-эффекты - ячейки больше не интерактивны */
-        /* .activity-cell:hover {
-            transform: translateY(-3px) scale(1.1);
-            box-shadow: 5px 5px 0 var(--neobrut-black);
-        } */
+        /* Эффекты для ячеек с активностью */
+        .activity-cell:not(.empty) {
+            cursor: pointer;
+        }
 
-        /* Удален active-эффект - ячейки больше не интерактивны */
-        /* .activity-cell:active {
-            transform: translateY(0) scale(0.95);
+        .activity-cell:not(.empty):hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            z-index: 10;
+        }
+
+        .activity-cell:not(.empty):active {
+            transform: translateY(0) scale(0.98);
             box-shadow: 2px 2px 0 var(--neobrut-black);
-        } */
+        }
 
         .activity-cell.empty {
             background: transparent;
@@ -885,17 +892,17 @@
         .year-btn {
             background: var(--neobrut-yellow);
             border: 3px solid var(--neobrut-black);
-            padding: 10px 16px;
+            padding: 6px 12px;
             font-weight: 800;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
             border-radius: 8px;
             color: var(--neobrut-black);
             box-shadow: 3px 3px 0 var(--neobrut-black);
             touch-action: manipulation;
-            min-width: 50px;
-            min-height: 50px;
+            min-width: 38px;
+            min-height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -936,7 +943,7 @@
 
         .year-nav {
             display: flex;
-            gap: 15px;
+            gap: 8px;
             align-items: center;
         }
 
@@ -1181,9 +1188,6 @@
     <div class="workout-section">
         <div class="workout-header">
             <h1 class="workout-title">Тренировочная Программа</h1>
-            <div class="workout-counter">
-                <span id="completed-count">0</span> / 7
-            </div>
         </div>
 
         <div class="workout-carousel">
@@ -1197,12 +1201,6 @@
     <div class="activity-section">
         <div class="activity-header">
             <h2 class="activity-title">Активность</h2>
-            <div class="year-nav">
-                <button class="year-btn" id="prev-year">←</button>
-                <span class="current-year" id="current-year">2024</span>
-                <button class="year-btn" id="next-year">→</button>
-                <button class="reset-btn" id="reset-activity" title="Сбросить всю активность">🔄</button>
-            </div>
         </div>
 
         <!-- Вертикальный календарь активности -->
@@ -1864,11 +1862,7 @@
         // Рендеринг вертикального календаря активности
         function renderActivityGrid() {
             const container = document.getElementById('calendar-months');
-            const yearElement = document.getElementById('current-year');
             const tooltip = document.getElementById('activity-tooltip');
-
-            // Обновляем отображение года
-            yearElement.textContent = currentYear;
 
             // Очищаем контейнер
             container.innerHTML = '';
@@ -1968,10 +1962,14 @@
                                 tooltip.classList.remove('show');
                             });
 
-                            // Удален обработчик клика - пользователь не может устанавливать активность вручную
-                            // cell.addEventListener('click', () => {
-                            //     recordActivity(currentDate);
-                            // });
+                            // Добавляем обработчик клика для сброса активности
+                            cell.addEventListener('click', () => {
+                                if (activity > 0) {
+                                    if (confirm(`Сбросить активность за ${currentDate.toLocaleDateString('ru-RU')}?`)) {
+                                        resetActivityForDate(currentDate);
+                                    }
+                                }
+                            });
 
                             currentDay++;
                         } else {
@@ -1996,8 +1994,48 @@
             return activityData[key] || 0;
         }
 
-        // Функция recordActivity удалена - активность теперь устанавливается автоматически
-        // при выполнении всех задач тренировки в функции checkAndRecordActivity()
+        // Функция для сброса активности за определенную дату
+        function resetActivityForDate(date) {
+            const dateKey = formatDateKey(date);
+
+            // Удаляем активность за эту дату
+            delete activityData[dateKey];
+            saveActivityData();
+
+            // Сбрасываем todos для дней тренировок, которые соответствуют этой дате
+            Object.keys(todoData).forEach(day => {
+                const workoutDate = getWorkoutDate(parseInt(day));
+                if (formatDateKey(workoutDate) === dateKey) {
+                    // Сбрасываем все задачи для этого дня
+                    todoData[day].forEach(task => {
+                        task.completed = false;
+                        // Сбрасываем все подзадачи
+                        if (task.subtasks) {
+                            task.subtasks.forEach(subtask => {
+                                subtask.completed = false;
+                            });
+                        }
+                    });
+                    saveTodoStates();
+
+                    // Если модальное окно открыто для этого дня, обновляем его
+                    const modal = document.getElementById('workout-modal');
+                    if (modal.classList.contains('show')) {
+                        const modalTitle = document.getElementById('modal-title');
+                        if (modalTitle.textContent.includes(`День ${day}`)) {
+                            const modalContent = document.getElementById('modal-content');
+                            modalContent.innerHTML = createTodoHtml(todoData[day]);
+                        }
+                    }
+                }
+            });
+
+            // Перерисовываем календарь
+            renderActivityGrid();
+
+            // Проверяем и обновляем активность на основе текущих состояний задач
+            checkAndRecordActivity();
+        }
 
         // Форматирование ключа даты
         function formatDateKey(date) {
@@ -2060,25 +2098,6 @@
 
         // Установка обработчиков событий
         function setupEventListeners() {
-            // Навигация по годам
-            document.getElementById('prev-year').addEventListener('click', () => {
-                currentYear--;
-                renderActivityGrid();
-            });
-
-            document.getElementById('next-year').addEventListener('click', () => {
-                currentYear++;
-                renderActivityGrid();
-            });
-
-            // Сброс активности
-            document.getElementById('reset-activity').addEventListener('click', () => {
-                if (confirm('Вы уверены, что хотите сбросить всю активность? Это действие нельзя отменить.')) {
-                    resetAllActivity();
-                    renderActivityGrid();
-                }
-            });
-
             // Прокрутка с клавиатуры
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft' && selectedWorkout > 1) {
