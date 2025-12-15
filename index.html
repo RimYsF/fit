@@ -719,7 +719,7 @@
             background: rgba(255, 255, 255, 0.7);
             border: 4px solid var(--neobrut-black);
             border-radius: 12px;
-            padding: 15px;
+            padding: 30px;
             box-shadow: 6px 6px 0 var(--neobrut-black);
             margin-top: 15px;
             flex: 1;
@@ -734,9 +734,14 @@
             width: 100%;
             flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: visible;
             scrollbar-width: thin;
             scrollbar-color: var(--neobrut-gray) transparent;
+        }
+
+        .calendar-wrapper {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            overflow: visible;
         }
 
         .calendar-container::-webkit-scrollbar {
@@ -777,6 +782,7 @@
             display: flex;
             gap: 8px;
             margin-bottom: 8px;
+            overflow: visible;
         }
 
         .calendar-weekday {
@@ -848,11 +854,6 @@
             background: var(--swamp-green);
         }
 
-        .activity-cell.today {
-            outline: 4px solid var(--neobrut-orange);
-            outline-offset: 2px;
-        }
-
         .activity-cell .date-number {
             position: absolute;
             top: 50%;
@@ -862,6 +863,32 @@
             font-weight: 700;
             color: var(--neobrut-black);
             opacity: 0.7;
+        }
+
+        /* Делаем текущий день постоянно выпирающим (3D-эффект) */
+        .activity-cell.today {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            border: 2px solid var(--neobrut-black);
+            z-index: 10;
+        }
+
+        /* Для текущего дня убираем эффекты наведения и нажатия */
+        .activity-cell.today:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        .activity-cell.today:active {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        /* Исключаем пустые ячейки из 3D-эффекта */
+        .activity-cell.today.empty {
+            transform: none;
+            box-shadow: none;
+            border: 2px solid transparent;
         }
 
         /* Легенда вертикальная */
@@ -882,6 +909,97 @@
             flex-shrink: 0;
         }
 
+        /* Оверлей для обучения свайпу */
+        .swipe-hint-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .swipe-hint-overlay.show {
+            opacity: 1;
+            pointer-events: none; /* Оставляем none чтобы не блокировать свайп */
+        }
+
+        .swipe-hint-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .swipe-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--neobrut-orange);
+            border: 4px solid var(--neobrut-black);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 6px 6px 0 var(--neobrut-black);
+            animation: swipeCircleMotion 2s ease-in-out infinite;
+        }
+
+        .circle-arrow {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 16px solid var(--neobrut-black);
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
+
+        @keyframes swipeCircleMotion {
+            0% {
+                transform: translateX(-100px);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateX(100px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-100px);
+                opacity: 0.3;
+            }
+        }
+
+        .swipe-text {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: textPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes textPulse {
+            0%, 100% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+
+  
         .year-selector {
             display: flex;
             justify-content: space-between;
@@ -1205,9 +1323,21 @@
 
         <!-- Вертикальный календарь активности -->
         <div class="activity-grid-vertical">
+            <!-- Оверлей для обучения свайпу -->
+            <div class="swipe-hint-overlay" id="swipeHintOverlay">
+                <div class="swipe-hint-content">
+                    <div class="swipe-circle" id="swipeCircle">
+                        <div class="circle-arrow"></div>
+                    </div>
+                    <div class="swipe-text">Смахни для смены года</div>
+                </div>
+            </div>
+
             <div class="calendar-container">
-                <div class="calendar-months" id="calendar-months">
-                    <!-- Месяцы генерируются JavaScript -->
+                <div class="calendar-wrapper">
+                    <div class="calendar-months" id="calendar-months">
+                        <!-- Месяцы генерируются JavaScript -->
+                    </div>
                 </div>
             </div>
 
@@ -1685,13 +1815,14 @@
             initializeApp();
         });
 
-        function initializeApp() {
+            function initializeApp() {
             loadActivityData();
             initializeTodoLists();
             // После загрузки состояний проверяем и обновляем родительские задачи
             updateAllParentTasks();
             renderWorkoutBlocks();
             renderActivityGrid();
+            initSwipeTutorial();
             setupEventListeners();
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
@@ -1860,10 +1991,27 @@
         }
 
         // Рендеринг вертикального календаря активности
-        function renderActivityGrid() {
+        function renderActivityGrid(isForward = true) {
             const container = document.getElementById('calendar-months');
             const tooltip = document.getElementById('activity-tooltip');
+            const calendarWrapper = document.querySelector('.calendar-wrapper');
 
+            // Если контейнер не пустой, анимируем смену года
+            if (container.children.length > 0) {
+                // Анимируем исчезновение
+                calendarWrapper.style.transform = isForward ? 'translateX(-50px)' : 'translateX(50px)';
+                calendarWrapper.style.opacity = '0';
+
+                setTimeout(() => {
+                    renderCalendarContent(container, tooltip, calendarWrapper, isForward);
+                }, 150);
+            } else {
+                renderCalendarContent(container, tooltip, calendarWrapper, isForward);
+            }
+        }
+
+        // Функция для рендеринга контента календаря
+        function renderCalendarContent(container, tooltip, calendarWrapper, isForward) {
             // Очищаем контейнер
             container.innerHTML = '';
 
@@ -1883,6 +2031,10 @@
                 // Создаем контейнер для месяца
                 const monthDiv = document.createElement('div');
                 monthDiv.className = 'calendar-month';
+                // Добавляем ID для текущего месяца
+                if (month === today.getMonth() && currentYear === today.getFullYear()) {
+                    monthDiv.id = 'current-month';
+                }
 
                 // Заголовок месяца
                 const monthHeader = document.createElement('div');
@@ -1964,7 +2116,8 @@
 
                             // Добавляем обработчик клика для сброса активности
                             cell.addEventListener('click', () => {
-                                if (activity > 0) {
+                                // Всегда позволяем кликать по текущему дню или дням с активностью
+                                if (activity > 0 || dateKey === todayKey) {
                                     if (confirm(`Сбросить активность за ${currentDate.toLocaleDateString('ru-RU')}?`)) {
                                         resetActivityForDate(currentDate);
                                     }
@@ -1985,6 +2138,23 @@
 
                 container.appendChild(monthDiv);
             }
+
+            // Анимируем появление
+            if (calendarWrapper) {
+                calendarWrapper.style.transform = 'translateX(0)';
+                calendarWrapper.style.opacity = '1';
+            }
+
+            // Прокручиваем к текущему месяцу с задержкой
+            setTimeout(() => {
+                const currentMonthElement = document.getElementById('current-month');
+                if (currentMonthElement) {
+                    currentMonthElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, 300); // Небольшая задержка для завершения анимации
         }
 
         
@@ -2107,6 +2277,106 @@
                 }
             });
 
+            // Свайп для переключения года в календаре активности
+            let calendarTouchStartX = 0;
+            let calendarTouchStartY = 0;
+            let calendarIsSwiping = false;
+            const calendarGrid = document.querySelector('.activity-grid-vertical');
+
+            calendarGrid.addEventListener('touchstart', (e) => {
+                calendarTouchStartX = e.touches[0].clientX;
+                calendarTouchStartY = e.touches[0].clientY;
+                calendarIsSwiping = false;
+            }, { passive: true });
+
+            calendarGrid.addEventListener('touchmove', (e) => {
+                const deltaX = Math.abs(e.touches[0].clientX - calendarTouchStartX);
+                const deltaY = Math.abs(e.touches[0].clientY - calendarTouchStartY);
+
+                // Определяем, что это горизонтальный свайп
+                if (deltaX > deltaY && deltaX > 20) {
+                    calendarIsSwiping = true;
+                }
+            }, { passive: true });
+
+            calendarGrid.addEventListener('touchend', (e) => {
+                if (!calendarIsSwiping) return;
+
+                const touchEndX = e.changedTouches[0].clientX;
+                const diff = calendarTouchStartX - touchEndX;
+
+                if (Math.abs(diff) > 50) { // Минимальная дистанция свайпа
+                    // Скрываем обучалку при первом свайпе
+                    hideSwipeHint();
+
+                    if (diff > 0) {
+                        // Свайп влево - следующий год
+                        currentYear++;
+                        renderActivityGrid(true);
+                    } else {
+                        // Свайп вправо - прошлый год
+                        currentYear--;
+                        renderActivityGrid(false);
+                    }
+                }
+            });
+
+            // Свайп мышью для десктопа
+            let mouseStartX = 0;
+            let mouseIsDown = false;
+            let mouseIsSwiping = false;
+
+            calendarGrid.addEventListener('mousedown', (e) => {
+                // Игнорируем клики по ячейкам активности
+                if (e.target.classList.contains('activity-cell') || e.target.closest('.activity-cell')) {
+                    return;
+                }
+                mouseStartX = e.clientX;
+                mouseIsDown = true;
+                mouseIsSwiping = false;
+                calendarGrid.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            calendarGrid.addEventListener('mousemove', (e) => {
+                if (!mouseIsDown) return;
+                const deltaX = Math.abs(e.clientX - mouseStartX);
+                if (deltaX > 20) {
+                    mouseIsSwiping = true;
+                    calendarGrid.style.cursor = 'grabbing';
+                }
+            });
+
+            calendarGrid.addEventListener('mouseup', (e) => {
+                if (!mouseIsDown) return;
+                calendarGrid.style.cursor = 'default';
+
+                if (mouseIsSwiping) {
+                    const diff = mouseStartX - e.clientX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            // Свайп влево - следующий год
+                            currentYear++;
+                            renderActivityGrid(true);
+                        } else {
+                            // Свайп вправо - прошлый год
+                            currentYear--;
+                            renderActivityGrid(false);
+                        }
+                    }
+                }
+                mouseIsDown = false;
+                mouseIsSwiping = false;
+            });
+
+            calendarGrid.addEventListener('mouseleave', () => {
+                if (mouseIsDown) {
+                    calendarGrid.style.cursor = 'default';
+                    mouseIsDown = false;
+                    mouseIsSwiping = false;
+                }
+            });
+
             // Свайп для мобильных с предотвращением hover-эффектов
             let touchStartX = 0;
             let isSwiping = false;
@@ -2149,6 +2419,47 @@
 
             // Устанавливаем обработчики для модального окна
             setupModalListeners();
+        }
+
+        // Функции для обучения свайпу
+        let swipeHintActive = false;
+
+        function initSwipeTutorial() {
+            // Проверяем, показывали ли уже обучалку
+            if (localStorage.getItem('swipeHintShown')) {
+                return;
+            }
+
+            const overlay = document.getElementById('swipeHintOverlay');
+
+            // Показываем оверлей с задержкой
+            setTimeout(() => {
+                overlay.classList.add('show');
+                swipeHintActive = true;
+            }, 1500); // Задержка 1.5 секунды после загрузки
+        }
+
+        function hideSwipeHint() {
+            if (!swipeHintActive) return;
+
+            const overlay = document.getElementById('swipeHintOverlay');
+            overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none';
+
+            // Сохраняем, что показали обучалку
+            localStorage.setItem('swipeHintShown', 'true');
+            swipeHintActive = false;
+
+            // Удаляем элемент после анимации
+            setTimeout(() => {
+                overlay.remove();
+            }, 500);
+        }
+
+        // Сброс обучения (для тестирования)
+        function resetSwipeTutorial() {
+            localStorage.removeItem('swipeHintShown');
+            swipeHintActive = false;
         }
     </script>
 </body>
