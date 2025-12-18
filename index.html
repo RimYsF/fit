@@ -651,6 +651,166 @@
             box-shadow: 2px 2px 0 var(--neobrut-black);
         }
 
+        /* Overlay модальное окно для задач */
+        .todo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--neobrut-white);
+            z-index: 100;
+            display: none;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            border-bottom: 4px solid var(--neobrut-black);
+        }
+
+        .todo-overlay.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .todo-modal {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: var(--neobrut-white);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .todo-modal-header {
+            background: var(--neobrut-yellow);
+            padding: 7.5px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--neobrut-black);
+            flex-shrink: 0;
+        }
+
+        .todo-modal-title {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            margin: 0;
+        }
+
+        .todo-modal-close {
+            width: 20px;
+            height: 20px;
+            background: var(--neobrut-red);
+            border: 1.5px solid var(--neobrut-black);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 1.5px 1.5px 0 var(--neobrut-black);
+            transition: all 0.2s;
+        }
+
+        .todo-modal-close:hover {
+            transform: scale(1.1);
+            background: var(--neobrut-orange);
+        }
+
+        .todo-modal-close:active {
+            transform: scale(0.95) translate(1px, 1px);
+            box-shadow: 1px 1px 0 var(--neobrut-black);
+        }
+
+        .todo-modal-content {
+            padding: 10px;
+            overflow-y: auto;
+            flex: 1;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Уменьшаем все элементы задач внутри модального окна на 5% (почти полный размер) */
+        .todo-modal-content {
+            transform: scale(0.95);
+            transform-origin: top left;
+            height: 105%;
+        }
+
+        .todo-modal-content .todo-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            border-width: 2px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            border-radius: 8px;
+        }
+
+        .todo-modal-content .todo-text {
+            font-size: 16px;
+            line-height: 1.3;
+        }
+
+        .todo-modal-content .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            margin-top: 1px;
+            border-width: 3px;
+            border-radius: 6px;
+        }
+
+        .todo-modal-content .todo-checkbox::after {
+            top: -3px;
+            left: 3px;
+            width: 8px;
+            height: 15px;
+            border-width: 3px;
+            border-radius: 2px;
+        }
+
+        .todo-modal-content .subtask-list {
+            margin-left: 32px;
+            margin-top: 8px;
+        }
+
+        .todo-modal-content .subtask-item {
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            border-width: 2px;
+            border-radius: 8px;
+        }
+
+        .todo-modal-content .todo-expand {
+            width: 14px;
+            height: 14px;
+            margin-left: 5px;
+            border-width: 1.5px;
+            border-radius: 4px;
+            box-shadow: 1.5px 1.5px 0 var(--neobrut-black);
+        }
+
+        .todo-modal-content .chevron {
+            width: 0;
+            height: 0;
+            border-left: 4px solid var(--neobrut-black);
+            border-top: 2.5px solid transparent;
+            border-bottom: 2.5px solid transparent;
+            margin-top: 3px;
+            transition: transform 0.2s;
+        }
+
+        .todo-modal-content .todo-bullet {
+            width: 4px;
+            height: 4px;
+            margin-right: 4px;
+            margin-top: 3px;
+        }
+
         /* Нижняя секция с активностью */
         .activity-section {
             padding: 15px;
@@ -1457,7 +1617,20 @@
             </div>
         </div>
 
-        <!-- Контейнер для полноэкранных задач -->
+        <!-- Overlay модальное окно для задач -->
+        <div class="todo-overlay" id="todo-overlay">
+            <div class="todo-modal">
+                <div class="todo-modal-header">
+                    <h1 class="todo-modal-title" id="todo-modal-title">День 1 - Задания</h1>
+                    <button class="todo-modal-close" id="todo-modal-close">×</button>
+                </div>
+                <div class="todo-modal-content" id="todo-modal-content">
+                    <!-- Задачи будут вставлены сюда -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Контейнер для задач (оставляем для совместимости) -->
         <div class="todo-content" id="todo-content" style="display: none;">
             <!-- Здесь будет отображаться todo-список в полноэкранном режиме -->
         </div>
@@ -1990,6 +2163,7 @@
             renderActivityGrid();
             initSwipeTutorial();
             setupEventListeners();
+            setupModalListeners();
 
             // Устанавливаем начальный год в дисплее
             const yearDisplay = document.getElementById('year-display');
@@ -2383,54 +2557,73 @@
   
         // Функции для режима отображения задач
         function openWorkoutModal(workout) {
-            const workoutSection = document.querySelector('.workout-section');
-            const todoContent = document.getElementById('todo-content');
-            const workoutHeader = document.querySelector('.workout-header');
+            const todoOverlay = document.getElementById('todo-overlay');
+            const todoModalContent = document.getElementById('todo-modal-content');
+            const todoModalTitle = document.getElementById('todo-modal-title');
 
-            // Добавляем кнопку "назад" в заголовок
-            workoutHeader.innerHTML = `
-                <h1 class="workout-title">День ${workout.day} - Задания</h1>
-                <button class="todos-back-btn" onclick="closeWorkoutModal()">×</button>
-            `;
+            // Устанавливаем заголовок
+            todoModalTitle.textContent = `День ${workout.day} - Задания`;
 
             // Отображаем todo-список для этого дня
             const dayTodos = todoData[workout.day];
-            todoContent.innerHTML = createTodoHtml(dayTodos);
+            todoModalContent.innerHTML = createTodoHtml(dayTodos);
 
-            // Переключаем в режим отображения задач
-            workoutSection.classList.add('show-todos');
+            // Показываем overlay с анимацией
+            todoOverlay.style.display = 'block';
+            setTimeout(() => {
+                todoOverlay.classList.add('show');
+            }, 10);
+
+            // Блокируем прокрутку карусели
+            const workoutTrack = document.getElementById('workout-track');
+            workoutTrack.style.overflow = 'hidden';
+            workoutTrack.style.pointerEvents = 'none';
 
             // Запоминаем текущий выбранный день
             selectedWorkout = workout.day;
         }
 
         function closeWorkoutModal() {
-            const workoutSection = document.querySelector('.workout-section');
-            const workoutHeader = document.querySelector('.workout-header');
-            const todoContent = document.getElementById('todo-content');
+            const todoOverlay = document.getElementById('todo-overlay');
+            const workoutTrack = document.getElementById('workout-track');
 
-            // Восстанавливаем исходный заголовок
-            workoutHeader.innerHTML = `
-                <h1 class="workout-title">Тренировочная Программа</h1>
-            `;
+            // Скрываем overlay с анимацией
+            todoOverlay.classList.remove('show');
+            setTimeout(() => {
+                todoOverlay.style.display = 'none';
+            }, 300);
 
-            // Убираем класс режима отображения задач
-            workoutSection.classList.remove('show-todos');
+            // Восстанавливаем прокрутку карусели
+            workoutTrack.style.overflow = 'auto';
+            workoutTrack.style.pointerEvents = 'auto';
 
             // Прокручиваем к выбранному дню
-            const track = document.getElementById('workout-track');
-            const currentBlock = track.querySelector(`[data-day="${selectedWorkout}"]`);
+            const currentBlock = workoutTrack.querySelector(`[data-day="${selectedWorkout}"]`);
             if (currentBlock) {
                 currentBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
         }
 
-        // Добавим обработчики для режима задач
+        // Добавим обработчики для модального окна
         function setupModalListeners() {
+            const todoOverlay = document.getElementById('todo-overlay');
+            const todoModalClose = document.getElementById('todo-modal-close');
+
+            // Закрытие по клику на крестик
+            todoModalClose.addEventListener('click', closeWorkoutModal);
+
+            // Закрытие по клику на заголовок (только если это не кнопка)
+            const todoModalHeader = document.querySelector('.todo-modal-header');
+            todoModalHeader.addEventListener('click', (e) => {
+                if (e.target === todoModalHeader) {
+                    closeWorkoutModal();
+                }
+            });
+
             // Закрытие по клавише Escape
             document.addEventListener('keydown', (e) => {
-                const workoutSection = document.querySelector('.workout-section');
-                if (e.key === 'Escape' && workoutSection.classList.contains('show-todos')) {
+                const todoOverlay = document.getElementById('todo-overlay');
+                if (e.key === 'Escape' && todoOverlay.classList.contains('show')) {
                     closeWorkoutModal();
                 }
             });
