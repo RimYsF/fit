@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="no-swipe-navigation">
 
 <head>
     <meta charset="utf-8">
@@ -61,6 +61,15 @@
             padding-bottom: env(safe-area-inset-bottom);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* Предотвращение свайп-навигации в мобильных браузерах */
+        html.no-swipe-navigation,
+        html.no-swipe-navigation body {
+            overscroll-behavior-x: none;
+            touch-action: pan-y pinch-zoom;
         }
 
         /* Глобальный фон на весь экран */
@@ -91,7 +100,7 @@
         }
 
         .workout-header {
-            padding: 0 20px 10px;
+            padding: 0 20px 2.5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -128,18 +137,18 @@
         .workout-carousel {
             position: relative;
             overflow: hidden;
-            padding: 10px 0;
+            padding: 2px 0;
         }
 
         .workout-track {
             display: flex;
             gap: 20px;
-            padding: 20px 40px; /* Увеличиваем padding по бокам для места под масштаб */
+            padding: 5px 40px; /* Уменьшили вертикальный отступ */
             overflow-x: auto;
             scroll-behavior: smooth;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
         }
 
         .workout-track::-webkit-scrollbar {
@@ -171,30 +180,17 @@
             overflow: hidden;
         }
 
-        /* 3D-эффект при фокусе - используем изменения размера вместо scale */
-        .workout-block.focused {
-            opacity: 1;
-            width: 170px; /* Увеличиваем размер вместо scale */
-            height: 170px;
-            margin: -10px; /* Компенсируем увеличение размера */
-            transform: rotate(0deg) translateY(-2px);
-            box-shadow:
-                12px 12px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0,0,0,0.1);
-            z-index: 10;
+        /* Базовые элементы */
+        .workout-block {
+            opacity: 0.8;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .workout-block:hover {
-            background: var(--accent-blue);
+            background: var(--neobrut-white);
+            transform: translateY(-2px);
             box-shadow:
-                4px 4px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0,0,0,0.1);
-        }
-
-        .workout-block.focused:hover {
-            background: var(--accent-purple);
-            box-shadow:
-                4px 4px 0 var(--neobrut-black),
+                8px 8px 0 var(--neobrut-black),
                 inset 2px 2px 0 rgba(0,0,0,0.1);
         }
 
@@ -245,125 +241,7 @@
             opacity: 0.8;
         }
 
-        /* Модальное окно */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .modal-container {
-            background: var(--neobrut-white);
-            border: 5px solid var(--neobrut-black);
-            border-radius: 20px;
-            box-shadow:
-                12px 12px 0 var(--neobrut-black),
-                0 0 0 2px var(--neobrut-black);
-            width: 80%;
-            height: 80%;
-            max-width: 900px;
-            max-height: 700px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transform: scale(0.9) rotate(-2deg);
-            animation: modalAppear 0.3s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes modalAppear {
-            to {
-                transform: scale(1) rotate(0deg);
-            }
-        }
-
-        .modal-header {
-            background: var(--neobrut-yellow);
-            border-bottom: 5px solid var(--neobrut-black);
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-
-        .modal-header::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 20px;
-            width: 60px;
-            height: 20px;
-            background: var(--neobrut-pink);
-            border: 3px solid var(--neobrut-black);
-            border-radius: 10px;
-            transform: rotate(-5deg);
-        }
-
-        .modal-title {
-            font-size: 28px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--neobrut-black);
-        }
-
-        .modal-close {
-            width: 50px;
-            height: 50px;
-            background: var(--neobrut-red);
-            border: 4px solid var(--neobrut-black);
-            border-radius: 15px;
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--neobrut-white);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            transition: all 0.2s;
-            transform: rotate(0deg);
-        }
-
-        .modal-close:hover {
-            transform: rotate(90deg) scale(1.1);
-            background: var(--neobrut-orange);
-        }
-
-        .modal-close:active {
-            transform: rotate(90deg) scale(0.95) translate(2px, 2px);
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-        }
-
-        .modal-content {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            background: var(--neobrut-white);
-        }
-
+      
         /* Todo-список в стиле необрутализма */
         .todo-list {
             list-style: none;
@@ -631,27 +509,146 @@
             border-radius: 12px;
         }
 
-        /* Мобильная адаптация модального окна */
+        /* Мобильная адаптация режима задач */
         @media (max-width: 768px) {
-            .modal-container {
-                width: 95%;
-                height: 90%;
-                border-width: 3px;
+            .workout-section.show-todos #todo-content {
+                padding: 10px;
+                height: 190px; /* Финальная высота для лучшего отображения */
             }
 
-            .modal-title {
+            .workout-section.show-todos .workout-title {
                 font-size: 20px;
             }
 
-            .modal-close {
-                width: 40px;
-                height: 40px;
-                font-size: 24px;
+            .workout-section.show-todos .todo-item {
+                margin-bottom: 10px;
+                padding: 8px;
             }
 
-            .modal-content {
-                padding: 20px;
+            .workout-section.show-todos .todo-text {
+                font-size: 14px;
             }
+        }
+
+        /* Режим отображения задач в верхней секции */
+        .workout-section.show-todos {
+            /* Секция остается того же размера, что и с каруселью */
+            display: flex;
+            flex-direction: column;
+            padding: 0; /* Убираем вертикальные отступы */
+        }
+
+        .workout-section.show-todos .workout-header {
+            background: var(--neobrut-yellow);
+            border-bottom: 5px solid var(--neobrut-black);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 0 var(--neobrut-black);
+            flex-shrink: 0;
+        }
+
+        .workout-section.show-todos .workout-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            width: 60px;
+            height: 20px;
+            background: var(--neobrut-pink);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 10px;
+            transform: rotate(-5deg);
+        }
+
+        .workout-section.show-todos .workout-title {
+            font-size: 24px;
+        }
+
+        .workout-section.show-todos .workout-carousel {
+            display: none;
+        }
+
+        
+        /* Базовые стили для контента задач */
+        #todo-content {
+            display: none;
+            overflow-y: auto;
+        }
+
+        /* Переопределяем display для режима задач (большая специфичность) */
+        .workout-section.show-todos #todo-content {
+            display: block !important;
+            padding: 15px;
+            background: var(--neobrut-white);
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 190px; /* Финальная высота для лучшего отображения */
+            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+            /* Убираем flex чтобы height работал */
+            flex: none;
+        }
+
+        /* Уменьшаем размер элементов задач в компактном режиме */
+        .workout-section.show-todos .todo-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            border-width: 2px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            border-radius: 8px;
+        }
+
+        .workout-section.show-todos .todo-text {
+            font-size: 16px;
+        }
+
+        .workout-section.show-todos .todo-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            margin-top: 1px;
+        }
+
+        .workout-section.show-todos .checkbox-visual {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .workout-section.show-todos .checkbox-checkmark {
+            width: 12px;
+            height: 10px;
+            border-width: 2px;
+        }
+
+        .todos-back-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--neobrut-red);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            transition: all 0.2s;
+            transform: rotate(0deg);
+        }
+
+        .todos-back-btn:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: var(--neobrut-orange);
+        }
+
+        .todos-back-btn:active {
+            transform: rotate(90deg) scale(0.95) translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
         }
 
         /* Нижняя секция с активностью */
@@ -726,22 +723,79 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 500px;
-            max-height: calc(100vh - 350px);
+            min-height: 400px;
+            max-height: calc(100vh - 320px);
+            pointer-events: auto;
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 480px) {
+            .activity-grid-vertical {
+                padding: 15px;
+                min-height: 350px;
+                max-height: calc(100vh - 280px);
+                margin-top: 10px;
+            }
+        }
+
+        /* Слайдер для календарей */
+        .activity-slider {
+            display: flex;
+            gap: 0;
+            flex: 1;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            pointer-events: auto;
         }
 
         .calendar-container {
-            width: 100%;
             flex: 1;
-            overflow-y: auto;
-            overflow-x: visible;
+            width: 100%;
+            height: 100%;
+            overflow-y: scroll;
+            overflow-x: hidden;
             scrollbar-width: thin;
             scrollbar-color: var(--neobrut-gray) transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: transform 0.3s ease-out;
+            pointer-events: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .calendar-container:nth-child(1) {
+            transform: translateX(-100%);
+        }
+
+        .calendar-container:nth-child(2) {
+            transform: translateX(0);
+            z-index: 1;
+        }
+
+        .calendar-container:nth-child(3) {
+            transform: translateX(100%);
+        }
+
+        .calendar-container.empty-calendar {
+            opacity: 0.3;
+        }
+
+        .calendar-container.empty-calendar .calendar-months {
+            pointer-events: none;
         }
 
         .calendar-wrapper {
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
             overflow: visible;
+            height: 100%;
+            min-height: 100%;
+        }
+
+        .calendar-months {
+            height: 100%;
+            overflow-y: visible;
+            overflow-x: visible;
         }
 
         .calendar-container::-webkit-scrollbar {
@@ -780,26 +834,26 @@
 
         .calendar-week {
             display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
+            gap: 5px;
+            margin-bottom: 5px;
             overflow: visible;
         }
 
         .calendar-weekday {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             color: var(--neobrut-gray);
-            width: 32px;
+            width: 28px;
             text-align: center;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             text-transform: uppercase;
         }
 
         .activity-cell {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--neobrut-black);
-            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 6px;
             cursor: default;
             transition: all 0.2s;
             position: relative;
@@ -891,12 +945,39 @@
             border: 2px solid transparent;
         }
 
+        /* Нижняя панель с элементами управления */
+        .activity-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* Мобильная адаптация для activity-controls */
+        @media (max-width: 480px) {
+            .activity-controls {
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .contrib-legend-vertical {
+                padding: 6px 10px;
+                gap: 6px;
+                font-size: 10px;
+            }
+
+            .legend-color {
+                width: 8px;
+                height: 8px;
+            }
+        }
+
         /* Легенда вертикальная */
         .contrib-legend-vertical {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-top: 10px;
             gap: 8px;
             font-size: 12px;
             font-weight: 700;
@@ -907,6 +988,75 @@
             border-radius: 8px;
             box-shadow: 3px 3px 0 var(--neobrut-black);
             flex-shrink: 0;
+        }
+
+        /* Переключатель года - минималистичный */
+        .year-switcher {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .year-btn {
+            background: transparent;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--neobrut-yellow);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .year-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .year-btn:active {
+            transform: scale(0.95) translate(1px, 1px);
+            box-shadow: 1px 1px 0 var(--neobrut-black);
+        }
+
+        .year-display {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--neobrut-black);
+            min-width: 45px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--neobrut-white);
+            padding: 4px 8px;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 4px;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 480px) {
+            .year-switcher {
+                gap: 8px;
+            }
+
+            .year-btn {
+                width: 26px;
+                height: 26px;
+                font-size: 16px;
+            }
+
+            .year-display {
+                font-size: 12px;
+                min-width: 40px;
+                padding: 3px 6px;
+            }
         }
 
         /* Оверлей для обучения свайпу */
@@ -1234,13 +1384,6 @@
                     6px 6px 0 var(--neobrut-black),
                     inset 2px 2px 0 rgba(0,0,0,0.1);
             }
-
-            .workout-block.focused:hover {
-                background: var(--neobrut-white);
-                box-shadow:
-                    8px 8px 0 var(--neobrut-black),
-                    inset 2px 2px 0 rgba(0,0,0,0.1);
-            }
         }
 
         /* Анимация появления */
@@ -1313,6 +1456,11 @@
                 <!-- Блоки тренировок будут сгенерированы JavaScript -->
             </div>
         </div>
+
+        <!-- Контейнер для полноэкранных задач -->
+        <div class="todo-content" id="todo-content" style="display: none;">
+            <!-- Здесь будет отображаться todo-список в полноэкранном режиме -->
+        </div>
     </div>
 
     <!-- Нижняя секция с активностью -->
@@ -1329,37 +1477,68 @@
                     <div class="swipe-circle" id="swipeCircle">
                         <div class="circle-arrow"></div>
                     </div>
-                    <div class="swipe-text">Смахни для смены года</div>
+                    <div class="swipe-text">Смахни для переключения</div>
                 </div>
             </div>
 
-            <div class="calendar-container">
-                <div class="calendar-wrapper">
-                    <div class="calendar-months" id="calendar-months">
-                        <!-- Месяцы генерируются JavaScript -->
+            <div class="activity-slider">
+                <!-- Пустой блок слева -->
+                <div class="calendar-container empty-calendar">
+                    <div class="calendar-wrapper">
+                        <div class="calendar-months">
+                            <!-- Пустой контент -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Основной календарь -->
+                <div class="calendar-container">
+                    <div class="calendar-wrapper">
+                        <div class="calendar-months" id="calendar-months">
+                            <!-- Месяцы генерируются JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Пустой блок справа -->
+                <div class="calendar-container empty-calendar">
+                    <div class="calendar-wrapper">
+                        <div class="calendar-months">
+                            <!-- Пустой контент -->
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Легенда -->
-            <div class="contrib-legend-vertical">
-                <span>Меньше</span>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--neobrut-lightgray);"></div>
+            <!-- Нижняя панель с легендой и переключателем года -->
+            <div class="activity-controls">
+                <!-- Легенда -->
+                <div class="contrib-legend-vertical">
+                    <span>Меньше</span>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--neobrut-lightgray);"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--lime-green);"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--light-green);"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--medium-green);"></div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--swamp-green);"></div>
+                    </div>
+                    <span>Больше</span>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--lime-green);"></div>
+
+                <!-- Переключатель года -->
+                <div class="year-switcher">
+                    <button class="year-btn" id="year-prev">‹</button>
+                    <span class="year-display" id="year-display">2024</span>
+                    <button class="year-btn" id="year-next">›</button>
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--light-green);"></div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--medium-green);"></div>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: var(--swamp-green);"></div>
-                </div>
-                <span>Больше</span>
             </div>
 
             <!-- Tooltip для активности -->
@@ -1367,19 +1546,6 @@
         </div>
 
       </div>
-
-    <!-- Модальное окно -->
-    <div class="modal-overlay" id="workout-modal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <div class="modal-title" id="modal-title">День 1 - Понедельник</div>
-                <button class="modal-close" id="modal-close">×</button>
-            </div>
-            <div class="modal-content" id="modal-content">
-                <!-- Здесь будет контент -->
-            </div>
-        </div>
-    </div>
 
     <script>
         // Программа тренировок
@@ -1824,6 +1990,13 @@
             renderActivityGrid();
             initSwipeTutorial();
             setupEventListeners();
+
+            // Устанавливаем начальный год в дисплее
+            const yearDisplay = document.getElementById('year-display');
+            if (yearDisplay) {
+                yearDisplay.textContent = currentYear;
+            }
+
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
         }
@@ -1860,11 +2033,7 @@
             workoutProgram.forEach((workout, index) => {
                 const block = document.createElement('div');
                 block.className = 'workout-block';
-
-                // Добавляем класс focused для выбранного блока
-                if (index === selectedWorkout - 1) {
-                    block.classList.add('focused');
-                }
+                block.dataset.day = workout.day;
 
                 // Создаем пустой блок только с номером дня
                 block.innerHTML = `
@@ -1872,29 +2041,22 @@
                 `;
 
                 block.addEventListener('click', () => {
-                    selectWorkout(workout.day);
+                    selectedWorkout = workout.day;
                     openWorkoutModal(workout);
                 });
                 track.appendChild(block);
             });
 
-            // Центрирование на выбранной тренировке
+            // Центрируем на выбранной тренировке при инициализации
             setTimeout(() => {
-                const focusedBlock = track.querySelector('.workout-block.focused');
-                if (focusedBlock) {
-                    focusedBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                const currentBlock = track.querySelector(`[data-day="${selectedWorkout}"]`);
+                if (currentBlock) {
+                    currentBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
                 }
             }, 100);
         }
 
-        // Выбор тренировки
-        function selectWorkout(day) {
-            selectedWorkout = day;
-            document.querySelectorAll('.workout-block').forEach((block, index) => {
-                block.classList.toggle('focused', index === day - 1);
-            });
-        }
-
+        
         // ===== НОВЫЕ ФУНКЦИИ ДЛЯ ПРОЦЕНТНОЙ СИСТЕМЫ =====
 
         // Расчет процента выполнения для отдельной задачи
@@ -2188,13 +2350,13 @@
                     });
                     saveTodoStates();
 
-                    // Если модальное окно открыто для этого дня, обновляем его
-                    const modal = document.getElementById('workout-modal');
-                    if (modal.classList.contains('show')) {
-                        const modalTitle = document.getElementById('modal-title');
-                        if (modalTitle.textContent.includes(`День ${day}`)) {
-                            const modalContent = document.getElementById('modal-content');
-                            modalContent.innerHTML = createTodoHtml(todoData[day]);
+                    // Если режим задач открыт для этого дня, обновляем его
+                    const workoutSection = document.querySelector('.workout-section');
+                    if (workoutSection.classList.contains('show-todos')) {
+                        const workoutTitle = document.querySelector('.workout-title');
+                        if (workoutTitle.textContent.includes(`День ${day}`)) {
+                            const todoContent = document.getElementById('todo-content');
+                            todoContent.innerHTML = createTodoHtml(todoData[day]);
                         }
                     }
                 }
@@ -2219,48 +2381,56 @@
 
   
   
-        // Функции для модального окна
+        // Функции для режима отображения задач
         function openWorkoutModal(workout) {
-            const modal = document.getElementById('workout-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const modalContent = document.getElementById('modal-content');
+            const workoutSection = document.querySelector('.workout-section');
+            const todoContent = document.getElementById('todo-content');
+            const workoutHeader = document.querySelector('.workout-header');
 
-            // Устанавливаем заголовок
-            modalTitle.textContent = `День ${workout.day}`;
+            // Добавляем кнопку "назад" в заголовок
+            workoutHeader.innerHTML = `
+                <h1 class="workout-title">День ${workout.day} - Задания</h1>
+                <button class="todos-back-btn" onclick="closeWorkoutModal()">×</button>
+            `;
 
             // Отображаем todo-список для этого дня
             const dayTodos = todoData[workout.day];
-            modalContent.innerHTML = createTodoHtml(dayTodos);
+            todoContent.innerHTML = createTodoHtml(dayTodos);
 
-            // Показываем модальное окно
-            modal.classList.add('show');
-            document.body.style.overflow = 'hidden'; // Блокируем прокрутку фона
+            // Переключаем в режим отображения задач
+            workoutSection.classList.add('show-todos');
+
+            // Запоминаем текущий выбранный день
+            selectedWorkout = workout.day;
         }
 
         function closeWorkoutModal() {
-            const modal = document.getElementById('workout-modal');
-            modal.classList.remove('show');
-            document.body.style.overflow = ''; // Возвращаем прокрутку
+            const workoutSection = document.querySelector('.workout-section');
+            const workoutHeader = document.querySelector('.workout-header');
+            const todoContent = document.getElementById('todo-content');
+
+            // Восстанавливаем исходный заголовок
+            workoutHeader.innerHTML = `
+                <h1 class="workout-title">Тренировочная Программа</h1>
+            `;
+
+            // Убираем класс режима отображения задач
+            workoutSection.classList.remove('show-todos');
+
+            // Прокручиваем к выбранному дню
+            const track = document.getElementById('workout-track');
+            const currentBlock = track.querySelector(`[data-day="${selectedWorkout}"]`);
+            if (currentBlock) {
+                currentBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
         }
 
-        // Добавим обработчики для модального окна в setupEventListeners
+        // Добавим обработчики для режима задач
         function setupModalListeners() {
-            const modal = document.getElementById('workout-modal');
-            const modalClose = document.getElementById('modal-close');
-
-            // Закрытие по клику на крестик
-            modalClose.addEventListener('click', closeWorkoutModal);
-
-            // Закрытие по клику на оверлей
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeWorkoutModal();
-                }
-            });
-
             // Закрытие по клавише Escape
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                const workoutSection = document.querySelector('.workout-section');
+                if (e.key === 'Escape' && workoutSection.classList.contains('show-todos')) {
                     closeWorkoutModal();
                 }
             });
@@ -2277,107 +2447,155 @@
                 }
             });
 
-            // Свайп для переключения года в календаре активности
+            // Свайп для переключения между календарями
             let calendarTouchStartX = 0;
-            let calendarTouchStartY = 0;
             let calendarIsSwiping = false;
-            const calendarGrid = document.querySelector('.activity-grid-vertical');
+            let currentSlide = 1; // 0 - левый пустой, 1 - центральный, 2 - правый пустой
+            const activitySlider = document.querySelector('.activity-slider');
+            const calendarContainers = document.querySelectorAll('.calendar-container');
 
-            calendarGrid.addEventListener('touchstart', (e) => {
+            // Функция для переключения слайдов
+            function switchSlide(targetSlide) {
+                if (targetSlide < 0 || targetSlide > 2) return;
+
+                currentSlide = targetSlide;
+                calendarContainers.forEach((container, index) => {
+                    const offset = index - currentSlide;
+                    container.style.transform = `translateX(${offset * 100}%)`;
+                    // Устанавливаем z-index так, чтобы все контейнеры могли принимать события
+                    // Активный контейнер имеет наивысший z-index
+                    container.style.zIndex = index === currentSlide ? '2' : '1';
+                });
+            }
+
+            // Инициализация начальных стилей для контейнеров
+            calendarContainers.forEach((container, index) => {
+                const offset = index - currentSlide;
+                container.style.transform = `translateX(${offset * 100}%)`;
+                container.style.zIndex = index === currentSlide ? '2' : '1';
+            });
+
+            // Обработчики для touch свайпов
+            activitySlider.addEventListener('touchstart', (e) => {
+                // Проверяем, что касание внутри activity-slider
+                if (!e.target.closest('.activity-slider')) {
+                    return;
+                }
+                // Предотвращаем распространение события наверх
+                e.stopPropagation();
                 calendarTouchStartX = e.touches[0].clientX;
-                calendarTouchStartY = e.touches[0].clientY;
                 calendarIsSwiping = false;
             }, { passive: true });
 
-            calendarGrid.addEventListener('touchmove', (e) => {
-                const deltaX = Math.abs(e.touches[0].clientX - calendarTouchStartX);
-                const deltaY = Math.abs(e.touches[0].clientY - calendarTouchStartY);
-
-                // Определяем, что это горизонтальный свайп
-                if (deltaX > deltaY && deltaX > 20) {
-                    calendarIsSwiping = true;
+            activitySlider.addEventListener('touchmove', (e) => {
+                // Проверяем, что движение началось внутри activity-slider
+                if (!calendarTouchStartX || !e.target.closest('.activity-slider')) {
+                    return;
                 }
-            }, { passive: true });
 
-            calendarGrid.addEventListener('touchend', (e) => {
-                if (!calendarIsSwiping) return;
+                const deltaX = Math.abs(e.touches[0].clientX - calendarTouchStartX);
+                if (deltaX > 20) {
+                    calendarIsSwiping = true;
+                    // Предотвращаем скролл страницы при свайпе календаря
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            activitySlider.addEventListener('touchend', (e) => {
+                if (!calendarIsSwiping) {
+                    // Сбрасываем начальную позицию если это был не свайп
+                    calendarTouchStartX = 0;
+                    return;
+                }
 
                 const touchEndX = e.changedTouches[0].clientX;
                 const diff = calendarTouchStartX - touchEndX;
 
-                if (Math.abs(diff) > 50) { // Минимальная дистанция свайпа
+                // Сбрасываем переменные после использования
+                const startX = calendarTouchStartX;
+                calendarTouchStartX = 0;
+                calendarIsSwiping = false;
+
+                if (Math.abs(diff) > 50) {
                     // Скрываем обучалку при первом свайпе
                     hideSwipeHint();
 
-                    if (diff > 0) {
-                        // Свайп влево - следующий год
-                        currentYear++;
-                        renderActivityGrid(true);
-                    } else {
-                        // Свайп вправо - прошлый год
-                        currentYear--;
-                        renderActivityGrid(false);
+                    if (diff > 0 && currentSlide < 2) {
+                        // Свайп влево - следующий слайд
+                        switchSlide(currentSlide + 1);
+                    } else if (diff < 0 && currentSlide > 0) {
+                        // Свайп вправо - предыдущий слайд
+                        switchSlide(currentSlide - 1);
                     }
                 }
             });
 
-            // Свайп мышью для десктопа
+            // Свайп мышью для десктопа (отключен на время теста)
+            /*
             let mouseStartX = 0;
             let mouseIsDown = false;
             let mouseIsSwiping = false;
 
-            calendarGrid.addEventListener('mousedown', (e) => {
+            activitySlider.addEventListener('mousedown', (e) => {
                 // Игнорируем клики по ячейкам активности
                 if (e.target.classList.contains('activity-cell') || e.target.closest('.activity-cell')) {
                     return;
                 }
-                mouseStartX = e.clientX;
-                mouseIsDown = true;
-                mouseIsSwiping = false;
-                calendarGrid.style.cursor = 'grabbing';
-                e.preventDefault();
-            });
 
-            calendarGrid.addEventListener('mousemove', (e) => {
+                // Обрабатываем только клики внутри основного календаря
+                const calendarContainer = e.target.closest('.calendar-container');
+                if (calendarContainer && !calendarContainer.classList.contains('empty-calendar')) {
+                    mouseStartX = e.clientX;
+                    mouseIsDown = true;
+                    mouseIsSwiping = false;
+                    e.preventDefault();
+                }
+            });
+            */
+
+            /*
+            activitySlider.addEventListener('mousemove', (e) => {
                 if (!mouseIsDown) return;
                 const deltaX = Math.abs(e.clientX - mouseStartX);
                 if (deltaX > 20) {
                     mouseIsSwiping = true;
-                    calendarGrid.style.cursor = 'grabbing';
                 }
             });
 
-            calendarGrid.addEventListener('mouseup', (e) => {
+            activitySlider.addEventListener('mouseup', (e) => {
                 if (!mouseIsDown) return;
-                calendarGrid.style.cursor = 'default';
 
                 if (mouseIsSwiping) {
                     const diff = mouseStartX - e.clientX;
                     if (Math.abs(diff) > 50) {
-                        if (diff > 0) {
-                            // Свайп влево - следующий год
-                            currentYear++;
-                            renderActivityGrid(true);
-                        } else {
-                            // Свайп вправо - прошлый год
-                            currentYear--;
-                            renderActivityGrid(false);
+                        if (diff > 0 && currentSlide < 2) {
+                            // Свайп влево - следующий слайд
+                            switchSlide(currentSlide + 1);
+                        } else if (diff < 0 && currentSlide > 0) {
+                            // Свайп вправо - предыдущий слайд
+                            switchSlide(currentSlide - 1);
                         }
                     }
                 }
                 mouseIsDown = false;
                 mouseIsSwiping = false;
             });
+            */
 
-            calendarGrid.addEventListener('mouseleave', () => {
-                if (mouseIsDown) {
-                    calendarGrid.style.cursor = 'default';
-                    mouseIsDown = false;
-                    mouseIsSwiping = false;
+            // Клик по пустому блоку для возврата к центру (только по фону)
+            calendarContainers.forEach((container, index) => {
+                if (index !== 1) { // Не для центрального
+                    container.addEventListener('click', (e) => {
+                        // Проверяем, что клик был по фону, а не по скроллбару
+                        if (e.target === container || e.target.classList.contains('calendar-wrapper')) {
+                            switchSlide(1); // Возврат к центру
+                        }
+                    });
                 }
             });
 
-            // Свайп для мобильных с предотвращением hover-эффектов
+            // Свайп для мобильных с предотвращением hover-эффектов (временно отключен)
+            /*
             let touchStartX = 0;
             let isSwiping = false;
             const track = document.getElementById('workout-track');
@@ -2416,6 +2634,64 @@
                     }
                 }
             });
+            */
+
+            // Обработчики для кнопок переключения года
+            const yearPrev = document.getElementById('year-prev');
+            const yearNext = document.getElementById('year-next');
+            const yearDisplay = document.getElementById('year-display');
+
+            yearPrev.addEventListener('click', () => {
+                currentYear--;
+                yearDisplay.textContent = currentYear;
+                renderActivityGrid(false);
+            });
+
+            yearNext.addEventListener('click', () => {
+                currentYear++;
+                yearDisplay.textContent = currentYear;
+                renderActivityGrid(true);
+            });
+
+            // Свайп для прокрутки задач
+            let todoTouchStartY = 0;
+            let todoIsSwiping = false;
+            const todoContent = document.getElementById('todo-content');
+
+            // Обработчики для свайпа задач
+            if (todoContent) {
+                todoContent.addEventListener('touchstart', (e) => {
+                    todoTouchStartY = e.touches[0].clientY;
+                    todoIsSwiping = false;
+                }, { passive: true });
+
+                todoContent.addEventListener('touchmove', (e) => {
+                    if (!todoTouchStartY) return;
+
+                    const deltaY = e.touches[0].clientY - todoTouchStartY;
+
+                    // Определяем, это прокрутка контента или свайп
+                    const scrollTop = todoContent.scrollTop;
+                    const scrollHeight = todoContent.scrollHeight;
+                    const clientHeight = todoContent.clientHeight;
+
+                    // Если можем прокручиваться вверх/вниз, позволяем это делать
+                    if ((deltaY > 0 && scrollTop > 0) || (deltaY < 0 && scrollTop < scrollHeight - clientHeight - 1)) {
+                        return;
+                    }
+
+                    // Если в начале или конце контента, предотвращаем свайп
+                    if (Math.abs(deltaY) > 10) {
+                        todoIsSwiping = true;
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                todoContent.addEventListener('touchend', () => {
+                    todoTouchStartY = 0;
+                    todoIsSwiping = false;
+                }, { passive: true });
+            }
 
             // Устанавливаем обработчики для модального окна
             setupModalListeners();
