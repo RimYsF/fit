@@ -1108,29 +1108,39 @@
         /* Нижняя панель с элементами управления */
         .activity-controls {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: center;
             margin-top: 20px;
-            gap: 15px;
-            flex-wrap: wrap;
+            padding: 0 10px;
         }
 
         /* Мобильная адаптация для activity-controls */
         @media (max-width: 480px) {
             .activity-controls {
-                gap: 10px;
                 margin-top: 15px;
+                padding: 0 5px;
             }
 
             .contrib-legend-vertical {
-                padding: 6px 10px;
-                gap: 6px;
+                padding: 6px 8px;
                 font-size: 10px;
+                gap: 5px;
+            }
+
+            .legend-text {
+                font-size: 9px;
+            }
+
+            .legend-items {
+                gap: 4px;
             }
 
             .legend-color {
                 width: 8px;
                 height: 8px;
+            }
+
+            .year-legend-group {
+                gap: 6px;
             }
         }
 
@@ -1148,6 +1158,21 @@
             border-radius: 8px;
             box-shadow: 3px 3px 0 var(--neobrut-black);
             flex-shrink: 0;
+            flex-wrap: wrap;
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .legend-items {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .year-legend-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         /* Переключатель года - минималистичный */
@@ -1160,13 +1185,13 @@
         .year-btn {
             background: transparent;
             border: none;
-            width: 30px;
-            height: 30px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 10px;
             font-weight: 900;
             color: var(--neobrut-black);
             cursor: pointer;
@@ -1207,15 +1232,19 @@
             }
 
             .year-btn {
-                width: 26px;
-                height: 26px;
-                font-size: 16px;
+                width: 16px;
+                height: 16px;
+                font-size: 9px;
+                box-shadow: 1.5px 1.5px 0 var(--neobrut-black);
+                min-width: 16px;
+                min-height: 16px;
             }
 
             .year-display {
-                font-size: 12px;
-                min-width: 40px;
-                padding: 3px 6px;
+                font-size: 11px;
+                min-width: 36px;
+                padding: 2px 5px;
+                border-width: 1.5px;
             }
         }
 
@@ -1320,17 +1349,19 @@
         .year-btn {
             background: var(--neobrut-yellow);
             border: 3px solid var(--neobrut-black);
-            padding: 6px 12px;
+            padding: 2px;
             font-weight: 800;
-            font-size: 14px;
+            font-size: 10px;
             cursor: pointer;
             transition: all 0.2s;
             border-radius: 8px;
             color: var(--neobrut-black);
             box-shadow: 3px 3px 0 var(--neobrut-black);
             touch-action: manipulation;
-            min-width: 38px;
-            min-height: 38px;
+            min-width: 18px;
+            min-height: 18px;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1687,30 +1718,30 @@
             <div class="activity-controls">
                 <!-- Легенда -->
                 <div class="contrib-legend-vertical">
-                    <span>Меньше</span>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--neobrut-lightgray);"></div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--neobrut-lightgray);"></div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--lime-green);"></div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--light-green);"></div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--medium-green);"></div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--swamp-green);"></div>
+                        </div>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--lime-green);"></div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--light-green);"></div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--medium-green);"></div>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: var(--swamp-green);"></div>
-                    </div>
-                    <span>Больше</span>
-                </div>
 
-                <!-- Переключатель года -->
-                <div class="year-switcher">
-                    <button class="year-btn" id="year-prev">‹</button>
-                    <span class="year-display" id="year-display">2024</span>
-                    <button class="year-btn" id="year-next">›</button>
+                    <!-- Переключатель года теперь внутри легенды -->
+                    <div class="year-switcher">
+                        <button class="year-btn" id="year-prev">‹</button>
+                        <span class="year-display" id="year-display">2024</span>
+                        <button class="year-btn" id="year-next">›</button>
+                    </div>
                 </div>
             </div>
 
@@ -1756,115 +1787,89 @@
                     {
                         id: 'task-1',
                         text: 'покушать',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     },
                     {
                         id: 'task-2',
-                        text: 'пробежка',
-                        completed: false,
-                        subtasks: [
-                            {
-                                id: 'task-2-sub1',
-                                text: '2км',
-                                completed: false
-                            },
-                            {
-                                id: 'task-2-sub2',
-                                text: '3км',
-                                completed: false
-                            }
-                        ]
+                        text: 'пробежка 5км',
+                        completed: false
                     },
                     {
                         id: 'task-3',
                         text: 'спать',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     }
                 ],
                 2: [
                     {
                         id: 'task-4',
                         text: 'Утренняя зарядка',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     },
                     {
                         id: 'task-5',
                         text: 'Пресс',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     }
                 ],
                 3: [
                     {
                         id: 'task-6',
                         text: 'Растяжка',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     },
                     {
                         id: 'task-7',
                         text: 'Отжимания',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     }
                 ],
                 4: [
                     {
                         id: 'task-8',
                         text: 'Приседания',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     },
                     {
                         id: 'task-9',
                         text: 'Планка',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     }
                 ],
                 5: [
                     {
                         id: 'task-10',
                         text: 'Бег',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     },
                     {
                         id: 'task-11',
                         text: 'Гигиеничес процедуры',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     }
                 ],
                 6: [
                     {
                         id: 'task-12',
                         text: 'Йога',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     },
                     {
                         id: 'task-13',
                         text: 'Медитация',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     }
                 ],
                 7: [
                     {
                         id: 'task-14',
                         text: 'Прогулка',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     },
                     {
                         id: 'task-15',
                         text: 'Чтение',
-                        completed: false,
-                        subtasks: []
+                        completed: false
                     }
                 ]
             };
@@ -1887,13 +1892,6 @@
                                 const taskState = states[day][task.id];
                                 if (taskState) {
                                     task.completed = taskState.completed;
-                                    if (taskState.subtasks) {
-                                        task.subtasks.forEach(subtask => {
-                                            if (taskState.subtasks[subtask.id] !== undefined) {
-                                                subtask.completed = taskState.subtasks[subtask.id];
-                                            }
-                                        });
-                                    }
                                 }
                             });
                         }
@@ -1913,12 +1911,8 @@
                     states[day] = {};
                     todoData[day].forEach(task => {
                         states[day][task.id] = {
-                            completed: task.completed,
-                            subtasks: {}
+                            completed: task.completed
                         };
-                        task.subtasks.forEach(subtask => {
-                            states[day][task.id].subtasks[subtask.id] = subtask.completed;
-                        });
                     });
                 }
             });
@@ -1935,7 +1929,6 @@
 
             todos.forEach(task => {
                 const taskCompletedClass = task.completed ? 'completed' : '';
-                const hasSubtasks = task.subtasks && task.subtasks.length > 0;
 
                 html += `
                     <li class="todo-item ${taskCompletedClass}">
@@ -1950,39 +1943,9 @@
                         </div>
                         <div class="todo-text-wrapper">
                             <div class="todo-text" onclick="toggleTask('${task.id}')">${task.text}</div>
-                            ${hasSubtasks ? `
-                                <div class="todo-expand" onclick="toggleSublist('${task.id}')" id="expand-${task.id}">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                        <path d="M6 9l6 6 6-6"/>
-                                    </svg>
-                                </div>
-                            ` : ''}
                         </div>
                     </li>
                 `;
-
-                // Добавляем подпункты если есть
-                if (hasSubtasks) {
-                    html += `<ul class="todo-sublist" id="sublist-${task.id}">`;
-                    task.subtasks.forEach(subtask => {
-                        const subtaskCompletedClass = subtask.completed ? 'completed' : '';
-                        html += `
-                            <li class="todo-subitem ${subtaskCompletedClass}">
-                                <div class="todo-checkbox">
-                                    <input type="checkbox"
-                                           id="${subtask.id}"
-                                           data-task-id="${subtask.id}"
-                                           ${subtask.completed ? 'checked' : ''}
-                                           onchange="toggleTask('${subtask.id}')">
-                                    <div class="checkbox-visual"></div>
-                                    <div class="checkbox-checkmark"></div>
-                                </div>
-                                <div class="todo-text" onclick="toggleTask('${subtask.id}')">${subtask.text}</div>
-                            </li>
-                        `;
-                    });
-                    html += '</ul>';
-                }
             });
 
             html += '</ul>';
@@ -2065,31 +2028,13 @@
 
         // Переключение состояния задачи
         function toggleTask(taskId) {
-            let isSubtask = false;
-
             // Ищем задачу по ID
             Object.keys(todoData).forEach(day => {
                 if (todoData[day]) {
                     todoData[day].forEach(task => {
                         if (task.id === taskId) {
-                            // Это основная задача
+                            // Переключаем состояние задачи
                             task.completed = !task.completed;
-
-                            // Если у задачи есть подзадачи, обновляем их состояние
-                            if (task.subtasks && task.subtasks.length > 0) {
-                                task.subtasks.forEach(subtask => {
-                                    subtask.completed = task.completed;
-                                    const subCheckbox = document.getElementById(subtask.id);
-                                    if (subCheckbox) {
-                                        subCheckbox.checked = task.completed;
-                                        const subItem = subCheckbox.closest('.todo-subitem');
-                                        if (subItem) {
-                                            subItem.classList.toggle('completed', task.completed);
-                                        }
-                                    }
-                                });
-                                console.log(`Родительская задача "${task.text}" переключена, все подзадачи обновлены`);
-                            }
 
                             const checkbox = document.getElementById(taskId);
                             if (checkbox) {
@@ -2099,52 +2044,20 @@
                             if (todoItem) {
                                 todoItem.classList.toggle('completed', task.completed);
                             }
-                        } else if (task.subtasks) {
-                            task.subtasks.forEach(subtask => {
-                                if (subtask.id === taskId) {
-                                    // Это подзадача
-                                    isSubtask = true;
-                                    subtask.completed = !subtask.completed;
-                                    const checkbox = document.getElementById(taskId);
-                                    if (checkbox) {
-                                        checkbox.checked = subtask.completed;
-                                    }
-                                    const todoSubitem = checkbox.closest('.todo-subitem');
-                                    if (todoSubitem) {
-                                        todoSubitem.classList.toggle('completed', subtask.completed);
-                                    }
-                                }
-                            });
                         }
                     });
                 }
             });
 
-            // Сохраняем состояния только если это была основная задача или задача без подзадач
-            if (!isSubtask) {
-                saveTodoStates();
-            }
-
-            // Если это была подзадача, обновляем родительскую задачу
-            if (isSubtask) {
-                updateParentTaskCompletion(taskId);
-            }
+            // Сохраняем состояния
+            saveTodoStates();
 
             // Проверяем процент выполнения и записываем активность
             checkAndRecordActivity();
         }
 
         // Переключение видимости подпунктов
-        function toggleSublist(taskId) {
-            const sublist = document.getElementById(`sublist-${taskId}`);
-            const expandBtn = document.getElementById(`expand-${taskId}`);
-
-            if (sublist && expandBtn) {
-                sublist.classList.toggle('expanded');
-                expandBtn.classList.toggle('expanded');
-            }
-        }
-
+        
         // Инициализация при загрузке
         window.addEventListener('load', () => {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -2157,8 +2070,6 @@
             function initializeApp() {
             loadActivityData();
             initializeTodoLists();
-            // После загрузки состояний проверяем и обновляем родительские задачи
-            updateAllParentTasks();
             renderWorkoutBlocks();
             renderActivityGrid();
             initSwipeTutorial();
@@ -2234,30 +2145,17 @@
         // ===== НОВЫЕ ФУНКЦИИ ДЛЯ ПРОЦЕНТНОЙ СИСТЕМЫ =====
 
         // Расчет процента выполнения для отдельной задачи
-        function getTaskCompletionPercentage(task) {
-            if (task.subtasks && task.subtasks.length > 0) {
-                const completedSubtasks = task.subtasks.filter(st => st.completed).length;
-                return Math.round((completedSubtasks / task.subtasks.length) * 100);
-            }
-            return task.completed ? 100 : 0;
-        }
-
+        
         // Расчет общего процента выполнения для дня
         function calculateCompletionPercentage(day) {
             const tasks = todoData[day];
             if (!tasks || tasks.length === 0) return 0;
 
-            let totalPercentage = 0;
+            const completedTasks = tasks.filter(task => task.completed).length;
+            const percentage = Math.round((completedTasks / tasks.length) * 100);
 
-            tasks.forEach(task => {
-                const taskPercentage = getTaskCompletionPercentage(task);
-                totalPercentage += taskPercentage;
-                console.log(`Задача "${task.text}": ${taskPercentage}%`);
-            });
-
-            const avgPercentage = Math.round(totalPercentage / tasks.length);
-            console.log(`Средний процент для дня ${day}: ${avgPercentage}%`);
-            return avgPercentage;
+            console.log(`День ${day}: ${completedTasks}/${tasks.length} задач выполнено = ${percentage}%`);
+            return percentage;
         }
 
         // Обновление состояния родительской задачи на основе подзадач
@@ -2295,28 +2193,7 @@
             saveTodoStates();
         }
 
-        // Обновление всех родительских задач на основе их подзадач
-        function updateAllParentTasks() {
-            Object.keys(todoData).forEach(day => {
-                if (todoData[day]) {
-                    todoData[day].forEach(task => {
-                        if (task.subtasks && task.subtasks.length > 0) {
-                            const percentage = getTaskCompletionPercentage(task);
-                            const shouldBeCompleted = percentage === 100;
-
-                            // Обновляем состояние если оно не соответствует подзадачам
-                            if (task.completed !== shouldBeCompleted) {
-                                task.completed = shouldBeCompleted;
-                                console.log(`Родительская задача "${task.text}" обновлена на ${shouldBeCompleted ? 'выполнена' : 'не выполнена'}`);
-                            }
-                        }
-                    });
-                }
-            });
-            // Сохраняем обновленные состояния
-            saveTodoStates();
-        }
-
+        
         // ===== КОНЕЦ НОВЫХ ФУНКЦИЙ =====
 
         // Проверка выполнения тренировки
