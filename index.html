@@ -97,6 +97,8 @@
             position: relative;
             box-shadow: 8px 8px 0 var(--neobrut-black);
             flex-shrink: 0;
+            overflow-y: auto;
+            min-height: 50px;
         }
 
         .workout-header {
@@ -833,6 +835,44 @@
             margin-top: 3px;
         }
 
+        /* Горизонтальный разделитель с кнопкой */
+        .divider {
+            height: 4px;
+            background: var(--neobrut-black);
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .divider-button {
+            width: 60px;
+            height: 20px;
+            background: var(--neobrut-yellow);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 1;
+        }
+
+        .divider-button:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            background: var(--neobrut-orange);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        .divider-button:active {
+            transform: translate(-50%, -50%) scale(0.95);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
         /* Нижняя секция с активностью */
         .activity-section {
             padding: 15px;
@@ -905,8 +945,8 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 400px;
-            max-height: calc(100vh - 320px);
+            min-height: 200px;
+            height: 100%;
             pointer-events: auto;
         }
 
@@ -914,8 +954,8 @@
         @media (max-width: 480px) {
             .activity-grid-vertical {
                 padding: 15px;
-                min-height: 350px;
-                max-height: calc(100vh - 280px);
+                min-height: 200px;
+                height: 100%;
                 margin-top: 10px;
             }
         }
@@ -932,23 +972,24 @@
         }
 
         .calendar-container {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            overflow-y: scroll;
-            overflow-x: hidden;
-            scrollbar-width: thin;
-            scrollbar-color: var(--neobrut-gray) transparent;
             position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--neobrut-gray) transparent;
             transition: transform 0.3s ease-out;
             pointer-events: auto;
             -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
         }
 
         .calendar-container:nth-child(1) {
-            transform: translateX(-110%);
+            transform: translateX(-100%);
         }
 
         .calendar-container:nth-child(2) {
@@ -957,7 +998,7 @@
         }
 
         .calendar-container:nth-child(3) {
-            transform: translateX(110%);
+            transform: translateX(100%);
         }
 
         .calendar-container.empty-calendar {
@@ -972,6 +1013,9 @@
             overflow: visible;
             height: 100%;
             min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
         }
 
         .calendar-months {
@@ -2046,6 +2090,11 @@
         <div class="todo-content" id="todo-content" style="display: none;">
             <!-- Здесь будет отображаться todo-список в полноэкранном режиме -->
         </div>
+    </div>
+
+    <!-- Горизонтальная линия-разделитель с кнопкой -->
+    <div class="divider">
+        <div class="divider-button"></div>
     </div>
 
     <!-- Нижняя секция с активностью -->
@@ -3801,6 +3850,98 @@
                     chatIsSwipingDown = false;
                 }, { passive: true });
             }
+        });
+
+        // Функционал перетаскивания разделителя
+        let isDragging = false;
+        let startY = 0;
+        let startTopHeight = 0;
+
+        const dividerButton = document.querySelector('.divider-button');
+        const workoutSection = document.querySelector('.workout-section');
+        const activitySection = document.querySelector('.activity-section');
+        const divider = document.querySelector('.divider');
+
+        // Устанавливаем начальную высоту после загрузки страницы
+        setTimeout(() => {
+            if (!workoutSection.style.height) {
+                workoutSection.style.height = '250px';
+            }
+        }, 100);
+
+        // Функция обновления размеров
+        function updateSizes(clientY) {
+            const deltaY = clientY - startY;
+            const viewportHeight = window.innerHeight;
+            const minTopHeight = 90; // Увеличим на 40px (15 + 10 + 10 + 5) для полного текста "Тренировочная Программа"
+
+            // Получаем реальные размеры элементов
+            const activityHeader = activitySection.querySelector('.activity-header');
+            const activityGrid = document.querySelector('.activity-grid-vertical');
+
+            // Рассчитываем минимальную высоту нижней секции
+            // Высота заголовка + минимальная высота календаря + padding + margin + дополнительное место снизу
+            const headerHeight = activityHeader ? activityHeader.offsetHeight : 60;
+            const calendarMinHeight = 200; // Из CSS min-height
+            const calendarPadding = 60; // 30px padding * 2
+            const calendarMargin = 15; // margin-top
+            const extraBottomSpace = 65; // Дополнительное место для видимости чисел месяца (15 + 15 + 10 + 10 + 5 + 5 + 5)
+            const minBottomHeight = headerHeight + calendarMinHeight + calendarPadding + calendarMargin + extraBottomSpace;
+
+            // Новая высота верхней секции
+            let newTopHeight = startTopHeight + deltaY;
+
+            // Ограничиваем сверху и снизу
+            newTopHeight = Math.max(minTopHeight, newTopHeight);
+            newTopHeight = Math.min(viewportHeight - divider.offsetHeight - minBottomHeight, newTopHeight);
+
+            // Применяем высоту
+            workoutSection.style.height = newTopHeight + 'px';
+        }
+
+        // Обработчики для мыши
+        dividerButton.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startY = e.clientY;
+            startTopHeight = workoutSection.offsetHeight;
+            document.body.style.cursor = 'ns-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            updateSizes(e.clientY);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // Обработчики для touch (мобильные устройства)
+        dividerButton.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            startTopHeight = workoutSection.offsetHeight;
+            e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            updateSizes(e.touches[0].clientY);
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Предотвращаем выделение текста при клике на кнопку
+        dividerButton.addEventListener('selectstart', (e) => {
+            e.preventDefault();
         });
     </script>
 </body>
