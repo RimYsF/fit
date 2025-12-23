@@ -72,6 +72,18 @@
             touch-action: pan-y pinch-zoom;
         }
 
+        /* Глобальное скрытие scrollbar для всех элементов */
+        *::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+
+        * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
         /* Глобальный фон на весь экран */
         body::after {
             content: '';
@@ -93,7 +105,7 @@
             background: rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(5px);
             border-bottom: 4px solid var(--neobrut-black);
-            padding: 15px 0;
+            padding: 0;
             position: relative;
             box-shadow: 8px 8px 0 var(--neobrut-black);
             flex-shrink: 0;
@@ -102,10 +114,8 @@
         }
 
         .workout-header {
-            padding: 0 20px 2.5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 0;
+            display: none; /* Скрываем пустой header */
         }
 
         .workout-title {
@@ -139,13 +149,15 @@
         .workout-carousel {
             position: relative;
             overflow: hidden;
-            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            height: 100%;
         }
 
         .workout-track {
             display: flex;
             gap: 20px;
-            padding: 5px 40px; /* Уменьшили вертикальный отступ */
+            padding: 0 40px;
             overflow-x: auto;
             scroll-behavior: smooth;
             scrollbar-width: none;
@@ -875,7 +887,7 @@
 
         /* Нижняя секция с активностью */
         .activity-section {
-            padding: 15px;
+            padding: 10px 15px;
             background: linear-gradient(
                 rgba(255, 255, 255, 0.2),
                 rgba(255, 255, 255, 0.3)
@@ -893,6 +905,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+            padding-bottom: 0;
         }
 
         .activity-title {
@@ -908,8 +921,8 @@
                 4px 4px 0 rgba(0, 0, 0, 0.05);
             position: relative;
             display: inline-block;
-            margin: 0 0 -25px 0;
-            padding: 8px 16px;
+            margin: 0;
+            padding: 6px 12px 0 12px;
             z-index: 1;
         }
 
@@ -938,9 +951,9 @@
             background: rgba(255, 255, 255, 0.7);
             border: 4px solid var(--neobrut-black);
             border-radius: 12px;
-            padding: 30px;
+            padding: 20px;
             box-shadow: 6px 6px 0 var(--neobrut-black);
-            margin-top: 15px;
+            margin-top: 0;
             flex: 1;
             overflow: hidden;
             display: flex;
@@ -953,10 +966,10 @@
         /* Мобильная адаптация */
         @media (max-width: 480px) {
             .activity-grid-vertical {
-                padding: 15px;
+                padding: 12px;
                 min-height: 200px;
                 height: 100%;
-                margin-top: 10px;
+                margin-top: 0;
             }
         }
 
@@ -979,8 +992,6 @@
             height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
-            scrollbar-width: thin;
-            scrollbar-color: var(--neobrut-gray) transparent;
             transition: transform 0.3s ease-out;
             pointer-events: auto;
             -webkit-overflow-scrolling: touch;
@@ -1024,34 +1035,19 @@
             overflow-x: visible;
         }
 
-        .calendar-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .calendar-container::-webkit-scrollbar-track {
-            background: var(--neobrut-lightgray);
-            border-radius: 4px;
-        }
-
-        .calendar-container::-webkit-scrollbar-thumb {
-            background: var(--neobrut-gray);
-            border-radius: 4px;
-            border: 2px solid var(--neobrut-black);
-        }
-
         .calendar-month {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .calendar-month-header {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 800;
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             color: var(--neobrut-black);
             background: rgba(255, 190, 11, 0.8);
             border: 3px solid var(--neobrut-black);
-            padding: 8px 16px;
+            padding: 5px 12px;
             border-radius: 8px;
             box-shadow: 3px 3px 0 var(--neobrut-black);
             display: inline-block;
@@ -1060,24 +1056,26 @@
 
         .calendar-week {
             display: flex;
-            gap: 5px;
-            margin-bottom: 5px;
+            gap: 8px;
+            margin-bottom: 4px;
             overflow: visible;
+            width: 100%;
         }
 
         .calendar-weekday {
             font-size: 10px;
             font-weight: 700;
             color: var(--neobrut-gray);
-            width: 28px;
+            flex: 1;
             text-align: center;
             margin-bottom: 4px;
             text-transform: uppercase;
         }
 
         .activity-cell {
-            width: 28px;
-            height: 28px;
+            flex: 1;
+            height: 18px;
+            min-width: 0;
             border: 2px solid var(--neobrut-black);
             border-radius: 6px;
             cursor: default;
@@ -1175,14 +1173,14 @@
         .activity-controls {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 12px;
             padding: 0 10px;
         }
 
         /* Мобильная адаптация для activity-controls */
         @media (max-width: 480px) {
             .activity-controls {
-                margin-top: 15px;
+                margin-top: 8px;
                 padding: 0 5px;
             }
 
@@ -1214,13 +1212,13 @@
         .contrib-legend-vertical {
             display: flex;
             align-items: center;
-            gap: 16px;
-            font-size: 14px;
+            gap: 12px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--neobrut-black);
             background: rgba(248, 249, 250, 0.8);
             border: 3px solid var(--neobrut-black);
-            padding: 3px 20px;
+            padding: 2px 15px;
             border-radius: 8px;
             box-shadow: 3px 3px 0 var(--neobrut-black);
             flex-shrink: 0;
@@ -1313,97 +1311,6 @@
             }
         }
 
-        /* Оверлей для обучения свайпу */
-        .swipe-hint-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            pointer-events: none;
-        }
-
-        .swipe-hint-overlay.show {
-            opacity: 1;
-            pointer-events: none; /* Оставляем none чтобы не блокировать свайп */
-        }
-
-        .swipe-hint-content {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 30px;
-        }
-
-        .swipe-circle {
-            width: 60px;
-            height: 60px;
-            background: var(--neobrut-orange);
-            border: 4px solid var(--neobrut-black);
-            border-radius: 50%;
-            position: relative;
-            box-shadow: 6px 6px 0 var(--neobrut-black);
-            animation: swipeCircleMotion 2s ease-in-out infinite;
-        }
-
-        .circle-arrow {
-            position: absolute;
-            top: 50%;
-            right: 15px;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-left: 16px solid var(--neobrut-black);
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
-        }
-
-        @keyframes swipeCircleMotion {
-            0% {
-                transform: translateX(-100px);
-                opacity: 0.3;
-            }
-            50% {
-                transform: translateX(100px);
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(-100px);
-                opacity: 0.3;
-            }
-        }
-
-        .swipe-text {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--neobrut-white);
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            animation: textPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes textPulse {
-            0%, 100% {
-                opacity: 0.8;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.05);
-            }
-        }
-
-  
         .year-selector {
             display: flex;
             justify-content: space-between;
@@ -2063,9 +1970,7 @@
 <body>
     <!-- Верхняя секция с тренировками -->
     <div class="workout-section">
-        <div class="workout-header">
-            <h1 class="workout-title">Тренировочная Программа</h1>
-        </div>
+        <div class="workout-header"></div>
 
         <div class="workout-carousel">
             <div class="workout-track" id="workout-track">
@@ -2105,16 +2010,6 @@
 
         <!-- Вертикальный календарь активности -->
         <div class="activity-grid-vertical">
-            <!-- Оверлей для обучения свайпу -->
-            <div class="swipe-hint-overlay" id="swipeHintOverlay">
-                <div class="swipe-hint-content">
-                    <div class="swipe-circle" id="swipeCircle">
-                        <div class="circle-arrow"></div>
-                    </div>
-                    <div class="swipe-text">Смахни для переключения</div>
-                </div>
-            </div>
-
             <div class="activity-slider">
                 <!-- Пустой блок слева -->
                 <div class="calendar-container empty-calendar">
@@ -2681,7 +2576,6 @@
             initializeTodoLists();
             renderWorkoutBlocks();
             renderActivityGrid();
-            initSwipeTutorial();
             setupEventListeners();
             setupModalListeners();
 
@@ -3012,12 +2906,9 @@
 
                     // Если режим задач открыт для этого дня, обновляем его
                     const workoutSection = document.querySelector('.workout-section');
-                    if (workoutSection.classList.contains('show-todos')) {
-                        const workoutTitle = document.querySelector('.workout-title');
-                        if (workoutTitle.textContent.includes(`День ${day}`)) {
-                            const todoContent = document.getElementById('todo-content');
-                            todoContent.innerHTML = createTodoHtml(todoData[day]);
-                        }
+                    if (workoutSection.classList.contains('show-todos') && selectedWorkout === day) {
+                        const todoContent = document.getElementById('todo-content');
+                        todoContent.innerHTML = createTodoHtml(todoData[day]);
                     }
                 }
             });
@@ -3196,9 +3087,6 @@
                 calendarIsSwiping = false;
 
                 if (Math.abs(diff) > 50) {
-                    // Скрываем обучалку при первом свайпе
-                    hideSwipeHint();
-
                     if (diff > 0 && currentSlide < 2) {
                         // Свайп влево - следующий слайд
                         switchSlide(currentSlide + 1);
@@ -3374,47 +3262,6 @@
 
             // Устанавливаем обработчики для модального окна
             setupModalListeners();
-        }
-
-        // Функции для обучения свайпу
-        let swipeHintActive = false;
-
-        function initSwipeTutorial() {
-            // Проверяем, показывали ли уже обучалку
-            if (localStorage.getItem('swipeHintShown')) {
-                return;
-            }
-
-            const overlay = document.getElementById('swipeHintOverlay');
-
-            // Показываем оверлей с задержкой
-            setTimeout(() => {
-                overlay.classList.add('show');
-                swipeHintActive = true;
-            }, 1500); // Задержка 1.5 секунды после загрузки
-        }
-
-        function hideSwipeHint() {
-            if (!swipeHintActive) return;
-
-            const overlay = document.getElementById('swipeHintOverlay');
-            overlay.style.opacity = '0';
-            overlay.style.pointerEvents = 'none';
-
-            // Сохраняем, что показали обучалку
-            localStorage.setItem('swipeHintShown', 'true');
-            swipeHintActive = false;
-
-            // Удаляем элемент после анимации
-            setTimeout(() => {
-                overlay.remove();
-            }, 500);
-        }
-
-        // Сброс обучения (для тестирования)
-        function resetSwipeTutorial() {
-            localStorage.removeItem('swipeHintShown');
-            swipeHintActive = false;
         }
 
         // AI Chat функции
@@ -3865,7 +3712,10 @@
         // Устанавливаем начальную высоту после загрузки страницы
         setTimeout(() => {
             if (!workoutSection.style.height) {
-                workoutSection.style.height = '250px';
+                const viewportHeight = window.innerHeight;
+                const baseHeight = 160;
+                const additionalHeight = viewportHeight * 0.05; // 5% от высоты экрана
+                workoutSection.style.height = (baseHeight + additionalHeight) + 'px';
             }
         }, 100);
 
@@ -3873,20 +3723,31 @@
         function updateSizes(clientY) {
             const deltaY = clientY - startY;
             const viewportHeight = window.innerHeight;
-            const minTopHeight = 90; // Увеличим на 40px (15 + 10 + 10 + 5) для полного текста "Тренировочная Программа"
 
-            // Получаем реальные размеры элементов
+            // Фиксированная минимальная высота для верхней секции (после удаления заголовка)
+            const minTopHeight = 60; // минимальная высота для workout-blocks
+
+            // Получаем реальные размеры элементов для нижней секции
             const activityHeader = activitySection.querySelector('.activity-header');
-            const activityGrid = document.querySelector('.activity-grid-vertical');
+            const calendarWrapper = document.querySelector('.calendar-wrapper');
 
-            // Рассчитываем минимальную высоту нижней секции
-            // Высота заголовка + минимальная высота календаря + padding + margin + дополнительное место снизу
-            const headerHeight = activityHeader ? activityHeader.offsetHeight : 60;
-            const calendarMinHeight = 200; // Из CSS min-height
-            const calendarPadding = 60; // 30px padding * 2
-            const calendarMargin = 15; // margin-top
-            const extraBottomSpace = 65; // Дополнительное место для видимости чисел месяца (15 + 15 + 10 + 10 + 5 + 5 + 5)
-            const minBottomHeight = headerHeight + calendarMinHeight + calendarPadding + calendarMargin + extraBottomSpace;
+            // Находим дни недели в календаре
+            const dayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
+            let minBottomHeight = 200; // базовое значение
+
+            if (dayLabels.length > 0) {
+                // Измеряем позицию последнего дня недели от верха activity-section
+                const activitySectionRect = activitySection.getBoundingClientRect();
+                const lastDayLabel = dayLabels[dayLabels.length - 1];
+                const lastDayRect = lastDayLabel.getBoundingClientRect();
+
+                // Минимальная высота нижней секции = 40% от высоты экрана
+                minBottomHeight = viewportHeight * 0.40;
+            } else {
+                // Fallback: измеряем высоту заголовка и добавляем минимальную высоту календаря
+                const headerHeight = activityHeader ? activityHeader.offsetHeight : 60;
+                minBottomHeight = headerHeight + 250; // заголовок + минимальная высота календаря + запас
+            }
 
             // Новая высота верхней секции
             let newTopHeight = startTopHeight + deltaY;
