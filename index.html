@@ -906,6 +906,7 @@
             justify-content: space-between;
             align-items: flex-end;
             padding-bottom: 0;
+            position: relative;
         }
 
         .activity-title {
@@ -1100,23 +1101,23 @@
         }
 
         /* Уровни активности - Зеленая градация */
-        .activity-cell[data-activity="0"] {
+        .activity-cell[data-activity="none"] {
             background: var(--neobrut-lightgray);
         }
 
-        .activity-cell[data-activity="30"] {
+        .activity-cell[data-activity="low"] {
             background: var(--lime-green);
         }
 
-        .activity-cell[data-activity="60"] {
+        .activity-cell[data-activity="medium"] {
             background: var(--light-green);
         }
 
-        .activity-cell[data-activity="90"] {
+        .activity-cell[data-activity="high"] {
             background: var(--medium-green);
         }
 
-        .activity-cell[data-activity="120"] {
+        .activity-cell[data-activity="max"] {
             background: var(--swamp-green);
         }
 
@@ -1897,6 +1898,93 @@
         }
 
         /* ===== КОНЕЦ НЕОБРУТАЛИСТИЧЕСКОГО ЧАТА ===== */
+
+        /* ===== STREAK АНИМАЦИЯ (как в Duolingo) ===== */
+        .streak-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .streak-overlay.show {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .streak-overlay.hide {
+            animation: fadeOut 0.5s ease forwards;
+        }
+
+        .streak-fire {
+            font-size: 120px;
+            line-height: 1;
+            animation: fireScale 0.6s ease-out forwards;
+            filter: drop-shadow(0 0 30px rgba(255, 150, 50, 0.8));
+        }
+
+        .streak-fire.glow {
+            animation: fireScale 0.6s ease-out forwards, fireGlow 0.8s ease-in-out 0.6s 3;
+        }
+
+        .streak-number {
+            font-size: 72px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            text-shadow: 4px 4px 0 var(--neobrut-yellow);
+            margin-top: 10px;
+            opacity: 0;
+            animation: numberSlide 0.5s ease-out 0.3s forwards;
+        }
+
+        .streak-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--neobrut-darkgray);
+            margin-top: 5px;
+            opacity: 0;
+            animation: textSlide 0.5s ease-out 0.4s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes fireScale {
+            0% { transform: scale(0) rotate(-10deg); }
+            50% { transform: scale(1.3) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes fireGlow {
+            0%, 100% { filter: drop-shadow(0 0 30px rgba(255, 150, 50, 0.8)); }
+            50% { filter: drop-shadow(0 0 60px rgba(255, 100, 0, 1)); }
+        }
+
+        @keyframes numberSlide {
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes textSlide {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        /* ===== КОНЕЦ STREAK АНИМАЦИИ ===== */
     </style>
 </head>
 
@@ -2024,35 +2112,16 @@
         // USER_PROFILE moved to TEMP_STORAGE for better security
         const APP_VERSION = "ZGVlcHNlZWsvZGVlcHNlZWstdjMuMg==";
 
-        // Восстановление строки подключения из base64
+        // ВРЕМЕННЫЙ API (временно не шифрован)
         function getConnectionString() {
-            // Проверяем валидность конфигурации
-            if (!validateConfig()) {
-                throw new Error("Configuration validation failed");
-            }
-
-            const data1 = atob(WEATHER_DATA);
-            const data2 = atob(SPORT_STATS);
-            const data3 = atob(METADATA_PREFIX);
-            const data4 = atob(TEMP_STORAGE);
-            // Собираем полную строку
-            const fullString = data1 + data2 + data3 + data4;
-
-            // Отладочный вывод (можно закомментировать в проде)
-            console.log('API Key parts:', { data1, data2, data3, data4 });
-            console.log('Full API key length:', fullString.length);
-            console.log('Starts with sk-or:', fullString.startsWith('sk-or-'));
-
-            return fullString;
+            return 'sk-VNRfUYfBhQC4lhzwSpyMvMv91PKsykrk';
         }
 
-        const AI_MODEL = atob(APP_VERSION);
+        const AI_MODEL = 'google/gemini-2.0-flash-001';
 
         // Динамическое формирование URL API
         function getAPIBaseURL() {
-            const domain = "openrouter.ai";
-            const path = atob("YXBpL3YxL2NoYXQvY29tcGxldGlvbnM="); // "api/v1/chat/completions"
-            return `https://${domain}/${path}`;
+            return 'https://openrouter.ai/api/v1/chat/completions';
         }
 
         // Временные данные приложения
@@ -2331,27 +2400,27 @@
                 const percentage = calculateCompletionPercentage(selectedWorkout);
                 console.log(`День ${selectedWorkout}: процент выполнения = ${percentage}%`);
 
-                // Определяем количество минут активности на основе процента
-                let activityMinutes = 0;
+                // Определяем уровень активности на основе процента
+                let activityLevel = 'none';
                 if (percentage >= 100) {
-                    activityMinutes = 120;
+                    activityLevel = 'max';
                 } else if (percentage >= 75) {
-                    activityMinutes = 90;
+                    activityLevel = 'high';
                 } else if (percentage >= 50) {
-                    activityMinutes = 60;
+                    activityLevel = 'medium';
                 } else if (percentage >= 25) {
-                    activityMinutes = 30;
+                    activityLevel = 'low';
                 }
 
                 // Обновляем активность для правильной даты
                 const dateKey = formatDateKey(workoutDate);
-                const oldActivity = activityData[dateKey] || 0;
+                const oldActivity = activityData[dateKey] || 'none';
 
-                console.log(`Активность на ${workoutDate.toLocaleDateString('ru-RU')}: ${oldActivity} -> ${activityMinutes} минут`);
+                console.log(`Активность на ${workoutDate.toLocaleDateString('ru-RU')}: ${oldActivity} -> ${activityLevel}`);
 
                 // Обновляем только если активность изменилась
-                if (oldActivity !== activityMinutes) {
-                    activityData[dateKey] = activityMinutes;
+                if (oldActivity !== activityLevel) {
+                    activityData[dateKey] = activityLevel;
                     saveActivityData();
 
                     // Обновляем календарь, если он показывает год даты тренировки
@@ -2359,11 +2428,11 @@
                         renderActivityGrid();
 
                         // Добавляем анимацию при увеличении активности
-                        if (activityMinutes > oldActivity && activityMinutes > 0) {
+                        if (activityLevel !== 'none' && oldActivity === 'none') {
                             const targetCell = document.querySelector(`[data-date="${dateKey}"]`);
                             if (targetCell) {
                                 // Сначала обновляем data-activity для применения нового цвета
-                                targetCell.dataset.activity = activityMinutes;
+                                targetCell.dataset.activity = activityLevel;
                                 // Затем добавляем анимацию
                                 targetCell.style.transform = 'translateY(-10px) scale(1.2) rotate(5deg)';
 
@@ -2375,6 +2444,126 @@
                     }
                 }
             }
+        }
+
+        // Расчёт текущей серии (streak)
+        function calculateStreak() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayKey = formatDateKey(today);
+
+            let streak = 0;
+            let checkDate = new Date(today);
+            let checkedToday = false;
+
+            // Проверяем сегодняшнюю активность
+            const todayActivity = activityData[todayKey];
+            if (todayActivity && todayActivity !== 'none') {
+                streak++;
+                checkedToday = true;
+            }
+
+            // Если сегодня нет активности, проверяем вчерашний день
+            // Если вчера была активность - streak продолжается
+            if (!checkedToday) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                const yesterdayKey = formatDateKey(checkDate);
+                const yesterdayActivity = activityData[yesterdayKey];
+
+                if (!yesterdayActivity || yesterdayActivity === 'none') {
+                    // Если вчера тоже не было активности - streak = 0
+                    return 0;
+                }
+                // Вчера была активность - продолжаем считать дальше назад
+            }
+
+            // Считаем подряд идущие дни назад от проверенной даты
+            while (true) {
+                checkDate.setDate(checkDate.getDate() - 1);
+                const dateKey = formatDateKey(checkDate);
+                const activity = activityData[dateKey];
+
+                if (activity && activity !== 'none') {
+                    streak++;
+                } else {
+                    break;
+                }
+
+                // Ограничиваем чтобы не уйти в бесконечность
+                if (streak > 3650) break;
+            }
+
+            return streak;
+        }
+
+        // Показ анимации streak (как в Duolingo)
+        function showStreakAnimation() {
+            const today = new Date();
+            const todayKey = formatDateKey(today);
+
+            // Проверяем, показывали ли уже сегодня
+            const lastShown = localStorage.getItem('fitTrackerStreakLastShown');
+            if (lastShown === todayKey) {
+                return; // Уже показывали сегодня
+            }
+
+            // Вычисляем текущий streak
+            const streak = calculateStreak();
+
+            // Показываем только если streak > 0
+            if (streak === 0) {
+                // Сохраняем что проверили сегодня, но не показываем
+                localStorage.setItem('fitTrackerStreakLastShown', todayKey);
+                return;
+            }
+
+            // Создаём элементы анимации
+            const overlay = document.createElement('div');
+            overlay.className = 'streak-overlay';
+
+            const fire = document.createElement('div');
+            fire.className = 'streak-fire glow';
+            fire.textContent = '🔥';
+
+            const number = document.createElement('div');
+            number.className = 'streak-number';
+            number.textContent = streak;
+
+            const text = document.createElement('div');
+            text.className = 'streak-text';
+            const dayWord = streak === 1 ? 'день' : (streak >= 2 && streak <= 4 ? 'дня' : 'дней');
+            text.textContent = `${dayWord} подряд!`;
+
+            overlay.appendChild(fire);
+            overlay.appendChild(number);
+            overlay.appendChild(text);
+            document.body.appendChild(overlay);
+
+            // Показываем анимацию
+            requestAnimationFrame(() => {
+                overlay.classList.add('show');
+            });
+
+            // Вибрация
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                setTimeout(() => {
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                }, 300);
+            }
+
+            // Скрываем и удаляем через 2.5 секунды
+            setTimeout(() => {
+                overlay.classList.remove('show');
+                overlay.classList.add('hide');
+            }, 2500);
+
+            // Удаляем из DOM после анимации
+            setTimeout(() => {
+                overlay.remove();
+            }, 3000);
+
+            // Сохраняем дату показа
+            localStorage.setItem('fitTrackerStreakLastShown', todayKey);
         }
 
         // Переключение состояния задачи
@@ -2390,47 +2579,14 @@
                                 // Задача только что выполнена - записываем время
                                 task.completed = true;
                                 task.completedAt = now.toISOString();
-
-                                // Если это первое выполнение, рассчитываем время
-                                if (!task.timeSpent) {
-                                    // Для простоты считаем примерное время по задаче
-                                    const timeMap = {
-                                        'покушать': 30,  // минут
-                                        'пробежка 5км': 40,
-                                        'спать': 480,  // 8 часов
-                                        'Утренняя зарядка': 20,
-                                        'Пресс': 15,
-                                        'Растяжка': 15,
-                                        'Отжимания': 10,
-                                        'Приседания': 10,
-                                        'Планка': 5,
-                                        'Бег': 30,
-                                        'Гигиеничес процедуры': 15,
-                                        'Йога': 30,
-                                        'Медитация': 20,
-                                        'Прогулка': 45,
-                                        'Чтение': 60
-                                    };
-
-                                    // Ищем соответствие по названию задачи
-                                    const taskName = task.text.toLowerCase();
-                                    for (let [key, minutes] of Object.entries(timeMap)) {
-                                        if (taskName.includes(key.toLowerCase())) {
-                                            task.timeSpent = minutes;
-                                            break;
-                                        }
-                                    }
-
-                                    // Если не нашли точного соответствия, ставим 15 минут
-                                    if (!task.timeSpent) {
-                                        task.timeSpent = 15;
-                                    }
+                                // Слабая вибрация как фидбек
+                                if (window.Telegram?.WebApp?.HapticFeedback) {
+                                    Telegram.WebApp.HapticFeedback.selectionChanged();
                                 }
                             } else {
                                 // Задача отменена - убираем время выполнения
                                 task.completed = false;
                                 task.completedAt = null;
-                                // Не обнуляем timeSpent, т.к. может быть несколько выполнений
                             }
 
                             const checkbox = document.getElementById(taskId);
@@ -2484,6 +2640,9 @@
 
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
+
+            // Показываем streak анимацию при первом входе за день
+            showStreakAnimation();
         }
 
         // Сброс всей активности (для перехода на новую систему)
@@ -2499,6 +2658,18 @@
             if (saved) {
                 try {
                     activityData = JSON.parse(saved);
+                    // Миграция старых числовых значений в новые текстовые
+                    const migrationMap = { 0: 'none', 30: 'low', 60: 'medium', 90: 'high', 120: 'max' };
+                    let migrated = false;
+                    Object.keys(activityData).forEach(key => {
+                        if (typeof activityData[key] === 'number') {
+                            activityData[key] = migrationMap[activityData[key]] || 'none';
+                            migrated = true;
+                        }
+                    });
+                    if (migrated) {
+                        saveActivityData();
+                    }
                 } catch (e) {
                     activityData = {};
                 }
@@ -2600,7 +2771,7 @@
         function checkWorkoutCompleted(day) {
             const today = new Date();
             const currentDay = today.getDay() === 0 ? 7 : today.getDay(); // Воскресенье = 7
-            return day <= currentDay && getActivityForDate(new Date()) > 0;
+            return day <= currentDay && getActivityForDate(new Date()) !== 'none';
         }
 
         // Рендеринг вертикального календаря активности
@@ -2652,7 +2823,13 @@
                 // Заголовок месяца
                 const monthHeader = document.createElement('div');
                 monthHeader.className = 'calendar-month-header';
+                monthHeader.style.cursor = 'pointer';
                 monthHeader.textContent = monthNames[month];
+                monthHeader.addEventListener('click', () => {
+                    if (confirm('Сбросить ВЕСЬ прогресс?\n\nВся активность и все выполненные задачи будут удалены.')) {
+                        resetAllProgress();
+                    }
+                });
                 monthDiv.appendChild(monthHeader);
 
                 // Создаем заголовки дней недели
@@ -2710,7 +2887,14 @@
                             cell.addEventListener('mouseenter', (e) => {
                                 const options = { day: 'numeric', month: 'long', year: 'numeric' };
                                 const dateString = currentDate.toLocaleDateString('ru-RU', options);
-                                const activityText = activity > 0 ? `${activity} минут активности` : 'нет активности';
+                                const activityLabels = {
+                                    'none': 'нет активности',
+                                    'low': 'минимальная активность',
+                                    'medium': 'средняя активность',
+                                    'high': 'высокая активность',
+                                    'max': 'максимальная активность'
+                                };
+                                const activityText = activityLabels[activity] || 'нет активности';
                                 tooltip.innerHTML = `
                                     <strong>${dateString}</strong><br>
                                     ${activityText}${dateKey === todayKey ? '<br><em>(Сегодня)</em>' : ''}
@@ -2725,16 +2909,6 @@
 
                             cell.addEventListener('mouseleave', () => {
                                 tooltip.classList.remove('show');
-                            });
-
-                            // Добавляем обработчик клика для сброса активности
-                            cell.addEventListener('click', () => {
-                                // Всегда позволяем кликать по текущему дню или дням с активностью
-                                if (activity > 0 || dateKey === todayKey) {
-                                    if (confirm(`Сбросить активность за ${currentDate.toLocaleDateString('ru-RU')}?`)) {
-                                        resetActivityForDate(currentDate);
-                                    }
-                                }
                             });
 
                             currentDay++;
@@ -2774,7 +2948,7 @@
         // Получение активности для даты
         function getActivityForDate(date) {
             const key = formatDateKey(date);
-            return activityData[key] || 0;
+            return activityData[key] || 'none';
         }
 
         // Функция для сброса активности за определенную дату
@@ -2815,6 +2989,44 @@
 
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
+        }
+
+        // Функция для полного сброса всего прогресса
+        function resetAllProgress() {
+            // Очищаем всю активность
+            activityData = {};
+            saveActivityData();
+
+            // Сбрасываем все задачи
+            Object.keys(todoData).forEach(day => {
+                if (todoData[day]) {
+                    todoData[day].forEach(task => {
+                        task.completed = false;
+                        task.completedAt = null;
+                        if (task.subtasks) {
+                            task.subtasks.forEach(subtask => {
+                                subtask.completed = false;
+                            });
+                        }
+                    });
+                }
+            });
+            saveTodoStates();
+
+            // Перерисовываем UI
+            renderActivityGrid();
+            renderWorkoutBlocks();
+
+            // Обновляем модалку если открыта
+            const todoContent = document.getElementById('todo-content');
+            if (todoContent && selectedWorkout) {
+                todoContent.innerHTML = createTodoHtml(todoData[selectedWorkout] || []);
+            }
+
+            // Вибрация подтверждения
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
         }
 
         // Форматирование ключа даты
@@ -3362,66 +3574,35 @@
                         messages: [
                             {
                                 role: "system",
-                                content: `Ты - продвинутый AI фитнес-ассистент FitTracker AI с экспертизой в спортивной физиологии и мотивации.
+                                content: `Ты - AI фитнес-ассистент FitTracker AI.
 
-                                ТВОИ СПОСОБНОСТИ:
-                                - Анализируй прогресс пользователя и давай персонализированные рекомендации
-                                - Составляй детальные планы тренировок и советы по технике
-                                - Мотивируй с психологической точки зрения
-                                - Предоставляй научные обоснования советов
+                                ВАЖНО: Отвечай ОЧЕНЬ кратко и по делу. Максимум 2-3 предложения. Никакой воды.
 
-                                СТИЛЬ ОБЩЕНИЯ:
-                                - Дружелюбный, но профессиональный тон
-                                - Используй эмодзи для мотивации 💪🔥⭐
-                                - Структурируй ответы абзацами и списками
+                                ТЕКУЩИЙ ДЕНЬ: ${selectedWorkout}/7 (${workoutProgram[selectedWorkout - 1]?.name || ''})
 
-                                ТЕКУЩАЯ ИНФОРМАЦИЯ О ПОЛЬЗОВАТЕЛЕ:
-                                - День тренировки: ${selectedWorkout}/7
-                                - Выполнение сегодня: ${calculateCompletionPercentage(selectedWorkout)}%
-                                - Активных дней всего: ${Object.keys(activityData).filter(date => activityData[date] > 0).length}
-                                - Текущая активность: ${activityData[formatDateKey(new Date())] || 0} минут
-                                - Текущее время: ${new Date().toLocaleString('ru-RU')}
+                                ВСЕ ЗАДАНИЯ ПО ДНЯМ:
+                                ${Object.keys(todoData).map(day => {
+                                    const dayNum = parseInt(day);
+                                    const dayInfo = workoutProgram[dayNum - 1];
+                                    const tasks = todoData[day] || [];
+                                    const completed = tasks.filter(t => t.completed).length;
+                                    return `День ${dayNum} (${dayInfo?.name || ''}): ${completed}/${tasks.length} выполнено`;
+                                }).join('\\n')}
 
-                                ПОЛНАЯ ПРОГРАММА:
-                                ${workoutProgram.map(w => `День ${w.day} (${w.name}): ${w.exercises.join(', ')}`).join('\n')}
+                                ЗАДАЧИ НА КАЖДЫЙ ДЕНЬ:
+                                ${Object.keys(todoData).map(day => {
+                                    const dayNum = parseInt(day);
+                                    const dayInfo = workoutProgram[dayNum - 1];
+                                    const tasks = todoData[day] || [];
+                                    return `\\n--- День ${dayNum} (${dayInfo?.name || ''}) ---` +
+                                        (tasks.length > 0 ? tasks.map(t => `${t.completed ? '✅' : '⏳'} ${t.text}`).join('\\n') : 'Нет задач');
+                                }).join('\\n')}
 
-                                ВЫПОЛНЕННЫЕ ЗАДАЧИ СЕГОДНЯ:
-                                ${(() => {
-                                    if (todoData[selectedWorkout]) {
-                                        return todoData[selectedWorkout]
-                                            .filter(task => task.completed)
-                                            .map(task => `✅ ${task.text} (${task.timeSpent || 'н/д'} минут, выполнено: ${task.completedAt ? new Date(task.completedAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'}) : 'н/д'})`)
-                                            .join('\n');
-                                    }
-                                    return 'Нет выполненных задач';
-                                })()}
+                                Выполнение сегодня: ${calculateCompletionPercentage(selectedWorkout)}%
+                                Активных дней: ${Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length}
+                                Время: ${new Date().toLocaleString('ru-RU')}
 
-                                НЕВЫПОЛНЕННЫЕ ЗАДАЧИ:
-                                ${(() => {
-                                    if (todoData[selectedWorkout]) {
-                                        return todoData[selectedWorkout]
-                                            .filter(task => !task.completed)
-                                            .map(task => `⏳ ${task.text}`)
-                                            .join('\n');
-                                    }
-                                    return 'Все задачи выполнены';
-                                })()}
-
-                                ОБЩЕЕ ВРЕМЯ НА ЗАДАЧИ СЕГОДНЯ: ${(() => {
-                                    if (todoData[selectedWorkout]) {
-                                        return todoData[selectedWorkout]
-                                            .filter(task => task.completed && task.timeSpent)
-                                            .reduce((sum, task) => sum + task.timeSpent, 0);
-                                    }
-                                    return 0;
-                                })()} минут
-
-                                ПРИМЕРЫ ОТВЕТОВ:
-                                - На вопрос "как делать отжимания" → дай подробную инструкцию с техниками
-                                - На "устал" → предложи активный отдых и объясни пользу восстановления
-                                - На "мотивация" → вдохновляющая речь с научными фактами
-
-                                Будь проактивным, задавай уточняющие вопросы, давай больше пользы!`
+                                Отвечай кратко, по сути. Используй эмодзи 💪🔥`
                             },
                             ...chatHistory.slice(-10), // Последние 10 сообщений для контекста
                             {
@@ -3429,7 +3610,7 @@
                                 content: userMessage
                             }
                         ],
-                        max_tokens: 4000,
+                        max_tokens: 1000,
                         temperature: 0.9,
                         top_p: 0.95,
                         frequency_penalty: 0.3,
