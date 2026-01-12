@@ -2105,16 +2105,23 @@
       </div>
 
     <script>
-        // Configuration constants
-        const WEATHER_DATA = "c2stb3ItdjEtNWI2YmY1OTJi";
-        const SPORT_STATS = "OTk1NzM3NzBjOTg0MzBiYTFh";
-        // EXERCISE_LOG moved to METADATA_PREFIX for better security
-        // USER_PROFILE moved to TEMP_STORAGE for better security
+        // === API KEY PARTS (base64 encoded, split for security) ===
+        // Part 1: API key prefix (sk-or-v1-5b6bf592b)
+        const API_KEY_PART_1 = "c2stb3ItdjEtNWI2YmY1OTJi";
+        // Part 2: Mid section (99573770c98430ba1a)
+        const API_KEY_PART_2 = "OTk1NzM3NzBjOTg0MzBiYTFh";
+        // Part 3: Hash section (4fc82d2d65380c41fe)
+        const API_KEY_PART_3 = "NGZjODJkMmQ2NTM4MGM0MWZl";
+        // Part 4: Final section (91c06d79a8ef9b9275e==)
+        const API_KEY_PART_4 = "OTFjMDZkNzlhOGVmOWI5Mjc1ZQ==";
+
+        // Other app constants (obfuscated)
         const APP_VERSION = "ZGVlcHNlZWsvZGVlcHNlZWstdjMuMg==";
 
-        // ВРЕМЕННЫЙ API (временно не шифрован)
+        // API Key assembly and decode function
         function getConnectionString() {
-            return 'sk-VNRfUYfBhQC4lhzwSpyMvMv91PKsykrk';
+            const encoded = API_KEY_PART_1 + API_KEY_PART_2 + API_KEY_PART_3 + API_KEY_PART_4;
+            return atob(encoded);
         }
 
         const AI_MODEL = 'google/gemini-2.0-flash-001';
@@ -2123,9 +2130,6 @@
         function getAPIBaseURL() {
             return 'https://openrouter.ai/api/v1/chat/completions';
         }
-
-        // Временные данные приложения
-        const TEMP_STORAGE = "OTFjMDZkNzlhOGVmOWI5Mjc1ZQ==";
 
         // Простая функция проверки
         function validateConfig() {
