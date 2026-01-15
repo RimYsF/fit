@@ -2194,21 +2194,19 @@
         }
 
         .weather-temp {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 900;
             color: var(--neobrut-black);
-            position: relative;
-            z-index: 3;
-            margin-left: -8px;
-            margin-top: 10px;
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            z-index: 4;
+            line-height: 1;
         }
 
         .weather-temp::after {
             content: '°';
-            font-size: 14px;
-            position: absolute;
-            top: -2px;
-            right: -7px;
+            font-size: 16px;
         }
 
         .weather-loading {
@@ -2227,21 +2225,6 @@
 
         .weather-night .weather-temp {
             color: var(--neobrut-white);
-        }
-
-        .weather-city {
-            position: absolute;
-            bottom: 2px;
-            right: 4px;
-            font-size: 8px;
-            font-weight: 700;
-            color: rgba(0,0,0,0.5);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .weather-night .weather-city {
-            color: rgba(255,255,255,0.6);
         }
 
         .ai-comment {
@@ -2308,9 +2291,8 @@
             <div class="weather-block" id="weather-block" title="Нажмите для обновления">
                 <div class="weather-content">
                     <div class="weather-icon" id="weather-icon">🌤️</div>
-                    <div class="weather-temp" id="weather-temp">--</div>
                 </div>
-                <div class="weather-city" id="weather-city"></div>
+                <div class="weather-temp" id="weather-temp">--</div>
             </div>
         </div>
 
@@ -3183,26 +3165,12 @@
             document.getElementById('weather-icon').innerHTML = '<div class="weather-loading">🔄</div>';
 
             try {
-                // Пробуем получить координаты (GPS или IP)
-                let latitude, longitude, city = 'Неизвестно';
+                // Используем только IP-геолокацию (не требует разрешения)
+                const ipLocation = await getIPLocation();
+                const latitude = ipLocation.latitude;
+                const longitude = ipLocation.longitude;
 
-                try {
-                    // Сначала пробуем GPS
-                    const position = await getCurrentPosition();
-                    latitude = position.coords.latitude;
-                    longitude = position.coords.longitude;
-                    console.log('Weather: Using GPS location', latitude, longitude);
-                } catch (gpsError) {
-                    // Если GPS не работает, используем IP-геолокацию
-                    console.log('Weather: GPS failed, using IP geolocation');
-                    const ipLocation = await getIPLocation();
-                    latitude = ipLocation.latitude;
-                    longitude = ipLocation.longitude;
-                    city = ipLocation.city;
-                    console.log('Weather: Using IP location', latitude, longitude, city);
-                }
-
-                console.log('Weather API: Loading for', latitude, longitude);
+                console.log('Weather: Using IP location', latitude, longitude);
 
                 // Запрос к Open-Meteo с явным указанием единиц измерения
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm`;
@@ -3218,8 +3186,7 @@
                 const weather = {
                     temp: Math.round(data.current_weather.temperature),
                     wmoCode: data.current_weather.weathercode,
-                    isNight: isNightTime(),
-                    city: city
+                    isNight: isNightTime()
                 };
 
                 console.log('Parsed weather:', weather);
@@ -3286,48 +3253,23 @@
             };
         }
 
-        // Получение геолокации через GPS
-        function getCurrentPosition() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) {
-                    reject(new Error('Geolocation not supported'));
-                    return;
-                }
-
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    timeout: 5000,
-                    maximumAge: 300000 // 5 минут
-                });
-            });
-        }
-
         // Обновление UI погоды
         function updateWeatherUI(weather) {
             // Всегда проверяем текущее время, а не кэшированное значение
             const currentIsNight = isNightTime();
             const icon = getWeatherIcon(weather.wmoCode, currentIsNight);
             const weatherBlock = document.getElementById('weather-block');
-            const cityElement = document.getElementById('weather-city');
 
             console.log('updateWeatherUI:', {
                 temp: weather.temp,
                 wmoCode: weather.wmoCode,
                 isNight: currentIsNight,
                 icon: icon,
-                hour: new Date().getHours(),
-                city: weather.city
+                hour: new Date().getHours()
             });
 
             document.getElementById('weather-icon').textContent = icon;
             document.getElementById('weather-temp').textContent = weather.temp;
-
-            // Показываем город (с сокращением если длинное название)
-            if (weather.city && weather.city !== 'Неизвестно') {
-                const cityName = weather.city.length > 10 ? weather.city.substring(0, 8) + '..' : weather.city;
-                cityElement.textContent = cityName;
-            } else {
-                cityElement.textContent = '';
-            }
 
             // Добавляем/убираем класс для ночи
             if (currentIsNight) {
