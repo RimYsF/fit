@@ -2157,15 +2157,27 @@
             background: linear-gradient(135deg, #87CEEB, #4A90D9);
             border: 3px solid var(--neobrut-black);
             border-radius: 12px;
-            padding: 8px;
+            padding: 10px;
             box-shadow: 4px 4px 0 var(--neobrut-black);
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 85px;
             flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .weather-block:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+        }
+
+        .weather-block:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
         }
 
         .weather-content {
@@ -2178,15 +2190,15 @@
         .weather-icon {
             font-size: 32px;
             line-height: 1;
-            z-index: 2;
+            z-index: 1;
         }
 
         .weather-temp {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 900;
             color: var(--neobrut-black);
             position: relative;
-            z-index: 1;
+            z-index: 3;
             margin-left: -8px;
             margin-top: 10px;
         }
@@ -2278,7 +2290,7 @@
             </div>
 
             <!-- ПОГОДА -->
-            <div class="weather-block" id="weather-block">
+            <div class="weather-block" id="weather-block" title="Нажмите для обновления">
                 <div class="weather-content">
                     <div class="weather-icon" id="weather-icon">🌤️</div>
                     <div class="weather-temp" id="weather-temp">--</div>
@@ -3105,7 +3117,7 @@
 
         let weatherCache = null;
         let weatherCacheTime = null;
-        const WEATHER_CACHE_DURATION = 30 * 60 * 1000; // 30 минут
+        const WEATHER_CACHE_DURATION = 2 * 60 * 1000; // 2 минуты - обновляем часто
 
         // WMO код → иконки погоды
         function getWeatherIcon(wmoCode, isNight) {
@@ -3121,13 +3133,13 @@
             };
 
             const nightIcons = {
-                0: '🌙', 1: '🌙☀️', 2: '🌙⛅', 3: '🌙☁️',
+                0: '🌙', 1: '☁️', 2: '☁️', 3: '☁️',
                 45: '🌫️', 48: '🌫️',
-                51: '🌙🌧️', 53: '🌙🌧️', 55: '🌙🌧️',
-                61: '🌙🌧️', 63: '🌙🌧️', 65: '🌙🌧️',
-                71: '🌙🌨️', 73: '🌙🌨️', 75: '🌙🌨️', 77: '🌙🌨️',
-                80: '🌙🌦️', 81: '🌙🌦️', 82: '🌙🌦️',
-                85: '🌙🌨️', 86: '🌙🌨️',
+                51: '🌧️', 53: '🌧️', 55: '🌧️',
+                61: '🌧️', 63: '🌧️', 65: '🌧️',
+                71: '🌨️', 73: '🌨️', 75: '🌨️', 77: '🌨️',
+                80: '🌧️', 81: '🌧️', 82: '🌧️',
+                85: '🌨️', 86: '🌨️',
                 95: '⛈️', 96: '⛈️', 99: '⛈️'
             };
 
@@ -3138,7 +3150,7 @@
         // Проверка ночь ли сейчас
         function isNightTime() {
             const hour = new Date().getHours();
-            return hour < 6 || hour > 21;
+            return hour < 6 || hour >= 21;
         }
 
         // Загрузка погоды
@@ -3159,16 +3171,26 @@
                 const position = await getCurrentPosition();
                 const { latitude, longitude } = position.coords;
 
-                // Запрос к Open-Meteo
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+                console.log('Weather API: Loading for', latitude, longitude);
+
+                // Запрос к Open-Meteo с явным указанием единиц измерения
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm`;
                 const response = await fetch(url);
                 const data = await response.json();
+
+                console.log('Weather API Response:', data);
+
+                if (!data.current_weather) {
+                    throw new Error('Invalid API response structure');
+                }
 
                 const weather = {
                     temp: Math.round(data.current_weather.temperature),
                     wmoCode: data.current_weather.weathercode,
                     isNight: isNightTime()
                 };
+
+                console.log('Parsed weather:', weather);
 
                 // Кешируем
                 weatherCache = weather;
@@ -3181,8 +3203,12 @@
                 updateWeatherUI(weather);
             } catch (error) {
                 console.error('Weather load error:', error);
+                // Очищаем кеш при ошибке
+                weatherCache = null;
+                weatherCacheTime = null;
+                localStorage.removeItem('fitTrackerWeather');
                 // Показываем заглушку
-                document.getElementById('weather-icon').textContent = '🌤️';
+                document.getElementById('weather-icon').textContent = '❓';
                 document.getElementById('weather-temp').textContent = '--';
             }
         }
@@ -3204,19 +3230,37 @@
 
         // Обновление UI погоды
         function updateWeatherUI(weather) {
-            const icon = getWeatherIcon(weather.wmoCode, weather.isNight);
+            // Всегда проверяем текущее время, а не кэшированное значение
+            const currentIsNight = isNightTime();
+            const icon = getWeatherIcon(weather.wmoCode, currentIsNight);
             const weatherBlock = document.getElementById('weather-block');
+
+            console.log('updateWeatherUI:', {
+                temp: weather.temp,
+                wmoCode: weather.wmoCode,
+                isNight: currentIsNight,
+                icon: icon,
+                hour: new Date().getHours()
+            });
 
             document.getElementById('weather-icon').textContent = icon;
             document.getElementById('weather-temp').textContent = weather.temp;
 
             // Добавляем/убираем класс для ночи
-            if (weather.isNight) {
+            if (currentIsNight) {
                 weatherBlock.classList.add('weather-night');
             } else {
                 weatherBlock.classList.remove('weather-night');
             }
         }
+
+        // Функция для принудительного обновления погоды (вызов из консоли)
+        window.forceRefreshWeather = function() {
+            weatherCache = null;
+            weatherCacheTime = null;
+            localStorage.removeItem('fitTrackerWeather');
+            loadWeather();
+        };
 
         // Загрузка закешированной погоды
         function loadCachedWeather() {
@@ -3265,8 +3309,7 @@
             loadCachedAIComment();
             updateAIComment();
 
-            // Загружаем погоду
-            loadCachedWeather();
+            // Загружаем погоду (всегда свежие данные)
             loadWeather();
         }
 
@@ -4014,6 +4057,21 @@
                     todoTouchStartY = 0;
                     todoIsSwiping = false;
                 }, { passive: true });
+            }
+
+            // Клик по виджету погоды для обновления
+            const weatherBlock = document.getElementById('weather-block');
+            if (weatherBlock) {
+                weatherBlock.addEventListener('click', () => {
+                    // Визуальная обратная связь
+                    weatherBlock.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        weatherBlock.style.transform = '';
+                    }, 100);
+
+                    // Обновляем погоду
+                    forceRefreshWeather();
+                });
             }
 
             // Устанавливаем обработчики для модального окна
