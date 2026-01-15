@@ -3481,20 +3481,28 @@
                 weatherBlock.style.cursor = '';
                 weatherBlock.onclick = null;
 
-                const loadWithGPS = async () => {
-                    try {
+                try {
+                    if (window.Telegram?.WebApp?.requestLocation) {
+                        await new Promise((resolve) => {
+                            Telegram.WebApp.requestLocation(async () => {
+                                try {
+                                    const position = await getCurrentPosition();
+                                    localStorage.setItem('fitTrackerGPSGranted', 'true');
+                                    await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
+                                    resolve();
+                                } catch {
+                                    showGeoDeniedState();
+                                    resolve();
+                                }
+                            });
+                        });
+                    } else {
                         const position = await getCurrentPosition();
                         localStorage.setItem('fitTrackerGPSGranted', 'true');
                         await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
-                    } catch {
-                        showGeoDeniedState();
                     }
-                };
-
-                if (window.Telegram?.WebApp?.requestLocation) {
-                    Telegram.WebApp.requestLocation(loadWithGPS);
-                } else {
-                    await loadWithGPS();
+                } catch {
+                    showGeoDeniedState();
                 }
             });
 
@@ -3519,30 +3527,53 @@
         // Загрузка погоды по координатам
         async function loadWeatherForCoords(latitude, longitude) {
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
-            const response = await fetch(url);
+
+            let response;
+            try {
+                response = await fetch(url);
+            } catch (e) {
+                throw new Error('Fetch failed');
+            }
+
+            if (!response) {
+                throw new Error('No response');
+            }
 
             if (!response.ok) {
                 throw new Error(`API error: ${response.status}`);
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                const text = await response.text();
+                data = JSON.parse(text);
+            } catch (e) {
+                throw new Error('Invalid JSON');
+            }
 
-            if (!data.current_weather) {
+            if (!data || !data.current_weather) {
                 throw new Error('Invalid API response');
             }
 
+            const temp = data.current_weather.temperature;
+            if (temp === undefined || temp === null) {
+                throw new Error('No temperature');
+            }
+
             const weather = {
-                temp: Math.round(data.current_weather.temperature),
-                wmoCode: data.current_weather.weathercode,
+                temp: Math.round(temp),
+                wmoCode: data.current_weather.weathercode || 0,
                 isNight: isNightTime()
             };
 
             weatherCache = weather;
             weatherCacheTime = Date.now();
-            localStorage.setItem('fitTrackerWeather', JSON.stringify({
-                weather,
-                timestamp: weatherCacheTime
-            }));
+            try {
+                localStorage.setItem('fitTrackerWeather', JSON.stringify({
+                    weather,
+                    timestamp: weatherCacheTime
+                }));
+            } catch (e) {}
 
             updateWeatherUI(weather);
         }
