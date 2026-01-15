@@ -3368,42 +3368,18 @@
         async function loadWeather() {
             const now = Date.now();
 
-            // Проверяем кеш
             if (weatherCache && weatherCacheTime && (now - weatherCacheTime < WEATHER_CACHE_DURATION)) {
                 updateWeatherUI(weatherCache);
                 return;
             }
 
-            try {
-                // Проверяем - давал ли пользователь разрешение на GPS раньше
-                const gpsPermissionGranted = localStorage.getItem('fitTrackerGPSGranted') === 'true';
-                const gpsDenied = localStorage.getItem('fitTrackerGPSDenied') === 'true';
+            const gpsDenied = localStorage.getItem('fitTrackerGPSDenied') === 'true';
+            if (gpsDenied) {
+                showGeoDeniedState();
+                return;
+            }
 
-                let latitude, longitude;
-
-                if (gpsPermissionGranted) {
-                    // Пользователь уже давал разрешение - используем GPS
-                    // Показываем загрузку
-                    const weatherIcon = document.getElementById('weather-icon');
-                    const weatherTemp = document.getElementById('weather-temp');
-                    if (weatherIcon) weatherIcon.textContent = '🔄';
-                    if (weatherTemp) weatherTemp.textContent = '...';
-
-                    // Получаем GPS
-                    const position = await getCurrentPosition();
-                    latitude = position.coords.latitude;
-                    longitude = position.coords.longitude;
-                } else if (gpsDenied) {
-                    // Пользователь отклонил - показываем желтый треугольник
-                    showGeoDeniedState();
-                    return;
-                } else {
-                    // Первый раз - открываем модальное окно для запроса разрешения
-                    openGeoModal();
-                    return;
-                }
-
-                // Запрос к Open-Meteo
+            const loadWithCoords = async (latitude, longitude) => {
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -3418,7 +3394,6 @@
                     isNight: isNightTime()
                 };
 
-                // Кешируем
                 weatherCache = weather;
                 weatherCacheTime = now;
                 localStorage.setItem('fitTrackerWeather', JSON.stringify({
@@ -3427,13 +3402,23 @@
                 }));
 
                 updateWeatherUI(weather);
-            } catch (error) {
-                console.error('Weather load error:', error);
-                // Показываем ошибку
+            };
+
+            const loadGPS = async () => {
                 const weatherIcon = document.getElementById('weather-icon');
                 const weatherTemp = document.getElementById('weather-temp');
-                if (weatherIcon) weatherIcon.textContent = '❌';
-                if (weatherTemp) weatherTemp.textContent = '--';
+                if (weatherIcon) weatherIcon.textContent = '🔄';
+                if (weatherTemp) weatherTemp.textContent = '...';
+
+                const position = await getCurrentPosition();
+                localStorage.setItem('fitTrackerGPSGranted', 'true');
+                await loadWithCoords(position.coords.latitude, position.coords.longitude);
+            };
+
+            try {
+                await loadGPS();
+            } catch {
+                openGeoModal();
             }
         }
 
@@ -3511,11 +3496,9 @@
 
             // Клик по "Разрешить"
             allowBtn.addEventListener('click', async () => {
-                // Удаляем флаг отказа
                 localStorage.removeItem('fitTrackerGPSDenied');
                 closeGeoModal();
 
-                // Показываем загрузку
                 const weatherBlock = document.getElementById('weather-block');
                 weatherBlock.innerHTML = `
                     <div class="weather-content">
@@ -3527,27 +3510,20 @@
                 weatherBlock.style.cursor = '';
                 weatherBlock.onclick = null;
 
-                // Функция получения координат
-                const getCoords = async () => {
-                    const position = await getCurrentPosition();
-                    localStorage.setItem('fitTrackerGPSGranted', 'true');
-                    await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
+                const loadWithGPS = async () => {
+                    try {
+                        const position = await getCurrentPosition();
+                        localStorage.setItem('fitTrackerGPSGranted', 'true');
+                        await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
+                    } catch {
+                        showGeoDeniedState();
+                    }
                 };
 
-                try {
-                    // В Telegram сначала запрашиваем разрешение через Telegram API
-                    if (window.Telegram?.WebApp?.requestLocation) {
-                        await new Promise((resolve, reject) => {
-                            Telegram.WebApp.requestLocation(() => {
-                                getCoords().then(resolve).catch(reject);
-                            });
-                        });
-                    } else {
-                        // В обычном браузере сразу запрашиваем GPS
-                        await getCoords();
-                    }
-                } catch (error) {
-                    showGeoDeniedState();
+                if (window.Telegram?.WebApp?.requestLocation) {
+                    Telegram.WebApp.requestLocation(loadWithGPS);
+                } else {
+                    await loadWithGPS();
                 }
             });
 
