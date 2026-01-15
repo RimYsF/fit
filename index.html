@@ -1722,6 +1722,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            align-items: flex-start;
         }
 
         .chat-wrapper .message {
@@ -1731,6 +1732,7 @@
             border-radius: 12px;
             padding: 12px 14px;
             animation: messageSlideIn 0.2s ease-out;
+            flex-shrink: 0;
         }
 
         @keyframes messageSlideIn {
@@ -1757,6 +1759,8 @@
         .chat-wrapper .message.ai-message {
             background: var(--neobrut-white);
             transform: rotate(-1deg);
+            width: fit-content;
+            max-width: 85%;
         }
 
         .chat-wrapper .message.ai-message .message-content {
@@ -1985,17 +1989,300 @@
         }
 
         /* ===== КОНЕЦ STREAK АНИМАЦИИ ===== */
+
+        /* ===== DASHBOARD STRIP (Верхняя панель) ===== */
+        .dashboard-strip {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 12px;
+            background: transparent;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .strip-main {
+            background: linear-gradient(135deg, var(--neobrut-orange), var(--neobrut-red));
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .strip-day-info {
+            color: var(--neobrut-white);
+        }
+
+        .strip-day {
+            font-size: 11px;
+            font-weight: 700;
+            opacity: 0.95;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .strip-date {
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        .strip-streak {
+            text-align: right;
+        }
+
+        .streak-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .streak-count {
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+        }
+
+        .strip-progress {
+            background: linear-gradient(135deg, var(--neobrut-blue), var(--neobrut-purple));
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .strip-progress-content {
+            flex: 1;
+        }
+
+        .strip-progress-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.85);
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .strip-progress-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            line-height: 1;
+        }
+
+        .strip-progress-sub {
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 2px;
+        }
+
+        .strip-progress-chart {
+            flex-shrink: 0;
+        }
+
+        /* ===== AI COMMENT BLOCK ===== */
+        .ai-comment {
+            background: linear-gradient(135deg, var(--neobrut-purple), var(--neobrut-blue));
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-comment::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .ai-comment-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--neobrut-white);
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ai-comment-loading {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+        }
+
+        .ai-comment-loading-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--neobrut-white);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .ai-comment-loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .ai-comment-loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .ai-comment-loading-dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ===== ПОГОДНЫЙ БЛОК ===== */
+        .weather-ai-row {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .weather-block {
+            background: linear-gradient(135deg, #87CEEB, #4A90D9);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 70px;
+            height: 70px;
+            flex-shrink: 0;
+        }
+
+        .weather-content {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            position: relative;
+        }
+
+        .weather-icon {
+            font-size: 32px;
+            line-height: 1;
+            z-index: 2;
+        }
+
+        .weather-temp {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            position: relative;
+            z-index: 1;
+            margin-left: -8px;
+            margin-top: 10px;
+        }
+
+        .weather-temp::after {
+            content: '°';
+            font-size: 14px;
+            position: absolute;
+            top: -2px;
+            right: -7px;
+        }
+
+        .weather-loading {
+            font-size: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .weather-night {
+            background: linear-gradient(135deg, #4A5568, #2D3748);
+        }
+
+        .weather-night .weather-temp {
+            color: var(--neobrut-white);
+        }
+
+        .ai-comment {
+            flex: 1;
+        }
+
+        /* ===== ФИКСИРОВАННОЕ СООТНОШЕНИЕ ЭКРАНА ===== */
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .workout-section {
+            height: 40%;
+            overflow-y: auto;
+        }
+
+        .activity-section {
+            height: 60%;
+            overflow: hidden;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Верхняя секция с тренировками -->
+    <!-- Верхняя панель с прогрессом (Dashboard Strip) -->
     <div class="workout-section">
-        <div class="workout-header"></div>
+        <div class="dashboard-strip" id="dashboard-strip">
+            <!-- Дата и серия -->
+            <div class="strip-main">
+                <div class="strip-day-info">
+                    <div class="strip-day" id="strip-day">Загрузка...</div>
+                    <div class="strip-date" id="strip-date">День 1</div>
+                </div>
+                <div class="strip-streak">
+                    <div class="streak-icon">🔥</div>
+                    <div class="streak-count" id="streak-count">0 дней</div>
+                </div>
+            </div>
 
-        <div class="workout-carousel">
-            <div class="workout-track" id="workout-track">
-                <!-- Блоки тренировок будут сгенерированы JavaScript -->
+            <!-- Прогресс -->
+            <div class="strip-progress">
+                <div class="strip-progress-content">
+                    <div class="strip-progress-label">Сегодня</div>
+                    <div class="strip-progress-value" id="strip-progress-value">0%</div>
+                    <div class="strip-progress-sub" id="strip-progress-sub">День 1 из 7</div>
+                </div>
+                <div class="strip-progress-chart">
+                    <svg width="50" height="50" viewBox="0 0 36 36">
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+                        <path id="strip-progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- AI Комментарий -->
+            <div class="ai-comment" id="ai-comment">
+                <div class="ai-comment-text" id="ai-comment-text">
+                    Загрузка AI комментария...
+                </div>
+            </div>
+
+            <!-- ПОГОДА -->
+            <div class="weather-block" id="weather-block">
+                <div class="weather-content">
+                    <div class="weather-icon" id="weather-icon">🌤️</div>
+                    <div class="weather-temp" id="weather-temp">--</div>
+                </div>
             </div>
         </div>
 
@@ -2010,11 +2297,6 @@
                     <!-- Задачи будут вставлены сюда -->
                 </div>
             </div>
-        </div>
-
-        <!-- Контейнер для задач (оставляем для совместимости) -->
-        <div class="todo-content" id="todo-content" style="display: none;">
-            <!-- Здесь будет отображаться todo-список в полноэкранном режиме -->
         </div>
     </div>
 
@@ -2621,10 +2903,339 @@
 
             // Проверяем процент выполнения и записываем активность
             checkAndRecordActivity();
+
+            // Обновляем dashboard strip
+            updateDashboardStrip();
+
+            // Обновляем AI комментарий если нужно
+            updateAIComment();
         }
 
         // Переключение видимости подпунктов
-        
+
+        // ===== DASHBOARD STRIP ФУНКЦИИ =====
+
+        // Обновление dashboard strip с актуальными данными
+        function updateDashboardStrip() {
+            const today = new Date();
+            const streak = calculateStreak();
+            const percentage = calculateCompletionPercentage(selectedWorkout);
+
+            // Обновляем дату
+            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+            const dayName = dayNames[today.getDay()];
+            const day = today.getDate();
+            const month = monthNames[today.getMonth()];
+
+            document.getElementById('strip-day').textContent = `${dayName}, ${day} ${month}`;
+            document.getElementById('strip-date').textContent = `День ${selectedWorkout}`;
+
+            // Обновляем серию
+            document.getElementById('streak-count').textContent = `${streak} ${streak === 1 ? 'день' : (streak >= 2 && streak <= 4 ? 'дня' : 'дней')}`;
+
+            // Обновляем прогресс
+            document.getElementById('strip-progress-value').textContent = `${percentage}%`;
+            document.getElementById('strip-progress-sub').textContent = `День ${selectedWorkout} из 7`;
+
+            // Обновляем круговой прогресс
+            const progressCircle = document.getElementById('strip-progress-circle');
+            progressCircle.setAttribute('stroke-dasharray', `${percentage}, 100`);
+        }
+
+        // ===== AI КОММЕНТАРИЙ ФУНКЦИИ =====
+
+        let lastAICommentUpdate = null;
+        let lastAICommentPercentage = -1;
+        const AI_COMMENT_UPDATE_INTERVAL = 15 * 60 * 1000; // 15 минут
+        const AI_COMMENT_PERCENTAGE_THRESHOLDS = [0, 25, 50, 75, 100];
+
+        // Проверка нужно ли обновить AI комментарий
+        function shouldUpdateAIComment(percentage) {
+            const now = Date.now();
+
+            // Если еще не было обновления - обновляем
+            if (!lastAICommentUpdate) return true;
+
+            // Если прошло 15+ минут - обновляем
+            if (now - lastAICommentUpdate > AI_COMMENT_UPDATE_INTERVAL) return true;
+
+            // Если процент изменился до порогового значения - обновляем
+            for (const threshold of AI_COMMENT_PERCENTAGE_THRESHOLDS) {
+                if (percentage >= threshold && lastAICommentPercentage < threshold) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Генерация AI комментария для dashboard
+        async function updateAIComment() {
+            const percentage = calculateCompletionPercentage(selectedWorkout);
+            const streak = calculateStreak();
+
+            // Проверяем нужно ли обновлять
+            if (!shouldUpdateAIComment(percentage)) {
+                return; // Используем закешированный комментарий
+            }
+
+            // Показываем индикатор загрузки
+            const commentElement = document.getElementById('ai-comment-text');
+            commentElement.innerHTML = `
+                <div class="ai-comment-loading">
+                    <span>Анализирую прогресс</span>
+                    <div class="ai-comment-loading-dot"></div>
+                    <div class="ai-comment-loading-dot"></div>
+                    <div class="ai-comment-loading-dot"></div>
+                </div>
+            `;
+
+            // Генерируем комментарий
+            const comment = await generateAICommentForDashboard(percentage, streak);
+
+            // Обновляем комментарий
+            commentElement.textContent = comment;
+
+            // Сохраняем время обновления и процент
+            lastAICommentUpdate = Date.now();
+            lastAICommentPercentage = percentage;
+
+            // Кешируем в localStorage
+            localStorage.setItem('fitTrackerAIComment', JSON.stringify({
+                comment,
+                timestamp: lastAICommentUpdate,
+                percentage: lastAICommentPercentage
+            }));
+        }
+
+        // Генерация AI комментария через API
+        async function generateAICommentForDashboard(percentage, streak) {
+            const today = new Date();
+            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            const dayName = dayNames[today.getDay()];
+
+            // Подсчитываем выполненные и оставшиеся задачи
+            const todos = todoData[selectedWorkout] || [];
+            const completedCount = todos.filter(t => t.completed).length;
+            const totalCount = todos.length;
+            const remainingCount = totalCount - completedCount;
+
+            const systemPrompt = `Ты — мотивирующий фитнес-тренер AI. Ты даёшь короткие, энерджичные комментарии на русском языке (макс 120 символов).
+Правила:
+- Будь дружелюбным и мотивирующим
+- Используй эмодзи (не более 2)
+- Адаптируй тон под прогресс пользователя
+- Упоминай конкретные цифры (процент, серия, задачи)
+- Никогда не повторяйся
+
+Контекст:
+- День: ${selectedWorkout} из 7
+- Процент выполнения: ${percentage}%
+- Серия: ${streak} дней
+- Выполнено задач: ${completedCount}/${totalCount}
+- Осталось: ${remainingCount} задач`;
+
+            try {
+                const response = await fetch(getAPIBaseURL(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getConnectionString()}`,
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'FitTracker AI'
+                    },
+                    body: JSON.stringify({
+                        model: AI_MODEL,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: 'Дай мотивирующий комментарий на основе текущего прогресса.' }
+                        ],
+                        max_tokens: 150,
+                        temperature: 0.8
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+
+                const data = await response.json();
+                const comment = data.choices[0]?.message?.content?.trim() || getFallbackComment(percentage, streak);
+                return comment;
+            } catch (error) {
+                console.error('AI Comment error:', error);
+                return getFallbackComment(percentage, streak);
+            }
+        }
+
+        // Fallback комментарии если API недоступен
+        function getFallbackComment(percentage, streak) {
+            const comments = [
+                { min: 0, max: 24, text: `Начинаем с вдоха! ${streak > 0 ? streak + ' дней серии — отличный старт!' : 'Первый шаг самый важный!'}` },
+                { min: 25, max: 49, text: `Хороший старт! ${percentage}% выполнено, продолжайте! 💪` },
+                { min: 50, max: 74, text: `Половина позади! ${streak} дней подряд — отличная дисциплина! 🔥` },
+                { min: 75, max: 99, text: `Почти у цели! ${percentage}% — финиш прям впереди! 🚀` },
+                { min: 100, max: 100, text: `Отлично! Все задачи выполнены! ${streak} дней серии — невероятно! 🏆` }
+            ];
+
+            const comment = comments.find(c => percentage >= c.min && percentage <= c.max);
+            return comment ? comment.text : comments[0].text;
+        }
+
+        // Загрузка закешированного AI комментария
+        function loadCachedAIComment() {
+            const cached = localStorage.getItem('fitTrackerAIComment');
+            if (cached) {
+                try {
+                    const { comment, timestamp, percentage } = JSON.parse(cached);
+                    const commentElement = document.getElementById('ai-comment-text');
+                    if (commentElement) {
+                        commentElement.textContent = comment;
+                    }
+                    lastAICommentUpdate = timestamp;
+                    lastAICommentPercentage = percentage;
+                } catch (e) {
+                    console.error('Error loading cached AI comment:', e);
+                }
+            }
+        }
+
+        // ===== ПОГОДА ЧЕРЕЗ OPEN-METEO =====
+
+        let weatherCache = null;
+        let weatherCacheTime = null;
+        const WEATHER_CACHE_DURATION = 30 * 60 * 1000; // 30 минут
+
+        // WMO код → иконки погоды
+        function getWeatherIcon(wmoCode, isNight) {
+            const dayIcons = {
+                0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+                45: '🌫️', 48: '🌫️',
+                51: '🌧️', 53: '🌧️', 55: '🌧️',
+                61: '🌧️', 63: '🌧️', 65: '🌧️',
+                71: '🌨️', 73: '🌨️', 75: '🌨️', 77: '🌨️',
+                80: '🌦️', 81: '🌦️', 82: '🌦️',
+                85: '🌨️', 86: '🌨️',
+                95: '⛈️', 96: '⛈️', 99: '⛈️'
+            };
+
+            const nightIcons = {
+                0: '🌙', 1: '🌙☀️', 2: '🌙⛅', 3: '🌙☁️',
+                45: '🌫️', 48: '🌫️',
+                51: '🌙🌧️', 53: '🌙🌧️', 55: '🌙🌧️',
+                61: '🌙🌧️', 63: '🌙🌧️', 65: '🌙🌧️',
+                71: '🌙🌨️', 73: '🌙🌨️', 75: '🌙🌨️', 77: '🌙🌨️',
+                80: '🌙🌦️', 81: '🌙🌦️', 82: '🌙🌦️',
+                85: '🌙🌨️', 86: '🌙🌨️',
+                95: '⛈️', 96: '⛈️', 99: '⛈️'
+            };
+
+            const icons = isNight ? nightIcons : dayIcons;
+            return icons[wmoCode] || (isNight ? '🌙' : '☀️');
+        }
+
+        // Проверка ночь ли сейчас
+        function isNightTime() {
+            const hour = new Date().getHours();
+            return hour < 6 || hour > 21;
+        }
+
+        // Загрузка погоды
+        async function loadWeather() {
+            const now = Date.now();
+
+            // Проверяем кеш
+            if (weatherCache && weatherCacheTime && (now - weatherCacheTime < WEATHER_CACHE_DURATION)) {
+                updateWeatherUI(weatherCache);
+                return;
+            }
+
+            // Показываем загрузку
+            document.getElementById('weather-icon').innerHTML = '<div class="weather-loading">🔄</div>';
+
+            try {
+                // Получаем геолокацию
+                const position = await getCurrentPosition();
+                const { latitude, longitude } = position.coords;
+
+                // Запрос к Open-Meteo
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const weather = {
+                    temp: Math.round(data.current_weather.temperature),
+                    wmoCode: data.current_weather.weathercode,
+                    isNight: isNightTime()
+                };
+
+                // Кешируем
+                weatherCache = weather;
+                weatherCacheTime = now;
+                localStorage.setItem('fitTrackerWeather', JSON.stringify({
+                    weather,
+                    timestamp: now
+                }));
+
+                updateWeatherUI(weather);
+            } catch (error) {
+                console.error('Weather load error:', error);
+                // Показываем заглушку
+                document.getElementById('weather-icon').textContent = '🌤️';
+                document.getElementById('weather-temp').textContent = '--';
+            }
+        }
+
+        // Получение геолокации
+        function getCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation not supported'));
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    timeout: 10000,
+                    maximumAge: 300000 // 5 минут
+                });
+            });
+        }
+
+        // Обновление UI погоды
+        function updateWeatherUI(weather) {
+            const icon = getWeatherIcon(weather.wmoCode, weather.isNight);
+            const weatherBlock = document.getElementById('weather-block');
+
+            document.getElementById('weather-icon').textContent = icon;
+            document.getElementById('weather-temp').textContent = weather.temp;
+
+            // Добавляем/убираем класс для ночи
+            if (weather.isNight) {
+                weatherBlock.classList.add('weather-night');
+            } else {
+                weatherBlock.classList.remove('weather-night');
+            }
+        }
+
+        // Загрузка закешированной погоды
+        function loadCachedWeather() {
+            const cached = localStorage.getItem('fitTrackerWeather');
+            if (cached) {
+                try {
+                    const { weather, timestamp } = JSON.parse(cached);
+                    const now = Date.now();
+                    if (now - timestamp < WEATHER_CACHE_DURATION) {
+                        weatherCache = weather;
+                        weatherCacheTime = timestamp;
+                        updateWeatherUI(weather);
+                    }
+                } catch (e) {
+                    console.error('Error loading cached weather:', e);
+                }
+            }
+        }
+
         // Инициализация при загрузке
         window.addEventListener('load', () => {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -2637,7 +3248,6 @@
             function initializeApp() {
             loadActivityData();
             initializeTodoLists();
-            renderWorkoutBlocks();
             renderActivityGrid();
             setupEventListeners();
             setupModalListeners();
@@ -2647,6 +3257,17 @@
 
             // Показываем streak анимацию при первом входе за день
             showStreakAnimation();
+
+            // Обновляем dashboard strip
+            updateDashboardStrip();
+
+            // Загружаем закешированный AI комментарий и генерируем новый если нужно
+            loadCachedAIComment();
+            updateAIComment();
+
+            // Загружаем погоду
+            loadCachedWeather();
+            loadWeather();
         }
 
         // Сброс всей активности (для перехода на новую систему)
