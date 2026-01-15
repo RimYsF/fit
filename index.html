@@ -3527,20 +3527,8 @@
                 weatherBlock.onclick = null;
 
                 try {
-                    let position;
-
-                    // Проверяем, в Telegram или нет
-                    if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.requestLocation) {
-                        // В Telegram: запрашиваем разрешение, затем получаем GPS
-                        position = await new Promise((resolve, reject) => {
-                            Telegram.WebApp.requestLocation(() => {
-                                navigator.geolocation.getCurrentPosition(resolve, reject);
-                            });
-                        });
-                    } else {
-                        // В браузере: просто получаем GPS
-                        position = await getCurrentPosition();
-                    }
+                    // Получаем GPS (одинаковый код для Telegram и браузера)
+                    const position = await getCurrentPosition();
 
                     // Сохраняем флаг и загружаем погоду
                     localStorage.setItem('fitTrackerGPSGranted', 'true');
