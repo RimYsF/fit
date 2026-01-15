@@ -3482,25 +3482,9 @@
                 weatherBlock.onclick = null;
 
                 try {
-                    if (window.Telegram?.WebApp?.requestLocation) {
-                        await new Promise((resolve) => {
-                            Telegram.WebApp.requestLocation(async () => {
-                                try {
-                                    const position = await getCurrentPosition();
-                                    localStorage.setItem('fitTrackerGPSGranted', 'true');
-                                    await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
-                                    resolve();
-                                } catch {
-                                    showGeoDeniedState();
-                                    resolve();
-                                }
-                            });
-                        });
-                    } else {
-                        const position = await getCurrentPosition();
-                        localStorage.setItem('fitTrackerGPSGranted', 'true');
-                        await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
-                    }
+                    const position = await getCurrentPosition();
+                    localStorage.setItem('fitTrackerGPSGranted', 'true');
+                    await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
                 } catch {
                     showGeoDeniedState();
                 }
