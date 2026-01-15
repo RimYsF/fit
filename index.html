@@ -3379,32 +3379,7 @@
                 return;
             }
 
-            const loadWithCoords = async (latitude, longitude) => {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm`;
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (!data.current_weather) {
-                    throw new Error('Invalid API response');
-                }
-
-                const weather = {
-                    temp: Math.round(data.current_weather.temperature),
-                    wmoCode: data.current_weather.weathercode,
-                    isNight: isNightTime()
-                };
-
-                weatherCache = weather;
-                weatherCacheTime = now;
-                localStorage.setItem('fitTrackerWeather', JSON.stringify({
-                    weather,
-                    timestamp: now
-                }));
-
-                updateWeatherUI(weather);
-            };
-
-            const loadGPS = async () => {
+            try {
                 const weatherIcon = document.getElementById('weather-icon');
                 const weatherTemp = document.getElementById('weather-temp');
                 if (weatherIcon) weatherIcon.textContent = '🔄';
@@ -3412,11 +3387,7 @@
 
                 const position = await getCurrentPosition();
                 localStorage.setItem('fitTrackerGPSGranted', 'true');
-                await loadWithCoords(position.coords.latitude, position.coords.longitude);
-            };
-
-            try {
-                await loadGPS();
+                await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
             } catch {
                 openGeoModal();
             }
@@ -3547,8 +3518,13 @@
 
         // Загрузка погоды по координатам
         async function loadWeatherForCoords(latitude, longitude) {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
             const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
             const data = await response.json();
 
             if (!data.current_weather) {
@@ -3561,7 +3537,6 @@
                 isNight: isNightTime()
             };
 
-            // Кешируем
             weatherCache = weather;
             weatherCacheTime = Date.now();
             localStorage.setItem('fitTrackerWeather', JSON.stringify({
