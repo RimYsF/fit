@@ -3392,16 +3392,27 @@
                     try {
                         // Проверяем, работаем ли в Telegram Mini App
                         if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.requestLocation) {
-                            // Используем Telegram API
+                            // В Telegram: сначала запрашиваем разрешение, затем получаем координаты
+                            console.log('Weather: Using Telegram WebApp to request GPS');
                             await new Promise((resolve, reject) => {
-                                Telegram.WebApp.requestLocation((locationData) => {
-                                    if (locationData && locationData.latitude) {
-                                        latitude = locationData.latitude;
-                                        longitude = locationData.longitude;
-                                        console.log('Weather: Using Telegram GPS', latitude, longitude);
-                                        resolve();
+                                Telegram.WebApp.requestLocation(() => {
+                                    console.log('Weather: Telegram permission granted');
+                                    // После получения разрешения используем браузерный API
+                                    if (navigator.geolocation) {
+                                        navigator.geolocation.getCurrentPosition(
+                                            (position) => {
+                                                latitude = position.coords.latitude;
+                                                longitude = position.coords.longitude;
+                                                console.log('Weather: GPS obtained via browser API', latitude, longitude);
+                                                resolve();
+                                            },
+                                            (error) => {
+                                                console.error('Weather: Browser GPS error', error);
+                                                reject(error);
+                                            }
+                                        );
                                     } else {
-                                        reject(new Error('No location data from Telegram'));
+                                        reject(new Error('Geolocation not supported'));
                                     }
                                 });
                             });
@@ -3572,20 +3583,29 @@
                 try {
                     // Проверяем, работаем ли в Telegram Mini App
                     if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.requestLocation) {
-                        // Используем Telegram API для запроса геолокации
-                        console.log('Using Telegram WebApp requestLocation API');
+                        // В Telegram: сначала запрашиваем разрешение через Telegram API
+                        // затем используем браузерный API для получения координат
+                        console.log('Using Telegram WebApp to request GPS permission');
 
                         await new Promise((resolve, reject) => {
-                            Telegram.WebApp.requestLocation((locationData) => {
-                                console.log('Telegram callback received:', locationData);
-                                if (locationData && locationData.latitude) {
-                                    latitude = locationData.latitude;
-                                    longitude = locationData.longitude;
-                                    console.log('Telegram GPS obtained:', latitude, longitude);
-                                    resolve();
+                            Telegram.WebApp.requestLocation(() => {
+                                console.log('Telegram permission granted, now getting location');
+                                // После получения разрешения используем браузерный API
+                                if (navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(
+                                        (position) => {
+                                            latitude = position.coords.latitude;
+                                            longitude = position.coords.longitude;
+                                            console.log('GPS obtained via browser API:', latitude, longitude);
+                                            resolve();
+                                        },
+                                        (error) => {
+                                            console.error('Browser GPS error:', error);
+                                            reject(error);
+                                        }
+                                    );
                                 } else {
-                                    console.error('Invalid location data:', locationData);
-                                    reject(new Error('No location data from Telegram'));
+                                    reject(new Error('Geolocation not supported'));
                                 }
                             });
                         });
