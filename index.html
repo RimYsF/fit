@@ -3375,7 +3375,10 @@
             }
 
             // Показываем загрузку
-            document.getElementById('weather-icon').innerHTML = '<div class="weather-loading">🔄</div>';
+            const weatherIcon = document.getElementById('weather-icon');
+            const weatherTemp = document.getElementById('weather-temp');
+            if (weatherIcon) weatherIcon.textContent = '🔄';
+            if (weatherTemp) weatherTemp.textContent = '...';
 
             try {
                 // Проверяем - давал ли пользователь разрешение на GPS раньше
@@ -3467,8 +3470,10 @@
                 weatherCacheTime = null;
                 localStorage.removeItem('fitTrackerWeather');
                 // Показываем заглушку
-                document.getElementById('weather-icon').textContent = '❓';
-                document.getElementById('weather-temp').textContent = '--';
+                const weatherIcon = document.getElementById('weather-icon');
+                const weatherTemp = document.getElementById('weather-temp');
+                if (weatherIcon) weatherIcon.textContent = '❓';
+                if (weatherTemp) weatherTemp.textContent = '--';
             }
         }
 
@@ -3491,11 +3496,11 @@
         function showGeoPermissionPrompt() {
             const weatherBlock = document.getElementById('weather-block');
 
-            // Меняем иконку на восклицательный знак
+            // Меняем иконку на восклицательный знак, сохраняя структуру с id
             weatherBlock.classList.add('geo-prompt');
             weatherBlock.innerHTML = `
                 <div class="weather-content">
-                    <div class="geo-prompt-icon">⚠️</div>
+                    <div class="weather-icon geo-prompt-icon">⚠️</div>
                 </div>
                 <div class="weather-temp">--</div>
             `;
@@ -3510,11 +3515,11 @@
         function showGeoDeniedState() {
             const weatherBlock = document.getElementById('weather-block');
 
-            // Меняем иконку на желтый треугольник
+            // Меняем иконку на желтый треугольник, сохраняя структуру с id
             weatherBlock.classList.add('geo-denied');
             weatherBlock.innerHTML = `
                 <div class="weather-content">
-                    <div class="geo-denied-icon">⚠️</div>
+                    <div class="weather-icon geo-denied-icon">⚠️</div>
                 </div>
                 <div class="weather-temp">--</div>
             `;
@@ -3547,15 +3552,19 @@
             allowBtn.addEventListener('click', async () => {
                 closeGeoModal();
 
-                // Показываем индикатор загрузки
+                // Показываем индикатор загрузки с сохранением структуры
                 const weatherBlock = document.getElementById('weather-block');
-                const originalContent = weatherBlock.innerHTML;
                 weatherBlock.innerHTML = `
                     <div class="weather-content">
-                        <div class="weather-loading">🔄</div>
+                        <div class="weather-icon" id="weather-icon">🔄</div>
                     </div>
-                    <div class="weather-temp">...</div>
+                    <div class="weather-temp" id="weather-temp">...</div>
                 `;
+
+                // Убираем класс геолокации отказана
+                weatherBlock.classList.remove('geo-denied');
+                weatherBlock.style.cursor = '';
+                weatherBlock.onclick = null;
 
                 try {
                     let latitude, longitude;
@@ -3631,12 +3640,14 @@
                         const position = await getCurrentPosition();
                         localStorage.setItem('fitTrackerGPSGranted', 'true');
                         localStorage.removeItem('fitTrackerGPSDenied');
-                        forceRefreshWeather();
+                        // Сбрасываем кеш и загружаем погоду снова
+                        weatherCache = null;
+                        weatherCacheTime = null;
+                        await loadWeather();
                     } catch (fallbackError) {
                         console.error('Fallback also failed:', fallbackError);
                         // Показываем снова состояние отказа
                         showGeoDeniedState();
-                        localStorage.setItem('fitTrackerGPSDenied', 'true');
                     }
                 }
             });
@@ -3686,7 +3697,11 @@
                 updateWeatherUI(weather);
             } catch (error) {
                 console.error('Weather load error:', error);
-                showGeoDeniedState();
+                // При ошибке API погоды показываем ошибку, а не желтый треугольник
+                const weatherIcon = document.getElementById('weather-icon');
+                const weatherTemp = document.getElementById('weather-temp');
+                if (weatherIcon) weatherIcon.textContent = '❌';
+                if (weatherTemp) weatherTemp.textContent = '--';
             }
         }
 
@@ -3797,8 +3812,31 @@
                 hour: new Date().getHours()
             });
 
-            document.getElementById('weather-icon').textContent = icon;
-            document.getElementById('weather-temp').textContent = weather.temp;
+            // Восстанавливаем оригинальную структуру HTML (если она была изменена)
+            const weatherIcon = document.getElementById('weather-icon');
+            const weatherTemp = document.getElementById('weather-temp');
+
+            if (!weatherIcon || !weatherTemp) {
+                // Структура была изменена (желтый треугольник), восстанавливаем
+                weatherBlock.innerHTML = `
+                    <div class="weather-content">
+                        <div class="weather-icon" id="weather-icon">${icon}</div>
+                    </div>
+                    <div class="weather-temp" id="weather-temp">${weather.temp}</div>
+                `;
+            } else {
+                // Структура в порядке, обновляем значения
+                weatherIcon.textContent = icon;
+                weatherTemp.textContent = weather.temp;
+            }
+
+            // Убираем классы геолокации
+            weatherBlock.classList.remove('geo-denied');
+            weatherBlock.classList.remove('geo-prompt');
+
+            // Убираем клик-обработчик для повторного запроса
+            weatherBlock.style.cursor = '';
+            weatherBlock.onclick = null;
 
             // Добавляем/убираем класс для ночи
             if (currentIsNight) {
