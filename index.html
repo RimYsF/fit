@@ -3509,17 +3509,17 @@
             };
         }
 
-        // Показать состояние отказа (желтый треугольник)
+        // Показать состояние отказа (желый треугольник) - С id для обновления!
         function showGeoDeniedState() {
             const weatherBlock = document.getElementById('weather-block');
 
-            // Меняем иконку на желтый треугольник, сохраняя структуру с id
+            // Меняем иконку на желтый треугольник, СОХРАНЯЯ id
             weatherBlock.classList.add('geo-denied');
             weatherBlock.innerHTML = `
                 <div class="weather-content">
-                    <div class="weather-icon geo-denied-icon">⚠️</div>
+                    <div class="weather-icon geo-denied-icon" id="weather-icon">⚠️</div>
                 </div>
-                <div class="weather-temp">--</div>
+                <div class="weather-temp" id="weather-temp">--</div>
             `;
             weatherBlock.style.cursor = 'pointer';
             // При клике открываем модальное окно для повторного запроса
