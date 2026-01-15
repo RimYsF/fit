@@ -3530,6 +3530,8 @@
 
             // Клик по "Разрешить"
             allowBtn.addEventListener('click', async () => {
+                // Сразу удаляем флаг отказа, чтобы пользователь мог повторить попытку
+                localStorage.removeItem('fitTrackerGPSDenied');
                 closeGeoModal();
 
                 // Показываем индикатор загрузки с сохранением структуры
@@ -3556,14 +3558,14 @@
 
                     // Сохраняем успешное получение координат
                     localStorage.setItem('fitTrackerGPSGranted', 'true');
-                    localStorage.removeItem('fitTrackerGPSDenied');
 
                     // Загружаем погоду с новыми координатами
                     await loadWeatherForCoords(latitude, longitude);
 
                 } catch (error) {
                     console.error('GPS permission error:', error);
-                    // Показываем снова состояние отказа
+                    // При ошибке НЕ сохраняем fitTrackerGPSDenied, чтобы пользователь мог повторить попытку
+                    // Показываем состояние отказа визуально, но не сохраняем флаг
                     showGeoDeniedState();
                 }
             });
