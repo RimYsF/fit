@@ -2227,6 +2227,115 @@
             color: var(--neobrut-white);
         }
 
+        /* ===== МОДАЛЬНОЕ ОКНО ГЕОЛОКАЦИИ ===== */
+        .geo-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .geo-modal-overlay.show {
+            display: flex;
+        }
+
+        .geo-modal {
+            background: var(--neobrut-white);
+            border: 4px solid var(--neobrut-black);
+            box-shadow: 8px 8px 0 var(--neobrut-black);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+            animation: geoModalSlide 0.3s ease-out;
+        }
+
+        @keyframes geoModalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .geo-modal-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .geo-modal-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--neobrut-black);
+            margin: 0 0 16px 0;
+        }
+
+        .geo-modal-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--neobrut-darkgray);
+            margin: 0 0 12px 0;
+        }
+
+        .geo-modal-subtext {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #666;
+            margin: 0 0 20px 0;
+        }
+
+        .geo-modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .geo-modal-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: 3px solid var(--neobrut-black);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .geo-modal-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .geo-modal-btn-deny {
+            background: var(--neobrut-white);
+            color: var(--neobrut-black);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .geo-modal-btn-deny:hover {
+            background: #f0f0f0;
+        }
+
+        .geo-modal-btn-allow {
+            background: var(--neobrut-blue);
+            color: var(--neobrut-white);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .geo-modal-btn-allow:hover {
+            background: #5dade2;
+        }
+
         .ai-comment {
             flex: 1;
         }
@@ -2309,6 +2418,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Модальное окно для запроса геолокации -->
+    <div class="geo-modal-overlay" id="geo-modal-overlay">
+        <div class="geo-modal">
+            <div class="geo-modal-icon">📍</div>
+            <h2 class="geo-modal-title">Доступ к геолокации</h2>
+            <p class="geo-modal-text">
+                Чтобы показывать точную погоду в твоём городе и давать персонализированные рекомендации от ИИ, нам нужен доступ к геолокации.
+            </p>
+            <p class="geo-modal-subtext">Это поможет ИИ учитывать погодные условия при составлении тренировочного плана 🌤️</p>
+            <div class="geo-modal-buttons">
+                <button class="geo-modal-btn geo-modal-btn-deny" id="geo-modal-deny">Запретить</button>
+                <button class="geo-modal-btn geo-modal-btn-allow" id="geo-modal-allow">Разрешить</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Горизонтальная линия-разделитель с кнопкой -->
     <div class="divider">
@@ -3165,12 +3291,59 @@
             document.getElementById('weather-icon').innerHTML = '<div class="weather-loading">🔄</div>';
 
             try {
-                // Используем только IP-геолокацию (не требует разрешения)
-                const ipLocation = await getIPLocation();
-                const latitude = ipLocation.latitude;
-                const longitude = ipLocation.longitude;
+                // Проверяем - давал ли пользователь разрешение на GPS раньше
+                const gpsPermissionGranted = localStorage.getItem('fitTrackerGPSGranted') === 'true';
 
-                console.log('Weather: Using IP location', latitude, longitude);
+                let latitude, longitude;
+
+                if (gpsPermissionGranted) {
+                    // Пользователь уже давал разрешение - используем GPS
+                    try {
+                        const position = await getCurrentPosition();
+                        latitude = position.coords.latitude;
+                        longitude = position.coords.longitude;
+                        console.log('Weather: Using GPS (cached permission)', latitude, longitude);
+                    } catch (gpsError) {
+                        // GPS не сработал - fallback на IP
+                        console.log('Weather: GPS failed, using IP');
+                        const ipLocation = await getIPLocation();
+                        latitude = ipLocation.latitude;
+                        longitude = ipLocation.longitude;
+                    }
+                } else {
+                    // Первый раз или пользователь не давал разрешение
+                    // Проверяем - отклонял ли пользователь раньше
+                    const gpsDenied = localStorage.getItem('fitTrackerGPSDenied') === 'true';
+
+                    if (gpsDenied) {
+                        // Пользователь уже отклонял - показываем желтый треугольник
+                        console.log('Weather: GPS denied by user, showing denied state');
+                        showGeoDeniedState();
+                        return; // Прерываем загрузку погоды
+                    } else {
+                        // Пробуем GPS с коротким таймаутом
+                        try {
+                            const position = await Promise.race([
+                                getCurrentPosition(),
+                                new Promise((_, reject) =>
+                                    setTimeout(() => reject(new Error('GPS timeout')), 2000)
+                                )
+                            ]);
+                            latitude = position.coords.latitude;
+                            longitude = position.coords.longitude;
+                            // Сохраняем что пользователь дал разрешение
+                            localStorage.setItem('fitTrackerGPSGranted', 'true');
+                            console.log('Weather: Using GPS (new permission)', latitude, longitude);
+                        } catch (gpsError) {
+                            // GPS не сработал или пользователь не дал разрешение - показываем желтый треугольник
+                            console.log('Weather: GPS denied/timeout, showing denied state');
+                            showGeoDeniedState();
+                            return; // Прерываем загрузку погоды
+                        }
+                    }
+                }
+
+                console.log('Weather API: Loading for', latitude, longitude);
 
                 // Запрос к Open-Meteo с явным указанием единиц измерения
                 const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&wind_speed_unit=kmh&precipitation_unit=mm`;
@@ -3211,6 +3384,157 @@
                 document.getElementById('weather-temp').textContent = '--';
             }
         }
+
+        // Получение геолокации через GPS
+        function getCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation not supported'));
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    timeout: 5000,
+                    maximumAge: 300000 // 5 минут
+                });
+            });
+        }
+
+        // Показать запрос разрешения на геолокацию
+        function showGeoPermissionPrompt() {
+            const weatherBlock = document.getElementById('weather-block');
+
+            // Меняем иконку на восклицательный знак
+            weatherBlock.classList.add('geo-prompt');
+            weatherBlock.innerHTML = `
+                <div class="weather-content">
+                    <div class="geo-prompt-icon">⚠️</div>
+                </div>
+                <div class="weather-temp">--</div>
+            `;
+            weatherBlock.style.cursor = 'pointer';
+            // При клике открываем модальное окно
+            weatherBlock.onclick = () => {
+                openGeoModal();
+            };
+        }
+
+        // Показать состояние отказа (желтый треугольник)
+        function showGeoDeniedState() {
+            const weatherBlock = document.getElementById('weather-block');
+
+            // Меняем иконку на желтый треугольник
+            weatherBlock.classList.add('geo-denied');
+            weatherBlock.innerHTML = `
+                <div class="weather-content">
+                    <div class="geo-denied-icon">⚠️</div>
+                </div>
+                <div class="weather-temp">--</div>
+            `;
+            weatherBlock.style.cursor = 'pointer';
+            // При клике открываем модальное окно для повторного запроса
+            weatherBlock.onclick = () => {
+                openGeoModal();
+            };
+        }
+
+        // Открыть модальное окно геолокации
+        function openGeoModal() {
+            const overlay = document.getElementById('geo-modal-overlay');
+            overlay.classList.add('show');
+        }
+
+        // Закрыть модальное окно геолокации
+        function closeGeoModal() {
+            const overlay = document.getElementById('geo-modal-overlay');
+            overlay.classList.remove('show');
+        }
+
+        // Настройка обработчиков для модального окна геолокации
+        function setupGeoModalListeners() {
+            const allowBtn = document.getElementById('geo-modal-allow');
+            const denyBtn = document.getElementById('geo-modal-deny');
+            const overlay = document.getElementById('geo-modal-overlay');
+
+            // Клик по "Разрешить"
+            allowBtn.addEventListener('click', async () => {
+                closeGeoModal();
+                try {
+                    const position = await getCurrentPosition();
+                    localStorage.setItem('fitTrackerGPSGranted', 'true');
+                    localStorage.removeItem('fitTrackerGPSDenied');
+                    // Перезагружаем погоду с новым разрешением
+                    forceRefreshWeather();
+                } catch (error) {
+                    console.error('GPS permission denied:', error);
+                }
+            });
+
+            // Клик по "Запретить"
+            denyBtn.addEventListener('click', () => {
+                closeGeoModal();
+                localStorage.setItem('fitTrackerGPSDenied', 'true');
+                // Оставляем IP-геолокацию
+            });
+
+            // Клик по фону - закрывает модальное окно
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    closeGeoModal();
+                }
+            });
+        }
+
+        // Стили для восклицательного знака
+        const geoPromptStyles = document.createElement('style');
+        geoPromptStyles.textContent = `
+            .geo-prompt {
+                background: linear-gradient(135deg, #FFB347, #FF6B6B) !important;
+            }
+
+            .geo-prompt .geo-prompt-icon {
+                font-size: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                animation: pulse 2s infinite;
+            }
+
+            .geo-prompt .weather-temp {
+                color: var(--neobrut-white) !important;
+            }
+
+            .geo-denied {
+                background: linear-gradient(135deg, #FFD700, #FFA500) !important;
+            }
+
+            .geo-denied .geo-denied-icon {
+                font-size: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+                animation: pulse 2s infinite;
+            }
+
+            .geo-denied .weather-temp {
+                color: var(--neobrut-white) !important;
+            }
+
+            @keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+            }
+        `;
+        document.head.appendChild(geoPromptStyles);
+
 
         // IP-геолокация (запасной вариант)
         async function getIPLocation() {
@@ -3320,6 +3644,7 @@
             renderActivityGrid();
             setupEventListeners();
             setupModalListeners();
+            setupGeoModalListeners();
 
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
@@ -4082,21 +4407,6 @@
                     todoTouchStartY = 0;
                     todoIsSwiping = false;
                 }, { passive: true });
-            }
-
-            // Клик по виджету погоды для обновления
-            const weatherBlock = document.getElementById('weather-block');
-            if (weatherBlock) {
-                weatherBlock.addEventListener('click', () => {
-                    // Визуальная обратная связь
-                    weatherBlock.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        weatherBlock.style.transform = '';
-                    }, 100);
-
-                    // Обновляем погоду
-                    forceRefreshWeather();
-                });
             }
 
             // Устанавливаем обработчики для модального окна
