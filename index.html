@@ -3390,13 +3390,31 @@
                     if (weatherTemp) weatherTemp.textContent = '...';
 
                     try {
-                        const position = await getCurrentPosition();
-                        latitude = position.coords.latitude;
-                        longitude = position.coords.longitude;
-                        console.log('Weather: Using GPS (cached permission)', latitude, longitude);
+                        // Проверяем, работаем ли в Telegram Mini App
+                        if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.requestLocation) {
+                            // Используем Telegram API
+                            await new Promise((resolve, reject) => {
+                                Telegram.WebApp.requestLocation((locationData) => {
+                                    if (locationData && locationData.latitude) {
+                                        latitude = locationData.latitude;
+                                        longitude = locationData.longitude;
+                                        console.log('Weather: Using Telegram GPS', latitude, longitude);
+                                        resolve();
+                                    } else {
+                                        reject(new Error('No location data from Telegram'));
+                                    }
+                                });
+                            });
+                        } else {
+                            // Используем стандартный браузерный API
+                            const position = await getCurrentPosition();
+                            latitude = position.coords.latitude;
+                            longitude = position.coords.longitude;
+                            console.log('Weather: Using browser GPS', latitude, longitude);
+                        }
                     } catch (gpsError) {
                         // GPS не сработал - fallback на IP
-                        console.log('Weather: GPS failed, using IP');
+                        console.log('Weather: GPS failed, using IP', gpsError);
                         const ipLocation = await getIPLocation();
                         latitude = ipLocation.latitude;
                         longitude = ipLocation.longitude;
@@ -3549,12 +3567,33 @@
                 weatherBlock.onclick = null;
 
                 try {
-                    // Пробуем получить GPS через стандартный API
-                    const position = await getCurrentPosition();
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
+                    let latitude, longitude;
 
-                    console.log('GPS obtained:', latitude, longitude);
+                    // Проверяем, работаем ли в Telegram Mini App
+                    if (window.Telegram && window.Telegram.WebApp && Telegram.WebApp.requestLocation) {
+                        // Используем Telegram API для запроса геолокации
+                        console.log('Using Telegram WebApp requestLocation API');
+
+                        await new Promise((resolve, reject) => {
+                            Telegram.WebApp.requestLocation((locationData) => {
+                                if (locationData && locationData.latitude) {
+                                    latitude = locationData.latitude;
+                                    longitude = locationData.longitude;
+                                    console.log('Telegram GPS obtained:', latitude, longitude);
+                                    resolve();
+                                } else {
+                                    reject(new Error('No location data from Telegram'));
+                                }
+                            });
+                        });
+                    } else {
+                        // Не в Telegram - используем стандартный браузерный API
+                        console.log('Using standard browser geolocation API');
+                        const position = await getCurrentPosition();
+                        latitude = position.coords.latitude;
+                        longitude = position.coords.longitude;
+                        console.log('Browser GPS obtained:', latitude, longitude);
+                    }
 
                     // Сохраняем успешное получение координат
                     localStorage.setItem('fitTrackerGPSGranted', 'true');
