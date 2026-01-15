@@ -3374,20 +3374,21 @@
                 return;
             }
 
-            // Показываем загрузку
-            const weatherIcon = document.getElementById('weather-icon');
-            const weatherTemp = document.getElementById('weather-temp');
-            if (weatherIcon) weatherIcon.textContent = '🔄';
-            if (weatherTemp) weatherTemp.textContent = '...';
-
             try {
                 // Проверяем - давал ли пользователь разрешение на GPS раньше
                 const gpsPermissionGranted = localStorage.getItem('fitTrackerGPSGranted') === 'true';
+                const gpsDenied = localStorage.getItem('fitTrackerGPSDenied') === 'true';
 
                 let latitude, longitude;
 
                 if (gpsPermissionGranted) {
                     // Пользователь уже давал разрешение - используем GPS
+                    // Показываем загрузку
+                    const weatherIcon = document.getElementById('weather-icon');
+                    const weatherTemp = document.getElementById('weather-temp');
+                    if (weatherIcon) weatherIcon.textContent = '🔄';
+                    if (weatherTemp) weatherTemp.textContent = '...';
+
                     try {
                         const position = await getCurrentPosition();
                         latitude = position.coords.latitude;
@@ -3400,37 +3401,16 @@
                         latitude = ipLocation.latitude;
                         longitude = ipLocation.longitude;
                     }
+                } else if (gpsDenied) {
+                    // Пользователь отклонил - показываем желтый треугольник
+                    console.log('Weather: GPS denied by user, showing denied state');
+                    showGeoDeniedState();
+                    return; // Прерываем загрузку погоды
                 } else {
-                    // Первый раз или пользователь не давал разрешение
-                    // Проверяем - отклонял ли пользователь раньше
-                    const gpsDenied = localStorage.getItem('fitTrackerGPSDenied') === 'true';
-
-                    if (gpsDenied) {
-                        // Пользователь уже отклонял - показываем желтый треугольник
-                        console.log('Weather: GPS denied by user, showing denied state');
-                        showGeoDeniedState();
-                        return; // Прерываем загрузку погоды
-                    } else {
-                        // Пробуем GPS с коротким таймаутом
-                        try {
-                            const position = await Promise.race([
-                                getCurrentPosition(),
-                                new Promise((_, reject) =>
-                                    setTimeout(() => reject(new Error('GPS timeout')), 2000)
-                                )
-                            ]);
-                            latitude = position.coords.latitude;
-                            longitude = position.coords.longitude;
-                            // Сохраняем что пользователь дал разрешение
-                            localStorage.setItem('fitTrackerGPSGranted', 'true');
-                            console.log('Weather: Using GPS (new permission)', latitude, longitude);
-                        } catch (gpsError) {
-                            // GPS не сработал или пользователь не дал разрешение - показываем желтый треугольник
-                            console.log('Weather: GPS denied/timeout, showing denied state');
-                            showGeoDeniedState();
-                            return; // Прерываем загрузку погоды
-                        }
-                    }
+                    // Первый раз - открываем модальное окно для запроса разрешения
+                    console.log('Weather: First time, showing geo modal');
+                    openGeoModal();
+                    return; // Прерываем загрузку до получения разрешения
                 }
 
                 console.log('Weather API: Loading for', latitude, longitude);
@@ -3567,63 +3547,12 @@
                 weatherBlock.onclick = null;
 
                 try {
-                    let latitude, longitude;
+                    // Пробуем получить GPS через стандартный API
+                    const position = await getCurrentPosition();
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
 
-                    // Проверяем, работаем ли в Telegram Mini App
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        const tg = window.Telegram.WebApp;
-
-                        // Используем Telegram API для запроса геолокации
-                        if (tg.requestLocation) {
-                            // Метод 1: Через Telegram requestLocation (если доступен)
-                            await new Promise((resolve, reject) => {
-                                tg.requestLocation((locationData) => {
-                                    if (locationData && locationData.latitude) {
-                                        latitude = locationData.latitude;
-                                        longitude = locationData.longitude;
-                                        resolve();
-                                    } else {
-                                        reject(new Error('No location data'));
-                                    }
-                                });
-                            });
-                        } else if (tg.openPopup) {
-                            // Метод 2: Через Telegram openPopup с кнопкой
-                            await new Promise((resolve, reject) => {
-                                tg.openPopup({
-                                    title: 'Геолокация',
-                                    message: 'Нажмите кнопку ниже, чтобы отправить вашу геолокацию',
-                                    buttons: [
-                                        { id: 'send_location', type: 'default', text: '📍 Отправить локацию' },
-                                        { id: 'cancel', type: 'cancel', text: 'Отмена' }
-                                    ]
-                                }, (buttonId) => {
-                                    if (buttonId === 'send_location') {
-                                        // После нажатия пробуем получить геолокацию
-                                        navigator.geolocation.getCurrentPosition(
-                                            (pos) => {
-                                                latitude = pos.coords.latitude;
-                                                longitude = pos.coords.longitude;
-                                                resolve();
-                                            },
-                                            (err) => {
-                                                reject(err);
-                                            },
-                                            { timeout: 10000, enableHighAccuracy: true }
-                                        );
-                                    } else {
-                                        reject(new Error('User cancelled'));
-                                    }
-                                });
-                            });
-                        } else {
-                            // Fallback на стандартный API
-                            throw new Error('Telegram API not available');
-                        }
-                    } else {
-                        // Не в Telegram - используем стандартный API
-                        throw new Error('Not in Telegram');
-                    }
+                    console.log('GPS obtained:', latitude, longitude);
 
                     // Сохраняем успешное получение координат
                     localStorage.setItem('fitTrackerGPSGranted', 'true');
@@ -3634,21 +3563,8 @@
 
                 } catch (error) {
                     console.error('GPS permission error:', error);
-
-                    // Если не удалось через Telegram, пробуем стандартный API как fallback
-                    try {
-                        const position = await getCurrentPosition();
-                        localStorage.setItem('fitTrackerGPSGranted', 'true');
-                        localStorage.removeItem('fitTrackerGPSDenied');
-                        // Сбрасываем кеш и загружаем погоду снова
-                        weatherCache = null;
-                        weatherCacheTime = null;
-                        await loadWeather();
-                    } catch (fallbackError) {
-                        console.error('Fallback also failed:', fallbackError);
-                        // Показываем снова состояние отказа
-                        showGeoDeniedState();
-                    }
+                    // Показываем снова состояние отказа
+                    showGeoDeniedState();
                 }
             });
 
@@ -3656,13 +3572,16 @@
             denyBtn.addEventListener('click', () => {
                 closeGeoModal();
                 localStorage.setItem('fitTrackerGPSDenied', 'true');
-                // Оставляем IP-геолокацию
+                // Показываем желтый треугольник
+                showGeoDeniedState();
             });
 
-            // Клик по фону - закрывает модальное окно
+            // Клик по фону - закрывает модальное окно и показывает отказ
             overlay.addEventListener('click', (e) => {
                 if (e.target === overlay) {
                     closeGeoModal();
+                    localStorage.setItem('fitTrackerGPSDenied', 'true');
+                    showGeoDeniedState();
                 }
             });
         }
