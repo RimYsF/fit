@@ -115,8 +115,7 @@
 
         .workout-header {
             padding: 0;
-            display: none;
-            /* Скрываем пустой header */
+            display: none; /* Скрываем пустой header */
         }
 
         .workout-title {
@@ -163,8 +162,7 @@
             scroll-behavior: smooth;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch;
-            /* Плавная прокрутка на iOS */
+            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
         }
 
         .workout-track::-webkit-scrollbar {
@@ -181,7 +179,7 @@
             border-radius: 16px;
             box-shadow:
                 8px 8px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0, 0, 0, 0.1);
+                inset 2px 2px 0 rgba(0,0,0,0.1);
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
@@ -207,7 +205,7 @@
             transform: translateY(-2px);
             box-shadow:
                 8px 8px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0, 0, 0, 0.1);
+                inset 2px 2px 0 rgba(0,0,0,0.1);
         }
 
         .workout-number {
@@ -257,7 +255,7 @@
             opacity: 0.8;
         }
 
-
+      
         /* Todo-список в стиле необрутализма */
         .todo-list {
             list-style: none;
@@ -290,7 +288,6 @@
 
         /* Дополнительно отключаем подсветку при клике на мобильных */
         @media (hover: none) and (pointer: coarse) {
-
             .todo-item:active,
             .todo-subitem:active,
             .todo-expand:active {
@@ -343,8 +340,7 @@
             height: 100%;
             cursor: pointer;
             z-index: 2;
-            outline: none;
-            /* Убираем синюю рамку при клике */
+            outline: none; /* Убираем синюю рамку при клике */
         }
 
         .checkbox-visual {
@@ -359,7 +355,7 @@
             transition: all 0.2s;
         }
 
-        .todo-checkbox input:checked~.checkbox-visual {
+        .todo-checkbox input:checked ~ .checkbox-visual {
             background: var(--neobrut-yellow);
             transform: rotate(-5deg);
         }
@@ -376,7 +372,7 @@
             transition: transform 0.2s;
         }
 
-        .todo-checkbox input:checked~.checkbox-checkmark {
+        .todo-checkbox input:checked ~ .checkbox-checkmark {
             transform: translate(-50%, -50%) rotate(-45deg) scale(1);
         }
 
@@ -387,8 +383,7 @@
             color: var(--neobrut-darkgray);
             user-select: none;
             cursor: pointer;
-            outline: none;
-            /* Убираем синюю рамку при клике */
+            outline: none; /* Убираем синюю рамку при клике */
         }
 
         .todo-item.completed .todo-text {
@@ -423,8 +418,7 @@
             list-style: none;
             padding: 0;
             margin: 10px 0 0 0;
-            display: none;
-            /* Скрыты по умолчанию */
+            display: none; /* Скрыты по умолчанию */
         }
 
         .todo-sublist.expanded {
@@ -470,8 +464,7 @@
         .todo-subitem .todo-text {
             font-size: 14px;
             font-weight: 500;
-            outline: none;
-            /* Убираем синюю рамку при клике */
+            outline: none; /* Убираем синюю рамку при клике */
         }
 
         .todo-subitem.completed {
@@ -556,8 +549,7 @@
         @media (max-width: 768px) {
             .workout-section.show-todos #todo-content {
                 padding: 10px;
-                height: 190px;
-                /* Финальная высота для лучшего отображения */
+                height: 190px; /* Финальная высота для лучшего отображения */
             }
 
             .workout-section.show-todos .workout-title {
@@ -579,8 +571,7 @@
             /* Секция остается того же размера, что и с каруселью */
             display: flex;
             flex-direction: column;
-            padding: 0;
-            /* Убираем вертикальные отступы */
+            padding: 0; /* Убираем вертикальные отступы */
         }
 
         .workout-section.show-todos .workout-header {
@@ -616,7 +607,7 @@
             display: none;
         }
 
-
+        
         /* Базовые стили для контента задач */
         #todo-content {
             display: none;
@@ -630,10 +621,8 @@
             background: var(--neobrut-white);
             overflow-y: auto;
             overflow-x: hidden;
-            height: 190px;
-            /* Финальная высота для лучшего отображения */
-            -webkit-overflow-scrolling: touch;
-            /* Плавная прокрутка на iOS */
+            height: 190px; /* Финальная высота для лучшего отображения */
+            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
             /* Убираем flex чтобы height работал */
             flex: none;
         }
@@ -899,8 +888,10 @@
         /* Нижняя секция с активностью */
         .activity-section {
             padding: 10px 15px;
-            background: linear-gradient(rgba(255, 255, 255, 0.2),
-                    rgba(255, 255, 255, 0.3));
+            background: linear-gradient(
+                rgba(255, 255, 255, 0.2),
+                rgba(255, 255, 255, 0.3)
+            );
             display: flex;
             flex-direction: column;
             flex: 1;
@@ -1350,7 +1341,7 @@
                 background: var(--neobrut-white);
                 box-shadow:
                     6px 6px 0 var(--neobrut-black),
-                    inset 2px 2px 0 rgba(0, 0, 0, 0.1);
+                    inset 2px 2px 0 rgba(0,0,0,0.1);
             }
         }
 
@@ -1494,8 +1485,7 @@
         }
 
         .ai-chat-close {
-            display: none;
-            /* Скрываем кнопку закрытия */
+            display: none; /* Скрываем кнопку закрытия */
         }
 
         .ai-chat-content {
@@ -1528,7 +1518,6 @@
                 opacity: 0;
                 transform: translateY(5px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -1695,14 +1684,10 @@
         }
 
         @keyframes typingAnimation {
-
-            0%,
-            60%,
-            100% {
+            0%, 60%, 100% {
                 transform: translateY(0);
                 opacity: 0.5;
             }
-
             30% {
                 transform: translateY(-10px);
                 opacity: 1;
@@ -1737,7 +1722,6 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            align-items: flex-start;
         }
 
         .chat-wrapper .message {
@@ -1747,7 +1731,6 @@
             border-radius: 12px;
             padding: 12px 14px;
             animation: messageSlideIn 0.2s ease-out;
-            flex-shrink: 0;
         }
 
         @keyframes messageSlideIn {
@@ -1755,7 +1738,6 @@
                 opacity: 0;
                 transform: translateX(-10px) rotate(-2deg);
             }
-
             to {
                 opacity: 1;
                 transform: translateX(0) rotate(0);
@@ -1775,8 +1757,6 @@
         .chat-wrapper .message.ai-message {
             background: var(--neobrut-white);
             transform: rotate(-1deg);
-            width: fit-content;
-            max-width: 85%;
         }
 
         .chat-wrapper .message.ai-message .message-content {
@@ -1974,73 +1954,34 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-
-            to {
-                opacity: 0;
-            }
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
 
         @keyframes fireScale {
-            0% {
-                transform: scale(0) rotate(-10deg);
-            }
-
-            50% {
-                transform: scale(1.3) rotate(5deg);
-            }
-
-            100% {
-                transform: scale(1) rotate(0deg);
-            }
+            0% { transform: scale(0) rotate(-10deg); }
+            50% { transform: scale(1.3) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
 
         @keyframes fireGlow {
-
-            0%,
-            100% {
-                filter: drop-shadow(0 0 30px rgba(255, 150, 50, 0.8));
-            }
-
-            50% {
-                filter: drop-shadow(0 0 60px rgba(255, 100, 0, 1));
-            }
+            0%, 100% { filter: drop-shadow(0 0 30px rgba(255, 150, 50, 0.8)); }
+            50% { filter: drop-shadow(0 0 60px rgba(255, 100, 0, 1)); }
         }
 
         @keyframes numberSlide {
-            0% {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            0% { transform: translateY(30px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
         @keyframes textSlide {
-            0% {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
         }
 
         /* ===== КОНЕЦ STREAK АНИМАЦИИ ===== */
@@ -2192,231 +2133,13 @@
             animation: bounce 1.4s infinite ease-in-out both;
         }
 
-        .ai-comment-loading-dot:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-
-        .ai-comment-loading-dot:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-
-        .ai-comment-loading-dot:nth-child(3) {
-            animation-delay: 0s;
-        }
+        .ai-comment-loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .ai-comment-loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .ai-comment-loading-dot:nth-child(3) { animation-delay: 0s; }
 
         @keyframes bounce {
-
-            0%,
-            80%,
-            100% {
-                transform: scale(0.6);
-                opacity: 0.5;
-            }
-
-            40% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        /* ===== ПОГОДНЫЙ БЛОК ===== */
-        .weather-ai-row {
-            display: flex;
-            gap: 10px;
-            align-items: stretch;
-        }
-
-        .weather-block {
-            background: linear-gradient(135deg, #87CEEB, #4A90D9);
-            border: 3px solid var(--neobrut-black);
-            border-radius: 12px;
-            padding: 10px;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 80px;
-            height: 85px;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        .weather-block:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 5px 5px 0 var(--neobrut-black);
-        }
-
-        .weather-block:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-        }
-
-        .weather-content {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            position: relative;
-        }
-
-        .weather-icon {
-            font-size: 32px;
-            line-height: 1;
-            z-index: 1;
-        }
-
-        .weather-temp {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--neobrut-black);
-            position: absolute;
-            bottom: 2px;
-            right: 4px;
-            z-index: 4;
-            line-height: 1;
-        }
-
-        .weather-temp::after {
-            content: '°';
-            font-size: 16px;
-        }
-
-        .weather-loading {
-            font-size: 20px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .weather-night {
-            background: linear-gradient(135deg, #4A5568, #2D3748);
-        }
-
-        .weather-night .weather-temp {
-            color: var(--neobrut-white);
-        }
-
-        /* ===== МОДАЛЬНОЕ ОКНО ГЕОЛОКАЦИИ ===== */
-        .geo-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 10000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .geo-modal-overlay.show {
-            display: flex;
-        }
-
-        .geo-modal {
-            background: var(--neobrut-white);
-            border: 4px solid var(--neobrut-black);
-            box-shadow: 8px 8px 0 var(--neobrut-black);
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 340px;
-            width: 100%;
-            text-align: center;
-            animation: geoModalSlide 0.3s ease-out;
-        }
-
-        @keyframes geoModalSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.9);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .geo-modal-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .geo-modal-title {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--neobrut-black);
-            margin: 0 0 16px 0;
-        }
-
-        .geo-modal-text {
-            font-size: 14px;
-            line-height: 1.5;
-            color: var(--neobrut-darkgray);
-            margin: 0 0 12px 0;
-        }
-
-        .geo-modal-subtext {
-            font-size: 13px;
-            line-height: 1.4;
-            color: #666;
-            margin: 0 0 20px 0;
-        }
-
-        .geo-modal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .geo-modal-btn {
-            flex: 1;
-            padding: 12px 16px;
-            border: 3px solid var(--neobrut-black);
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.1s;
-        }
-
-        .geo-modal-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-        }
-
-        .geo-modal-btn-deny {
-            background: var(--neobrut-white);
-            color: var(--neobrut-black);
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-        }
-
-        .geo-modal-btn-deny:hover {
-            background: #f0f0f0;
-        }
-
-        .geo-modal-btn-allow {
-            background: var(--neobrut-blue);
-            color: var(--neobrut-white);
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-        }
-
-        .geo-modal-btn-allow:hover {
-            background: #5dade2;
-        }
-
-        .ai-comment {
-            flex: 1;
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
         /* ===== ФИКСИРОВАННОЕ СООТНОШЕНИЕ ЭКРАНА ===== */
@@ -2462,12 +2185,8 @@
                 </div>
                 <div class="strip-progress-chart">
                     <svg width="50" height="50" viewBox="0 0 36 36">
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" />
-                        <path id="strip-progress-circle"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100"
-                            stroke-linecap="round" />
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+                        <path id="strip-progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
                     </svg>
                 </div>
             </div>
@@ -2477,14 +2196,6 @@
                 <div class="ai-comment-text" id="ai-comment-text">
                     Загрузка AI комментария...
                 </div>
-            </div>
-
-            <!-- ПОГОДА -->
-            <div class="weather-block" id="weather-block" title="Нажмите для обновления">
-                <div class="weather-content">
-                    <div class="weather-icon" id="weather-icon">🌤️</div>
-                </div>
-                <div class="weather-temp" id="weather-temp">--</div>
             </div>
         </div>
 
@@ -2500,25 +2211,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Модальное окно для запроса геолокации -->
-    <div class="geo-modal-overlay" id="geo-modal-overlay">
-        <div class="geo-modal">
-            <div class="geo-modal-icon">📍</div>
-            <h2 class="geo-modal-title">Доступ к геолокации</h2>
-            <p class="geo-modal-text">
-                Чтобы показывать точную погоду в твоём городе и давать персонализированные рекомендации от ИИ, нам нужен
-                доступ к геолокации.
-            </p>
-            <p class="geo-modal-subtext">Это поможет ИИ учитывать погодные условия при составлении тренировочного плана
-                🌤️</p>
-            <div class="geo-modal-buttons">
-                <button class="geo-modal-btn geo-modal-btn-deny" id="geo-modal-deny">Запретить</button>
-                <button class="geo-modal-btn geo-modal-btn-allow" id="geo-modal-allow">Разрешить</button>
-            </div>
-        </div>
-    </div>
     </div>
 
     <!-- Горизонтальная линия-разделитель с кнопкой -->
@@ -2547,8 +2239,7 @@
                         </div>
                         <div class="chat-input-area">
                             <div class="chat-input-row">
-                                <input type="text" class="chat-input-neobrut" id="slider-chat-input"
-                                    placeholder="Спроси меня что угодно...">
+                                <input type="text" class="chat-input-neobrut" id="slider-chat-input" placeholder="Спроси меня что угодно...">
                                 <button class="chat-send-neobrut" id="slider-chat-send">
                                     <span>→</span>
                                 </button>
@@ -2598,8 +2289,7 @@
                             </div>
                         </div>
                         <div class="chat-input-container">
-                            <input type="text" class="chat-input" id="chat-input"
-                                placeholder="Введите ваше сообщение...">
+                            <input type="text" class="chat-input" id="chat-input" placeholder="Введите ваше сообщение...">
                             <button class="chat-send" id="chat-send">Отправить</button>
                         </div>
                     </div>
@@ -2607,7 +2297,7 @@
             </div>
         </div>
 
-    </div>
+      </div>
 
     <script>
         // === API KEY PARTS (base64 encoded, split for security) ===
@@ -2669,7 +2359,7 @@
         let selectedWorkout = 1;
         let todoData = {}; // Хранение состояния todo-списков
 
-
+        
         // Инициализация todo-списков
         function initializeTodoLists() {
             todoData = {
@@ -2870,7 +2560,7 @@
                         </div>
                         <div class="todo-text-wrapper">
                             <div class="todo-text" onclick="toggleTask('${task.id}')">
-                                ${task.text}${task.completed && task.completedAt ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}
+                                ${task.text}${task.completed && task.completedAt ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
                             </div>
                         </div>
                     </li>
@@ -3106,7 +2796,7 @@
                                 const todoText = checkbox.closest('.todo-item').querySelector('.todo-text');
                                 if (todoText) {
                                     const timeText = task.completed && task.completedAt
-                                        ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>`
+                                        ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</span>`
                                         : '';
                                     todoText.innerHTML = `${task.text}${timeText}`;
                                 }
@@ -3324,400 +3014,6 @@
             }
         }
 
-        // ===== ПОГОДА ЧЕРЕЗ OPEN-METEO =====
-
-        let weatherCache = null;
-        let weatherCacheTime = null;
-        const WEATHER_CACHE_DURATION = 2 * 60 * 1000; // 2 минуты - обновляем часто
-
-        // WMO код → иконки погоды
-        function getWeatherIcon(wmoCode, isNight) {
-            const dayIcons = {
-                0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
-                45: '🌫️', 48: '🌫️',
-                51: '🌧️', 53: '🌧️', 55: '🌧️',
-                61: '🌧️', 63: '🌧️', 65: '🌧️',
-                71: '🌨️', 73: '🌨️', 75: '🌨️', 77: '🌨️',
-                80: '🌦️', 81: '🌦️', 82: '🌦️',
-                85: '🌨️', 86: '🌨️',
-                95: '⛈️', 96: '⛈️', 99: '⛈️'
-            };
-
-            const nightIcons = {
-                0: '🌙', 1: '☁️', 2: '☁️', 3: '☁️',
-                45: '🌫️', 48: '🌫️',
-                51: '🌧️', 53: '🌧️', 55: '🌧️',
-                61: '🌧️', 63: '🌧️', 65: '🌧️',
-                71: '🌨️', 73: '🌨️', 75: '🌨️', 77: '🌨️',
-                80: '🌧️', 81: '🌧️', 82: '🌧️',
-                85: '🌨️', 86: '🌨️',
-                95: '⛈️', 96: '⛈️', 99: '⛈️'
-            };
-
-            const icons = isNight ? nightIcons : dayIcons;
-            return icons[wmoCode] || (isNight ? '🌙' : '☀️');
-        }
-
-        // Проверка ночь ли сейчас
-        function isNightTime() {
-            const hour = new Date().getHours();
-            return hour < 6 || hour >= 21;
-        }
-
-        // Загрузка погоды
-        async function loadWeather() {
-            const now = Date.now();
-
-            if (weatherCache && weatherCacheTime && (now - weatherCacheTime < WEATHER_CACHE_DURATION)) {
-                updateWeatherUI(weatherCache);
-                return;
-            }
-
-            const gpsDenied = localStorage.getItem('fitTrackerGPSDenied') === 'true';
-            if (gpsDenied) {
-                showGeoDeniedState();
-                return;
-            }
-
-            try {
-                const weatherIcon = document.getElementById('weather-icon');
-                const weatherTemp = document.getElementById('weather-temp');
-                if (weatherIcon) weatherIcon.textContent = '🔄';
-                if (weatherTemp) weatherTemp.textContent = '...';
-
-                const position = await getCurrentPosition();
-                localStorage.setItem('fitTrackerGPSGranted', 'true');
-                await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
-            } catch {
-                openGeoModal();
-            }
-        }
-
-        // Получение геолокации через GPS
-        function getCurrentPosition() {
-            return new Promise((resolve, reject) => {
-                if (!navigator.geolocation) {
-                    reject(new Error('Geolocation not supported'));
-                    return;
-                }
-
-                navigator.geolocation.getCurrentPosition(resolve, reject, {
-                    timeout: 15000,
-                    maximumAge: 300000,
-                    enableHighAccuracy: false
-                });
-            });
-        }
-
-        // Показать запрос разрешения на геолокацию
-        function showGeoPermissionPrompt() {
-            const weatherBlock = document.getElementById('weather-block');
-
-            // Меняем иконку на восклицательный знак, сохраняя структуру с id
-            weatherBlock.classList.add('geo-prompt');
-            weatherBlock.innerHTML = `
-                <div class="weather-content">
-                    <div class="weather-icon geo-prompt-icon">⚠️</div>
-                </div>
-                <div class="weather-temp">--</div>
-            `;
-            weatherBlock.style.cursor = 'pointer';
-            // При клике открываем модальное окно
-            weatherBlock.onclick = () => {
-                openGeoModal();
-            };
-        }
-
-        // Показать состояние отказа (желый треугольник) - С id для обновления!
-        function showGeoDeniedState() {
-            const weatherBlock = document.getElementById('weather-block');
-
-            // Меняем иконку на желтый треугольник, СОХРАНЯЯ id
-            weatherBlock.classList.add('geo-denied');
-            weatherBlock.innerHTML = `
-                <div class="weather-content">
-                    <div class="weather-icon geo-denied-icon" id="weather-icon">⚠️</div>
-                </div>
-                <div class="weather-temp" id="weather-temp">--</div>
-            `;
-            weatherBlock.style.cursor = 'pointer';
-            // При клике открываем модальное окно для повторного запроса
-            weatherBlock.onclick = () => {
-                openGeoModal();
-            };
-        }
-
-        // Открыть модальное окно геолокации
-        function openGeoModal() {
-            const overlay = document.getElementById('geo-modal-overlay');
-            overlay.classList.add('show');
-        }
-
-        // Закрыть модальное окно геолокации
-        function closeGeoModal() {
-            const overlay = document.getElementById('geo-modal-overlay');
-            overlay.classList.remove('show');
-        }
-
-        // Настройка обработчиков для модального окна геолокации
-        function setupGeoModalListeners() {
-            const allowBtn = document.getElementById('geo-modal-allow');
-            const denyBtn = document.getElementById('geo-modal-deny');
-            const overlay = document.getElementById('geo-modal-overlay');
-
-            // Клик по "Разрешить"
-            allowBtn.addEventListener('click', async () => {
-                localStorage.removeItem('fitTrackerGPSDenied');
-                closeGeoModal();
-
-                const weatherBlock = document.getElementById('weather-block');
-                weatherBlock.innerHTML = `
-                    <div class="weather-content">
-                        <div class="weather-icon" id="weather-icon">🔄</div>
-                    </div>
-                    <div class="weather-temp" id="weather-temp">...</div>
-                `;
-                weatherBlock.classList.remove('geo-denied');
-                weatherBlock.style.cursor = '';
-                weatherBlock.onclick = null;
-
-                try {
-                    const position = await getCurrentPosition();
-                    localStorage.setItem('fitTrackerGPSGranted', 'true');
-                    await loadWeatherForCoords(position.coords.latitude, position.coords.longitude);
-                } catch {
-                    showGeoDeniedState();
-                }
-            });
-
-            // Клик по "Запретить"
-            denyBtn.addEventListener('click', () => {
-                closeGeoModal();
-                localStorage.setItem('fitTrackerGPSDenied', 'true');
-                // Показываем желтый треугольник
-                showGeoDeniedState();
-            });
-
-            // Клик по фону - закрывает модальное окно и показывает отказ
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    closeGeoModal();
-                    localStorage.setItem('fitTrackerGPSDenied', 'true');
-                    showGeoDeniedState();
-                }
-            });
-        }
-
-        // Загрузка погоды по координатам
-        async function loadWeatherForCoords(latitude, longitude) {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
-
-            let response;
-            try {
-                response = await fetch(url);
-            } catch (e) {
-                throw new Error('Fetch failed');
-            }
-
-            if (!response) {
-                throw new Error('No response');
-            }
-
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-
-            let data;
-            try {
-                const text = await response.text();
-                data = JSON.parse(text);
-            } catch (e) {
-                throw new Error('Invalid JSON');
-            }
-
-            if (!data || !data.current_weather) {
-                throw new Error('Invalid API response');
-            }
-
-            const temp = data.current_weather.temperature;
-            if (temp === undefined || temp === null) {
-                throw new Error('No temperature');
-            }
-
-            const weather = {
-                temp: Math.round(temp),
-                wmoCode: data.current_weather.weathercode || 0,
-                isNight: isNightTime()
-            };
-
-            weatherCache = weather;
-            weatherCacheTime = Date.now();
-            try {
-                localStorage.setItem('fitTrackerWeather', JSON.stringify({
-                    weather,
-                    timestamp: weatherCacheTime
-                }));
-            } catch (e) {}
-
-            updateWeatherUI(weather);
-        }
-
-        // Стили для восклицательного знака
-        const geoPromptStyles = document.createElement('style');
-        geoPromptStyles.textContent = `
-            .geo-prompt {
-                background: linear-gradient(135deg, #FFB347, #FF6B6B) !important;
-            }
-
-            .geo-prompt .geo-prompt-icon {
-                font-size: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-                animation: pulse 2s infinite;
-            }
-
-            .geo-prompt .weather-temp {
-                color: var(--neobrut-white) !important;
-            }
-
-            .geo-denied {
-                background: linear-gradient(135deg, #FFD700, #FFA500) !important;
-            }
-
-            .geo-denied .geo-denied-icon {
-                font-size: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-                animation: pulse 2s infinite;
-            }
-
-            .geo-denied .weather-temp {
-                color: var(--neobrut-white) !important;
-            }
-
-            @keyframes pulse {
-                0%, 100% {
-                    transform: scale(1);
-                }
-                50% {
-                    transform: scale(1.1);
-                }
-            }
-        `;
-        document.head.appendChild(geoPromptStyles);
-
-
-        // IP-геолокация (запасной вариант)
-        async function getIPLocation() {
-            // Пробуем несколько API для надежности
-            const apis = [
-                {
-                    url: 'https://ipapi.co/json/',
-                    parse: (data) => ({ lat: data.latitude, lon: data.longitude, city: data.city })
-                },
-                {
-                    url: 'https://ip-api.com/json/',
-                    parse: (data) => ({ lat: data.lat, lon: data.lon, city: data.city })
-                }
-            ];
-
-            for (const api of apis) {
-                try {
-                    console.log('Trying IP API:', api.url);
-                    const response = await fetch(api.url);
-                    const data = await response.json();
-                    const parsed = api.parse(data);
-                    console.log('IP API success:', api.url, parsed);
-                    return {
-                        latitude: parsed.lat,
-                        longitude: parsed.lon,
-                        city: parsed.city
-                    };
-                } catch (error) {
-                    console.error('API failed:', api.url, error);
-                    continue;
-                }
-            }
-
-            // Если все API не сработали, возвращаем координаты по умолчанию (Москва)
-            console.log('All IP APIs failed, using default location (Moscow)');
-            return {
-                latitude: 55.7558,
-                longitude: 37.6173,
-                city: 'Москва'
-            };
-        }
-
-        // Обновление UI погоды
-        function updateWeatherUI(weather) {
-            const currentIsNight = isNightTime();
-            const icon = getWeatherIcon(weather.wmoCode, currentIsNight);
-            const weatherBlock = document.getElementById('weather-block');
-
-            // Находим элементы
-            const weatherIcon = document.getElementById('weather-icon');
-            const weatherTemp = document.getElementById('weather-temp');
-
-            if (!weatherIcon || !weatherTemp) {
-                // Структура была изменена, восстанавливаем
-                weatherBlock.innerHTML = `
-                    <div class="weather-content">
-                        <div class="weather-icon" id="weather-icon">${icon}</div>
-                    </div>
-                    <div class="weather-temp" id="weather-temp">${weather.temp}</div>
-                `;
-            } else {
-                // Обновляем значения
-                weatherIcon.textContent = icon;
-                weatherTemp.textContent = weather.temp;
-            }
-
-            // Убираем классы геолокации
-            weatherBlock.classList.remove('geo-denied');
-            weatherBlock.classList.remove('geo-prompt');
-            weatherBlock.style.cursor = '';
-            weatherBlock.onclick = null;
-
-            // Добавляем/убираем класс для ночи
-            if (currentIsNight) {
-                weatherBlock.classList.add('weather-night');
-            } else {
-                weatherBlock.classList.remove('weather-night');
-            }
-        }
-
-        // Функция для принудительного обновления погоды (вызов из консоли)
-        window.forceRefreshWeather = function () {
-            weatherCache = null;
-            weatherCacheTime = null;
-            localStorage.removeItem('fitTrackerWeather');
-            loadWeather();
-        };
-
-        // Загрузка закешированной погоды
-        function loadCachedWeather() {
-            const cached = localStorage.getItem('fitTrackerWeather');
-            if (cached) {
-                try {
-                    const { weather, timestamp } = JSON.parse(cached);
-                    const now = Date.now();
-                    if (now - timestamp < WEATHER_CACHE_DURATION) {
-                        weatherCache = weather;
-                        weatherCacheTime = timestamp;
-                        updateWeatherUI(weather);
-                    }
-                } catch (e) {
-                    console.error('Error loading cached weather:', e);
-                }
-            }
-        }
-
         // Инициализация при загрузке
         window.addEventListener('load', () => {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -3727,13 +3023,12 @@
             initializeApp();
         });
 
-        function initializeApp() {
+            function initializeApp() {
             loadActivityData();
             initializeTodoLists();
             renderActivityGrid();
             setupEventListeners();
             setupModalListeners();
-            setupGeoModalListeners();
 
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
@@ -3747,9 +3042,6 @@
             // Загружаем закешированный AI комментарий и генерируем новый если нужно
             loadCachedAIComment();
             updateAIComment();
-
-            // Загружаем погоду (всегда свежие данные)
-            loadWeather();
         }
 
         // Сброс всей активности (для перехода на новую систему)
@@ -3819,11 +3111,11 @@
             }, 100);
         }
 
-
+        
         // ===== НОВЫЕ ФУНКЦИИ ДЛЯ ПРОЦЕНТНОЙ СИСТЕМЫ =====
 
         // Расчет процента выполнения для отдельной задачи
-
+        
         // Расчет общего процента выполнения для дня
         function calculateCompletionPercentage(day) {
             const tasks = todoData[day];
@@ -3871,7 +3163,7 @@
             saveTodoStates();
         }
 
-
+        
         // ===== КОНЕЦ НОВЫХ ФУНКЦИЙ =====
 
         // Проверка выполнения тренировки
@@ -3910,7 +3202,7 @@
             const todayKey = formatDateKey(today);
 
             const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                               'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
             const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
             // Генерируем месяцы
@@ -4051,7 +3343,7 @@
             }, 300); // Небольшая задержка для завершения анимации
         }
 
-
+        
         // Получение активности для даты
         function getActivityForDate(date) {
             const key = formatDateKey(date);
@@ -4146,8 +3438,8 @@
             return `${date.getDate()} ${['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'][date.getMonth()]}`;
         }
 
-
-
+  
+  
         // Функции для режима отображения задач
         function openWorkoutModal(workout) {
             const todoOverlay = document.getElementById('todo-overlay');
@@ -4523,7 +3815,7 @@
 
                 // Прогрев AI - быстрый запрос для инициализации
                 if (chatHistory.length === 2) { // Только при первом открытии
-                    generateAIResponse("👋").catch(() => { }); // Silent fail
+                    generateAIResponse("👋").catch(() => {}); // Silent fail
                 }
             }, 10);
         }
@@ -4657,7 +3949,7 @@
                     }
                     // Иначе оборачиваем в параграф
                     return `<p style="margin: 10px 0; line-height: 1.6;">${paragraph}</p>`;
-              })
+                })
                 .join('\n');
 
             return formatted;
@@ -4683,7 +3975,7 @@
                                 role: "system",
                                 content: `Ты - AI фитнес-ассистент FitTracker AI.
 
-                                ВАЖНО: Отвечай кратко и по делу. меньше воды. пользователь должен получить достоточно информации
+                                ВАЖНО: Отвечай ОЧЕНЬ кратко и по делу. Максимум 2-3 предложения. Никакой воды.
 
                                 ТЕКУЩИЙ ДЕНЬ: ${selectedWorkout}/7 (${workoutProgram[selectedWorkout - 1]?.name || ''})
 
@@ -4709,7 +4001,7 @@
                                 Активных дней: ${Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length}
                                 Время: ${new Date().toLocaleString('ru-RU')}
 
-                                Отвечай кратко, по сути. Используй эмодзи 💪🔥 но только там где это нужно по контексту`
+                                Отвечай кратко, по сути. Используй эмодзи 💪🔥`
                             },
                             ...chatHistory.slice(-10), // Последние 10 сообщений для контекста
                             {
