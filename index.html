@@ -3207,14 +3207,20 @@
             }
         }
 
-        // Получение геолокации по IP (несколько API для надёжности)
+        // Получение геолокации по IP (API с поддержкой CORS для Telegram)
         async function getLocationByIP() {
-            // Список бесплатных IP-геолокации API (в порядке приоритета)
+            // Список бесплатных IP-геолокации API с поддержкой CORS
             const apis = [
                 {
-                    url: 'https://ipapi.co/json/',
+                    url: 'https://freeipapi.com/api/json/',
                     parse: (data) => data.latitude && data.longitude
-                        ? { lat: data.latitude, lon: data.longitude, city: data.city, country: data.country_name }
+                        ? { lat: data.latitude, lon: data.longitude, city: data.cityName, country: data.countryName }
+                        : null
+                },
+                {
+                    url: 'https://country.is/',
+                    parse: (data) => data.latitude && data.longitude
+                        ? { lat: data.latitude, lon: data.longitude, city: data.city || 'Unknown', country: data.country || 'Unknown' }
                         : null
                 },
                 {
@@ -3222,19 +3228,24 @@
                     parse: (data) => data.status === 'success' && data.lat && data.lon
                         ? { lat: data.lat, lon: data.lon, city: data.city, country: data.country }
                         : null
-                },
-                {
-                    url: 'https://ipwhois.app/json/',
-                    parse: (data) => data.latitude && data.longitude
-                        ? { lat: data.latitude, lon: data.longitude, city: data.city, country: data.country }
-                        : null
                 }
             ];
 
             for (const api of apis) {
                 try {
-                    console.log('Trying IP geolocation API:', api.url);
-                    const response = await fetch(api.url);
+                    console.log('🔍 Trying IP geolocation API:', api.url);
+                    const response = await fetch(api.url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        console.log('❌ API response not OK:', response.status);
+                        continue;
+                    }
+
                     const data = await response.json();
                     const location = api.parse(data);
 
@@ -3248,7 +3259,7 @@
                 }
             }
 
-            console.error('All IP geolocation APIs failed');
+            console.error('❌ All IP geolocation APIs failed');
             return null;
         }
 
