@@ -21,6 +21,7 @@
             --neobrut-red: #FF006E;
             --neobrut-yellow: #FFBE0B;
             --neobrut-blue: #3A86FF;
+            --neobrut-cyan: #00D9FF;
             --neobrut-green: #06FFB4;
             --neobrut-purple: #8338EC;
             --neobrut-pink: #FF4081;
@@ -2085,6 +2086,127 @@
             flex-shrink: 0;
         }
 
+        /* ===== КОНТЕЙНЕР ДЛЯ ПРОГРЕССА И ПОГОДЫ ===== */
+        .strip-stats-container {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        /* Компактный прогресс */
+        .strip-progress-compact {
+            flex: 1;
+        }
+
+        .strip-progress-compact .strip-progress-label {
+            font-size: 9px;
+        }
+
+        .strip-progress-compact .strip-progress-value {
+            font-size: 28px;
+        }
+
+        .strip-progress-compact .strip-progress-sub {
+            font-size: 11px;
+        }
+
+        .strip-progress-compact .strip-progress-chart.compact {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+        }
+
+        /* ===== ВИДЖЕТ ПОГОДЫ ===== */
+        .strip-weather {
+            background: linear-gradient(135deg, var(--neobrut-cyan), var(--neobrut-blue));
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 8px 12px;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 85px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .strip-weather:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+        }
+
+        .strip-weather:active {
+            transform: translate(0, 0);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .strip-weather::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
+            pointer-events: none;
+        }
+
+        /* Состояние загрузки погоды */
+        .weather-loading {
+            font-size: 22px;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Состояние ошибки */
+        .weather-error {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-error-icon {
+            font-size: 20px;
+        }
+
+        /* Содержимое погоды */
+        .weather-content {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .weather-icon {
+            font-size: 22px;
+            line-height: 1;
+            filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.15));
+        }
+
+        .weather-temp {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+        }
+
+        /* Анимация пульсации при обновлении */
+        .strip-weather.refreshing {
+            animation: weather-pulse 0.6s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.95); }
+        }
+
+        @keyframes weather-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.92); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         /* ===== AI COMMENT BLOCK ===== */
         .ai-comment {
             background: linear-gradient(135deg, var(--neobrut-purple), var(--neobrut-blue));
@@ -2176,18 +2298,35 @@
                 </div>
             </div>
 
-            <!-- Прогресс -->
-            <div class="strip-progress">
-                <div class="strip-progress-content">
-                    <div class="strip-progress-label">Сегодня</div>
-                    <div class="strip-progress-value" id="strip-progress-value">0%</div>
-                    <div class="strip-progress-sub" id="strip-progress-sub">День 1 из 7</div>
+            <!-- Прогресс и Погода -->
+            <div class="strip-stats-container">
+                <!-- Прогресс -->
+                <div class="strip-progress strip-progress-compact">
+                    <div class="strip-progress-content">
+                        <div class="strip-progress-label">Сегодня</div>
+                        <div class="strip-progress-value" id="strip-progress-value">0%</div>
+                        <div class="strip-progress-sub" id="strip-progress-sub">День 1 из 7</div>
+                    </div>
+                    <div class="strip-progress-chart compact">
+                        <svg width="42" height="42" viewBox="0 0 36 36">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+                            <path id="strip-progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
+                        </svg>
+                    </div>
                 </div>
-                <div class="strip-progress-chart">
-                    <svg width="50" height="50" viewBox="0 0 36 36">
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
-                        <path id="strip-progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
-                    </svg>
+
+                <!-- Погода -->
+                <div class="strip-weather" id="weather-widget">
+                    <div class="weather-loading" id="weather-loading">
+                        <span>📍</span>
+                    </div>
+                    <div class="weather-error" id="weather-error" style="display: none;">
+                        <span class="weather-error-icon">⚠️</span>
+                    </div>
+                    <div class="weather-content" id="weather-content" style="display: none;">
+                        <div class="weather-icon" id="weather-icon">☀️</div>
+                        <div class="weather-temp" id="weather-temp">--°</div>
+                    </div>
                 </div>
             </div>
 
@@ -2863,6 +3002,42 @@
         const AI_COMMENT_UPDATE_INTERVAL = 15 * 60 * 1000; // 15 минут
         const AI_COMMENT_PERCENTAGE_THRESHOLDS = [0, 25, 50, 75, 100];
 
+        // ===== WEATHER CONSTANTS =====
+        const WEATHER_CACHE_DURATION = 10 * 60 * 1000; // 10 минут
+        const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
+
+        // Weather code to emoji mapping (WMO weather codes)
+        const weatherCodes = {
+            0: { icon: '☀️', night: '🌙', name: 'Ясно' },
+            1: { icon: '🌤️', night: '🌙', name: 'Малооблачно' },
+            2: { icon: '⛅', night: '☁️', name: 'Переменная облачность' },
+            3: { icon: '☁️', night: '☁️', name: 'Облачно' },
+            45: { icon: '🌫️', night: '🌫️', name: 'Туман' },
+            48: { icon: '🌫️', night: '🌫️', name: 'Изморозь' },
+            51: { icon: '🌧️', night: '🌧️', name: 'Морось' },
+            53: { icon: '🌧️', night: '🌧️', name: 'Морось' },
+            55: { icon: '🌧️', night: '🌧️', name: 'Морось' },
+            61: { icon: '🌧️', night: '🌧️', name: 'Дождь' },
+            63: { icon: '🌧️', night: '🌧️', name: 'Дождь' },
+            65: { icon: '🌧️', night: '🌧️', name: 'Сильный дождь' },
+            71: { icon: '🌨️', night: '🌨️', name: 'Снег' },
+            73: { icon: '🌨️', night: '🌨️', name: 'Снег' },
+            75: { icon: '❄️', night: '❄️', name: 'Сильный снег' },
+            77: { icon: '🌨️', night: '🌨️', name: 'Снежные зёрна' },
+            80: { icon: '🌦️', night: '🌧️', name: 'Ливень' },
+            81: { icon: '🌦️', night: '🌧️', name: 'Ливень' },
+            82: { icon: '⛈️', night: '⛈️', name: 'Сильный ливень' },
+            85: { icon: '🌨️', night: '🌨️', name: 'Снегопад' },
+            86: { icon: '🌨️', night: '🌨️', name: 'Сильный снегопад' },
+            95: { icon: '⛈️', night: '⛈️', name: 'Гроза' },
+            96: { icon: '⛈️', night: '⛈️', name: 'Гроза с градом' },
+            99: { icon: '⛈️', night: '⛈️', name: 'Гроза с градом' }
+        };
+
+        // Weather state variables
+        let weatherData = null;
+        let weatherLastUpdate = null;
+
         // Проверка нужно ли обновить AI комментарий
         function shouldUpdateAIComment(percentage) {
             const now = Date.now();
@@ -3014,6 +3189,163 @@
             }
         }
 
+        // ===== WEATHER FUNCTIONS =====
+
+        // Получение погоды от API
+        async function fetchWeather(lat, lon) {
+            const url = `${WEATHER_API_URL}?latitude=${lat}&longitude=${lon}&current_weather=true`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Weather API error');
+
+                const data = await response.json();
+                return data.current_weather;
+            } catch (error) {
+                console.error('Weather fetch error:', error);
+                return null;
+            }
+        }
+
+        // Получение геолокации пользователя
+        async function getUserLocation() {
+            return new Promise((resolve) => {
+                if (!navigator.geolocation) {
+                    resolve(null);
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        });
+                    },
+                    (error) => {
+                        console.log('Geolocation denied or error:', error.message);
+                        resolve(null); // Не используем IP-геолокацию
+                    },
+                    { timeout: 10000, enableHighAccuracy: false }
+                );
+            });
+        }
+
+        // Обновление UI погоды
+        function updateWeatherUI(weather, isError = false) {
+            const loading = document.getElementById('weather-loading');
+            const error = document.getElementById('weather-error');
+            const content = document.getElementById('weather-content');
+            const icon = document.getElementById('weather-icon');
+            const temp = document.getElementById('weather-temp');
+            const widget = document.getElementById('weather-widget');
+
+            // Убираем анимацию обновления
+            widget.classList.remove('refreshing');
+
+            if (isError) {
+                loading.style.display = 'none';
+                error.style.display = 'flex';
+                content.style.display = 'none';
+                return;
+            }
+
+            if (!weather) {
+                loading.style.display = 'flex';
+                error.style.display = 'none';
+                content.style.display = 'none';
+                return;
+            }
+
+            const code = weather.weathercode;
+            const weatherInfo = weatherCodes[code] || weatherCodes[0];
+            const isNight = !weather.is_day;
+            const iconChar = isNight && weatherInfo.night ? weatherInfo.night : weatherInfo.icon;
+
+            icon.textContent = iconChar;
+            temp.textContent = `${Math.round(weather.temperature)}°`;
+
+            loading.style.display = 'none';
+            error.style.display = 'none';
+            content.style.display = 'flex';
+        }
+
+        // Загрузка погоды с кэшированием
+        async function loadWeather(showRefreshAnimation = false) {
+            const now = Date.now();
+            const widget = document.getElementById('weather-widget');
+
+            // Показываем анимацию обновления
+            if (showRefreshAnimation) {
+                widget.classList.add('refreshing');
+            }
+
+            // Проверяем кэш
+            if (weatherData && weatherLastUpdate && (now - weatherLastUpdate < WEATHER_CACHE_DURATION)) {
+                if (showRefreshAnimation) {
+                    setTimeout(() => updateWeatherUI(weatherData), 300);
+                } else {
+                    updateWeatherUI(weatherData);
+                }
+                return;
+            }
+
+            // Получаем локацию
+            const location = await getUserLocation();
+
+            if (!location) {
+                updateWeatherUI(null, true); // Показываем ошибку
+                return;
+            }
+
+            // Загружаем погоду
+            const weather = await fetchWeather(location.lat, location.lon);
+
+            if (weather) {
+                weatherData = weather;
+                weatherLastUpdate = now;
+                updateWeatherUI(weather);
+
+                // Сохраняем в localStorage
+                localStorage.setItem('fitTrackerWeather', JSON.stringify({
+                    data: weather,
+                    timestamp: now
+                }));
+            } else {
+                updateWeatherUI(null, true);
+            }
+        }
+
+        // Загрузка погоды из localStorage
+        function loadCachedWeather() {
+            const cached = localStorage.getItem('fitTrackerWeather');
+            if (cached) {
+                try {
+                    const { data, timestamp } = JSON.parse(cached);
+                    weatherData = data;
+                    weatherLastUpdate = timestamp;
+                    updateWeatherUI(data);
+                } catch (e) {
+                    console.error('Error loading cached weather:', e);
+                }
+            }
+        }
+
+        // Обработчик клика по виджету погоды
+        function setupWeatherWidgetClick() {
+            const widget = document.getElementById('weather-widget');
+            if (widget) {
+                widget.addEventListener('click', () => {
+                    // Вибрация через Telegram WebApp
+                    if (window.Telegram?.WebApp?.HapticFeedback) {
+                        window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                    }
+                    // Обновляем погоду
+                    loadWeather(true);
+                });
+            }
+        }
+
         // Инициализация при загрузке
         window.addEventListener('load', () => {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -3042,6 +3374,11 @@
             // Загружаем закешированный AI комментарий и генерируем новый если нужно
             loadCachedAIComment();
             updateAIComment();
+
+            // Загружаем погоду
+            loadCachedWeather();
+            loadWeather();
+            setupWeatherWidgetClick();
         }
 
         // Сброс всей активности (для перехода на новую систему)
