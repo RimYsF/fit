@@ -2171,6 +2171,15 @@
             font-size: 20px;
         }
 
+        .weather-error-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--neobrut-white);
+            margin-left: 4px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
         /* Содержимое погоды */
         .weather-content {
             display: flex;
@@ -2322,6 +2331,7 @@
                     </div>
                     <div class="weather-error" id="weather-error" style="display: none;">
                         <span class="weather-error-icon">⚠️</span>
+                        <span class="weather-error-text" id="weather-error-text"></span>
                     </div>
                     <div class="weather-content" id="weather-content" style="display: none;">
                         <div class="weather-icon" id="weather-icon">☀️</div>
@@ -3207,26 +3217,36 @@
             }
         }
 
-        // Получение геолокации по IP (API с поддержкой CORS для Telegram)
+        // Получение геолокации по IP (через CORS прокси для Telegram)
         async function getLocationByIP() {
-            // Список бесплатных IP-геолокации API с поддержкой CORS
+            // Используем CORS прокси для обхода ограничений Telegram
             const apis = [
                 {
-                    url: 'https://freeipapi.com/api/json/',
+                    // Через allorigins.win CORS прокси
+                    url: 'https://api.allorigins.win/raw?url=https://ipapi.co/json/',
                     parse: (data) => data.latitude && data.longitude
-                        ? { lat: data.latitude, lon: data.longitude, city: data.cityName, country: data.countryName }
+                        ? { lat: data.latitude, lon: data.longitude, city: data.city, country: data.country_name }
                         : null
                 },
                 {
-                    url: 'https://country.is/',
+                    // Прямой запрос к ipapi.co (иногда работает)
+                    url: 'https://ipapi.co/json/',
                     parse: (data) => data.latitude && data.longitude
-                        ? { lat: data.latitude, lon: data.longitude, city: data.city || 'Unknown', country: data.country || 'Unknown' }
+                        ? { lat: data.latitude, lon: data.longitude, city: data.city, country: data.country_name }
                         : null
                 },
                 {
-                    url: 'http://ip-api.com/json/',
+                    // Через allorigins.win для ip-api.com
+                    url: 'https://api.allorigins.win/raw?url=https://ip-api.com/json/',
                     parse: (data) => data.status === 'success' && data.lat && data.lon
                         ? { lat: data.lat, lon: data.lon, city: data.city, country: data.country }
+                        : null
+                },
+                {
+                    // ipify через прокси
+                    url: 'https://api.allorigins.win/raw?url=https://api.ipify.org?format=json',
+                    parse: (data) => data.ip // Возвращает только IP
+                        ? { lat: null, lon: null, ip: data.ip } // Нужен другой API для координат
                         : null
                 }
             ];
@@ -3249,13 +3269,13 @@
                     const data = await response.json();
                     const location = api.parse(data);
 
-                    if (location) {
+                    if (location && location.lat && location.lon) {
                         console.log('✅ IP geolocation success:', location.city, location.country);
                         return location;
                     }
                 } catch (error) {
                     console.log('❌ API failed:', api.url, error.message);
-                    continue; // Пробуем следующий API
+                    continue;
                 }
             }
 
@@ -3271,9 +3291,10 @@
         }
 
         // Обновление UI погоды
-        function updateWeatherUI(weather, isError = false) {
+        function updateWeatherUI(weather, isError = false, errorText = '') {
             const loading = document.getElementById('weather-loading');
             const error = document.getElementById('weather-error');
+            const errorTextElem = document.getElementById('weather-error-text');
             const content = document.getElementById('weather-content');
             const icon = document.getElementById('weather-icon');
             const temp = document.getElementById('weather-temp');
@@ -3285,6 +3306,7 @@
             if (isError) {
                 loading.style.display = 'none';
                 error.style.display = 'flex';
+                errorTextElem.textContent = errorText;
                 content.style.display = 'none';
                 return;
             }
@@ -3330,17 +3352,23 @@
             }
 
             // Получаем локацию
+            console.log('🌍 Getting user location...');
             const location = await getUserLocation();
 
             if (!location) {
-                updateWeatherUI(null, true); // Показываем ошибку
+                console.error('❌ Failed to get location');
+                updateWeatherUI(null, true, 'Нет\nгеолокации'); // Показываем ошибку
                 return;
             }
 
+            console.log('✅ Location found:', location.lat, location.lon);
+
             // Загружаем погоду
+            console.log('🌤️ Fetching weather...');
             const weather = await fetchWeather(location.lat, location.lon);
 
             if (weather) {
+                console.log('✅ Weather loaded:', weather);
                 weatherData = weather;
                 weatherLastUpdate = now;
                 updateWeatherUI(weather);
@@ -3351,7 +3379,8 @@
                     timestamp: now
                 }));
             } else {
-                updateWeatherUI(null, true);
+                console.error('❌ Failed to fetch weather');
+                updateWeatherUI(null, true, 'Ошибка\nAPI');
             }
         }
 
