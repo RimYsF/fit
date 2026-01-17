@@ -21,7 +21,6 @@
             --neobrut-red: #FF006E;
             --neobrut-yellow: #FFBE0B;
             --neobrut-blue: #3A86FF;
-            --neobrut-cyan: #00D9FF;
             --neobrut-green: #06FFB4;
             --neobrut-purple: #8338EC;
             --neobrut-pink: #FF4081;
@@ -112,6 +111,9 @@
             flex-shrink: 0;
             overflow-y: auto;
             min-height: 50px;
+            /* Оптимизация для плавного изменения высоты */
+            contain: layout style paint;
+            -webkit-overflow-scrolling: touch;
         }
 
         .workout-header {
@@ -870,9 +872,17 @@
             left: 50%;
             transform: translate(-50%, -50%);
             box-shadow: 3px 3px 0 var(--neobrut-black);
-            cursor: pointer;
+            cursor: grab;
             transition: all 0.2s ease;
             z-index: 1;
+            /* Оптимизация для мобильных устройств */
+            touch-action: none;
+            will-change: transform;
+            /* Аппаратное ускорение */
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            perspective: 1000px;
+            -webkit-perspective: 1000px;
         }
 
         .divider-button:hover {
@@ -884,6 +894,7 @@
         .divider-button:active {
             transform: translate(-50%, -50%) scale(0.95);
             box-shadow: 2px 2px 0 var(--neobrut-black);
+            cursor: grabbing;
         }
 
         /* Нижняя секция с активностью */
@@ -899,6 +910,9 @@
             box-shadow: 0 -4px 0 var(--neobrut-black);
             min-height: 0;
             position: relative;
+            /* Оптимизация для плавного изменения высоты */
+            contain: layout style paint;
+            -webkit-overflow-scrolling: touch;
         }
 
         .activity-header {
@@ -2086,136 +2100,6 @@
             flex-shrink: 0;
         }
 
-        /* ===== КОНТЕЙНЕР ДЛЯ ПРОГРЕССА И ПОГОДЫ ===== */
-        .strip-stats-container {
-            display: flex;
-            gap: 10px;
-            align-items: stretch;
-        }
-
-        /* Компактный прогресс */
-        .strip-progress-compact {
-            flex: 1;
-        }
-
-        .strip-progress-compact .strip-progress-label {
-            font-size: 9px;
-        }
-
-        .strip-progress-compact .strip-progress-value {
-            font-size: 28px;
-        }
-
-        .strip-progress-compact .strip-progress-sub {
-            font-size: 11px;
-        }
-
-        .strip-progress-compact .strip-progress-chart.compact {
-            width: 42px;
-            height: 42px;
-            flex-shrink: 0;
-        }
-
-        /* ===== ВИДЖЕТ ПОГОДЫ ===== */
-        .strip-weather {
-            background: linear-gradient(135deg, var(--neobrut-cyan), var(--neobrut-blue));
-            border: 3px solid var(--neobrut-black);
-            border-radius: 12px;
-            padding: 8px 12px;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 85px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .strip-weather:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 5px 5px 0 var(--neobrut-black);
-        }
-
-        .strip-weather:active {
-            transform: translate(0, 0);
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-        }
-
-        .strip-weather::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.2), transparent);
-            pointer-events: none;
-        }
-
-        /* Состояние загрузки погоды */
-        .weather-loading {
-            font-size: 22px;
-            animation: pulse 1.5s infinite;
-        }
-
-        /* Состояние ошибки */
-        .weather-error {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .weather-error-icon {
-            font-size: 20px;
-        }
-
-        .weather-error-text {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--neobrut-white);
-            margin-left: 4px;
-            text-align: center;
-            line-height: 1.2;
-        }
-
-        /* Содержимое погоды */
-        .weather-content {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .weather-icon {
-            font-size: 22px;
-            line-height: 1;
-            filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.15));
-        }
-
-        .weather-temp {
-            font-size: 18px;
-            font-weight: 900;
-            color: var(--neobrut-white);
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
-        }
-
-        /* Анимация пульсации при обновлении */
-        .strip-weather.refreshing {
-            animation: weather-pulse 0.6s ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.95); }
-        }
-
-        @keyframes weather-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.92); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
         /* ===== AI COMMENT BLOCK ===== */
         .ai-comment {
             background: linear-gradient(135deg, var(--neobrut-purple), var(--neobrut-blue));
@@ -2307,36 +2191,18 @@
                 </div>
             </div>
 
-            <!-- Прогресс и Погода -->
-            <div class="strip-stats-container">
-                <!-- Прогресс -->
-                <div class="strip-progress strip-progress-compact">
-                    <div class="strip-progress-content">
-                        <div class="strip-progress-label">Сегодня</div>
-                        <div class="strip-progress-value" id="strip-progress-value">0%</div>
-                        <div class="strip-progress-sub" id="strip-progress-sub">День 1 из 7</div>
-                    </div>
-                    <div class="strip-progress-chart compact">
-                        <svg width="42" height="42" viewBox="0 0 36 36">
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
-                            <path id="strip-progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
-                        </svg>
-                    </div>
+            <!-- Прогресс -->
+            <div class="strip-progress">
+                <div class="strip-progress-content">
+                    <div class="strip-progress-label">Сегодня</div>
+                    <div class="strip-progress-value" id="strip-progress-value">0%</div>
+                    <div class="strip-progress-sub" id="strip-progress-sub">День 1 из 7</div>
                 </div>
-
-                <!-- Погода -->
-                <div class="strip-weather" id="weather-widget">
-                    <div class="weather-loading" id="weather-loading">
-                        <span>📍</span>
-                    </div>
-                    <div class="weather-error" id="weather-error" style="display: none;">
-                        <span class="weather-error-icon">⚠️</span>
-                        <span class="weather-error-text" id="weather-error-text"></span>
-                    </div>
-                    <div class="weather-content" id="weather-content" style="display: none;">
-                        <div class="weather-icon" id="weather-icon">☀️</div>
-                        <div class="weather-temp" id="weather-temp">--°</div>
-                    </div>
+                <div class="strip-progress-chart">
+                    <svg width="50" height="50" viewBox="0 0 36 36">
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+                        <path id="strip-progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
+                    </svg>
                 </div>
             </div>
 
@@ -3012,42 +2878,6 @@
         const AI_COMMENT_UPDATE_INTERVAL = 15 * 60 * 1000; // 15 минут
         const AI_COMMENT_PERCENTAGE_THRESHOLDS = [0, 25, 50, 75, 100];
 
-        // ===== WEATHER CONSTANTS =====
-        const WEATHER_CACHE_DURATION = 10 * 60 * 1000; // 10 минут
-        const WEATHER_API_URL = 'https://api.open-meteo.com/v1/forecast';
-
-        // Weather code to emoji mapping (WMO weather codes)
-        const weatherCodes = {
-            0: { icon: '☀️', night: '🌙', name: 'Ясно' },
-            1: { icon: '🌤️', night: '🌙', name: 'Малооблачно' },
-            2: { icon: '⛅', night: '☁️', name: 'Переменная облачность' },
-            3: { icon: '☁️', night: '☁️', name: 'Облачно' },
-            45: { icon: '🌫️', night: '🌫️', name: 'Туман' },
-            48: { icon: '🌫️', night: '🌫️', name: 'Изморозь' },
-            51: { icon: '🌧️', night: '🌧️', name: 'Морось' },
-            53: { icon: '🌧️', night: '🌧️', name: 'Морось' },
-            55: { icon: '🌧️', night: '🌧️', name: 'Морось' },
-            61: { icon: '🌧️', night: '🌧️', name: 'Дождь' },
-            63: { icon: '🌧️', night: '🌧️', name: 'Дождь' },
-            65: { icon: '🌧️', night: '🌧️', name: 'Сильный дождь' },
-            71: { icon: '🌨️', night: '🌨️', name: 'Снег' },
-            73: { icon: '🌨️', night: '🌨️', name: 'Снег' },
-            75: { icon: '❄️', night: '❄️', name: 'Сильный снег' },
-            77: { icon: '🌨️', night: '🌨️', name: 'Снежные зёрна' },
-            80: { icon: '🌦️', night: '🌧️', name: 'Ливень' },
-            81: { icon: '🌦️', night: '🌧️', name: 'Ливень' },
-            82: { icon: '⛈️', night: '⛈️', name: 'Сильный ливень' },
-            85: { icon: '🌨️', night: '🌨️', name: 'Снегопад' },
-            86: { icon: '🌨️', night: '🌨️', name: 'Сильный снегопад' },
-            95: { icon: '⛈️', night: '⛈️', name: 'Гроза' },
-            96: { icon: '⛈️', night: '⛈️', name: 'Гроза с градом' },
-            99: { icon: '⛈️', night: '⛈️', name: 'Гроза с градом' }
-        };
-
-        // Weather state variables
-        let weatherData = null;
-        let weatherLastUpdate = null;
-
         // Проверка нужно ли обновить AI комментарий
         function shouldUpdateAIComment(percentage) {
             const now = Date.now();
@@ -3199,270 +3029,6 @@
             }
         }
 
-        // ===== WEATHER FUNCTIONS =====
-
-        // Получение погоды от API
-        async function fetchWeather(lat, lon) {
-            const url = `${WEATHER_API_URL}?latitude=${lat}&longitude=${lon}&current_weather=true`;
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Weather API error');
-
-                const data = await response.json();
-                return data.current_weather;
-            } catch (error) {
-                console.error('Weather fetch error:', error);
-                return null;
-            }
-        }
-
-        // Определение координат по timezone пользователя (без внешних запросов!)
-        function getLocationByTimezone() {
-            try {
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                console.log('🕐 Detected timezone:', timezone);
-
-                // Маппинг timezone → примерные координаты (центры регионов)
-                const timezoneMap = {
-                    // Россия
-                    'Europe/Moscow': { lat: 55.7558, lon: 37.6173, city: 'Москва' },
-                    'Europe/Saint Petersburg': { lat: 59.9343, lon: 30.3351, city: 'СПб' },
-                    'Europe/Kaliningrad': { lat: 54.7104, lon: 20.4522, city: 'Калининград' },
-                    'Asia/Yekaterinburg': { lat: 56.8389, lon: 60.6057, city: 'Екатеринбург' },
-                    'Asia/Novosibirsk': { lat: 55.0084, lon: 82.9357, city: 'Новосибирск' },
-                    'Asia/Irkutsk': { lat: 52.2869, lon: 104.3050, city: 'Иркутск' },
-                    'Asia/Yakutsk': { lat: 62.0355, lon: 129.6755, city: 'Якутск' },
-                    'Asia/Vladivostok': { lat: 43.1332, lon: 131.9113, city: 'Владивосток' },
-                    'Asia/Kamchatka': { lat: 53.0677, lon: 158.5350, city: 'Камчатка' },
-                    'Asia/Samarkand': { lat: 39.6542, lon: 66.9597, city: 'Самарканд' },
-                    'Asia/Tashkent': { lat: 41.2995, lon: 69.2401, city: 'Ташкент' },
-                    'Asia/Almaty': { lat: 43.2220, lon: 76.8512, city: 'Алматы' },
-                    'Asia/Bishkek': { lat: 42.8746, lon: 74.5698, city: 'Бишкек' },
-                    'Asia/Dushanbe': { lat: 38.5598, lon: 68.7870, city: 'Душанбе' },
-                    'Asia/Ashgabat': { lat: 37.9601, lon: 58.3261, city: 'Ашхабад' },
-                    // Европа
-                    'Europe/London': { lat: 51.5074, lon: -0.1278, city: 'Лондон' },
-                    'Europe/Paris': { lat: 48.8566, lon: 2.3522, city: 'Париж' },
-                    'Europe/Berlin': { lat: 52.5200, lon: 13.4050, city: 'Берлин' },
-                    'Europe/Rome': { lat: 41.9028, lon: 12.4964, city: 'Рим' },
-                    'Europe/Madrid': { lat: 40.4168, lon: -3.7038, city: 'Мадрид' },
-                    'Europe/Kiev': { lat: 50.4501, lon: 30.5234, city: 'Киев' },
-                    'Europe/Minsk': { lat: 53.9000, lon: 27.5667, city: 'Минск' },
-                    'Europe/Warsaw': { lat: 52.2297, lon: 21.0122, city: 'Варшава' },
-                    'Europe/Prague': { lat: 50.0755, lon: 14.4378, city: 'Прага' },
-                    'Europe/Vienna': { lat: 48.2082, lon: 16.3738, city: 'Вена' },
-                    // Азия
-                    'Asia/Tokyo': { lat: 35.6762, lon: 139.6503, city: 'Токио' },
-                    'Asia/Seoul': { lat: 37.5665, lon: 126.9780, city: 'Сеул' },
-                    'Asia/Shanghai': { lat: 31.2304, lon: 121.4737, city: 'Шанхай' },
-                    'Asia/Beijing': { lat: 39.9042, lon: 116.4074, city: 'Пекин' },
-                    'Asia/Hong Kong': { lat: 22.3193, lon: 114.1694, city: 'Гонконг' },
-                    'Asia/Singapore': { lat: 1.3521, lon: 103.8198, city: 'Сингапур' },
-                    'Asia/Bangkok': { lat: 13.7563, lon: 100.5018, city: 'Бангкок' },
-                    'Asia/Dubai': { lat: 25.2048, lon: 55.2708, city: 'Дубай' },
-                    'Asia/Jerusalem': { lat: 31.7683, lon: 35.2137, city: 'Иерусалим' },
-                    'Asia/Karachi': { lat: 24.8607, lon: 67.0011, city: 'Карачи' },
-                    'Asia/Mumbai': { lat: 19.0760, lon: 72.8777, city: 'Мумбаи' },
-                    'Asia/Dhaka': { lat: 23.8103, lon: 90.4125, city: 'Дакка' },
-                    'Asia/Jakarta': { lat: -6.2088, lon: 106.8456, city: 'Джакарта' },
-                    'Asia/Manila': { lat: 14.5995, lon: 120.9842, city: 'Манила' },
-                    'Asia/Taipei': { lat: 25.0330, lon: 121.5654, city: 'Тайбэй' },
-                    // Америка
-                    'America/New_York': { lat: 40.7128, lon: -74.0060, city: 'Нью-Йорк' },
-                    'America/Los_Angeles': { lat: 34.0522, lon: -118.2437, city: 'LA' },
-                    'America/Chicago': { lat: 41.8781, lon: -87.6298, city: 'Чикаго' },
-                    'America/Toronto': { lat: 43.6532, lon: -79.3832, city: 'Торонто' },
-                    'America/Vancouver': { lat: 49.2827, lon: -123.1207, city: 'Ванкувер' },
-                    'America/Mexico_City': { lat: 19.4326, lon: -99.1332, city: 'Мехико' },
-                    'America/Sao_Paulo': { lat: -23.5505, lon: -46.6333, city: 'Сан-Паулу' },
-                    'America/Buenos_Aires': { lat: -34.6037, lon: -58.3816, city: 'Буэнос-Айрес' },
-                    'America/Lima': { lat: -12.0464, lon: -77.0428, city: 'Лима' },
-                    'America/Bogota': { lat: 4.7110, lon: -74.0721, city: 'Богота' },
-                    // Африка
-                    'Africa/Cairo': { lat: 30.0444, lon: 31.2357, city: 'Каир' },
-                    'Africa/Lagos': { lat: 6.5244, lon: 3.3792, city: 'Лагос' },
-                    'Africa/Johannesburg': { lat: -26.2041, lon: 28.0473, city: 'Йоханнесбург' },
-                    'Africa/Nairobi': { lat: -1.2921, lon: 36.8219, city: 'Найроби' },
-                    // Океания
-                    'Pacific/Auckland': { lat: -36.8485, lon: 174.7633, city: 'Окленд' },
-                    'Pacific/Sydney': { lat: -33.8688, lon: 151.2093, city: 'Сидней' },
-                    'Pacific/Melbourne': { lat: -37.8136, lon: 144.9631, city: 'Мельбурн' },
-                };
-
-                const location = timezoneMap[timezone];
-                if (location) {
-                    console.log('✅ Found location by timezone:', location.city);
-                    return location;
-                }
-
-                // Если timezone не найден, пытаемся определить по смещению
-                const offset = -new Date().getTimezoneOffset() / 60;
-                console.log('⚠️ Timezone not in map, offset:', offset, 'hours');
-
-                // Приближённые координаты по смещению UTC
-                const offsetMap = {
-                    3: { lat: 55.7558, lon: 37.6173, city: 'Москва (UTC+3)' },
-                    2: { lat: 48.8566, lon: 2.3522, city: 'Европа (UTC+2)' },
-                    1: { lat: 52.5200, lon: 13.4050, city: 'Центр. Европа (UTC+1)' },
-                    0: { lat: 51.5074, lon: -0.1278, city: 'Лондон (UTC+0)' },
-                    4: { lat: 55.7558, lon: 37.6173, city: 'Москва (UTC+4)' },
-                    5: { lat: 43.2220, lon: 76.8512, city: 'Центр. Азия (UTC+5)' },
-                    6: { lat: 55.0084, lon: 82.9357, city: 'Новосибирск (UTC+6)' },
-                    7: { lat: 52.2869, lon: 104.3050, city: 'Иркутск (UTC+7)' },
-                    8: { lat: 43.1332, lon: 131.9113, city: 'Владивосток (UTC+8)' },
-                    9: { lat: 35.6762, lon: 139.6503, city: 'Токио (UTC+9)' },
-                    10: { lat: -37.8136, lon: 144.9631, city: 'Сидней (UTC+10)' },
-                    12: { lat: -36.8485, lon: 174.7633, city: 'Окленд (UTC+12)' },
-                    '-5': { lat: 40.7128, lon: -74.0060, city: 'Нью-Йорк (UTC-5)' },
-                    '-8': { lat: 34.0522, lon: -118.2437, city: 'LA (UTC-8)' }
-                };
-
-                const offsetLocation = offsetMap[offset];
-                if (offsetLocation) {
-                    console.log('✅ Found location by offset:', offsetLocation.city);
-                    return offsetLocation;
-                }
-
-                console.error('❌ Could not determine location');
-                return null;
-            } catch (error) {
-                console.error('❌ Error getting timezone:', error);
-                return null;
-            }
-        }
-
-        // Получение геолокации пользователя (по timezone, работает везде!)
-        async function getUserLocation() {
-            console.log('📍 Getting location via timezone...');
-            const location = getLocationByTimezone();
-            return location ? { lat: location.lat, lon: location.lon } : null;
-        }
-
-        // Обновление UI погоды
-        function updateWeatherUI(weather, isError = false, errorText = '') {
-            const loading = document.getElementById('weather-loading');
-            const error = document.getElementById('weather-error');
-            const errorTextElem = document.getElementById('weather-error-text');
-            const content = document.getElementById('weather-content');
-            const icon = document.getElementById('weather-icon');
-            const temp = document.getElementById('weather-temp');
-            const widget = document.getElementById('weather-widget');
-
-            // Убираем анимацию обновления
-            widget.classList.remove('refreshing');
-
-            if (isError) {
-                loading.style.display = 'none';
-                error.style.display = 'flex';
-                errorTextElem.textContent = errorText;
-                content.style.display = 'none';
-                return;
-            }
-
-            if (!weather) {
-                loading.style.display = 'flex';
-                error.style.display = 'none';
-                content.style.display = 'none';
-                return;
-            }
-
-            const code = weather.weathercode;
-            const weatherInfo = weatherCodes[code] || weatherCodes[0];
-            const isNight = !weather.is_day;
-            const iconChar = isNight && weatherInfo.night ? weatherInfo.night : weatherInfo.icon;
-
-            icon.textContent = iconChar;
-            temp.textContent = `${Math.round(weather.temperature)}°`;
-
-            loading.style.display = 'none';
-            error.style.display = 'none';
-            content.style.display = 'flex';
-        }
-
-        // Загрузка погоды с кэшированием
-        async function loadWeather(showRefreshAnimation = false) {
-            const now = Date.now();
-            const widget = document.getElementById('weather-widget');
-
-            // Показываем анимацию обновления
-            if (showRefreshAnimation) {
-                widget.classList.add('refreshing');
-            }
-
-            // Проверяем кэш
-            if (weatherData && weatherLastUpdate && (now - weatherLastUpdate < WEATHER_CACHE_DURATION)) {
-                if (showRefreshAnimation) {
-                    setTimeout(() => updateWeatherUI(weatherData), 300);
-                } else {
-                    updateWeatherUI(weatherData);
-                }
-                return;
-            }
-
-            // Получаем локацию
-            console.log('🌍 Getting user location...');
-            const location = await getUserLocation();
-
-            if (!location) {
-                console.error('❌ Failed to get location');
-                updateWeatherUI(null, true, 'Нет\nгеолокации'); // Показываем ошибку
-                return;
-            }
-
-            console.log('✅ Location found:', location.lat, location.lon);
-
-            // Загружаем погоду
-            console.log('🌤️ Fetching weather...');
-            const weather = await fetchWeather(location.lat, location.lon);
-
-            if (weather) {
-                console.log('✅ Weather loaded:', weather);
-                weatherData = weather;
-                weatherLastUpdate = now;
-                updateWeatherUI(weather);
-
-                // Сохраняем в localStorage
-                localStorage.setItem('fitTrackerWeather', JSON.stringify({
-                    data: weather,
-                    timestamp: now
-                }));
-            } else {
-                console.error('❌ Failed to fetch weather');
-                updateWeatherUI(null, true, 'Ошибка\nAPI');
-            }
-        }
-
-        // Загрузка погоды из localStorage
-        function loadCachedWeather() {
-            const cached = localStorage.getItem('fitTrackerWeather');
-            if (cached) {
-                try {
-                    const { data, timestamp } = JSON.parse(cached);
-                    weatherData = data;
-                    weatherLastUpdate = timestamp;
-                    updateWeatherUI(data);
-                } catch (e) {
-                    console.error('Error loading cached weather:', e);
-                }
-            }
-        }
-
-        // Обработчик клика по виджету погоды
-        function setupWeatherWidgetClick() {
-            const widget = document.getElementById('weather-widget');
-            if (widget) {
-                widget.addEventListener('click', () => {
-                    // Вибрация через Telegram WebApp
-                    if (window.Telegram?.WebApp?.HapticFeedback) {
-                        window.Telegram.WebApp.HapticFeedback.selectionChanged();
-                    }
-                    // Обновляем погоду
-                    loadWeather(true);
-                });
-            }
-        }
-
         // Инициализация при загрузке
         window.addEventListener('load', () => {
             if (window.Telegram && window.Telegram.WebApp) {
@@ -3491,11 +3057,6 @@
             // Загружаем закешированный AI комментарий и генерируем новый если нужно
             loadCachedAIComment();
             updateAIComment();
-
-            // Загружаем погоду
-            loadCachedWeather();
-            loadWeather();
-            setupWeatherWidgetClick();
         }
 
         // Сброс всей активности (для перехода на новую систему)
@@ -4684,10 +4245,16 @@
             }
         });
 
-        // Функционал перетаскивания разделителя
+        // Функционал перетаскивания разделителя (ОПТИМИЗИРОВАН)
         let isDragging = false;
         let startY = 0;
         let startTopHeight = 0;
+        let rafId = null; // RequestAnimationFrame ID
+        let currentClientY = 0;
+
+        // Кэшируем вычисляемые значения
+        let cachedViewportHeight = 0;
+        let cachedMinBottomHeight = 0;
 
         const dividerButton = document.querySelector('.divider-button');
         const workoutSection = document.querySelector('.workout-section');
@@ -4697,52 +4264,52 @@
         // Устанавливаем начальную высоту после загрузки страницы
         setTimeout(() => {
             if (!workoutSection.style.height) {
-                const viewportHeight = window.innerHeight;
+                cachedViewportHeight = window.innerHeight;
                 const baseHeight = 160;
-                const additionalHeight = viewportHeight * 0.05; // 5% от высоты экрана
+                const additionalHeight = cachedViewportHeight * 0.05; // 5% от высоты экрана
                 workoutSection.style.height = (baseHeight + additionalHeight) + 'px';
             }
+            // Кэшируем минимальную высоту нижней секции при инициализации
+            cacheMinBottomHeight();
         }, 100);
 
-        // Функция обновления размеров
-        function updateSizes(clientY) {
-            const deltaY = clientY - startY;
-            const viewportHeight = window.innerHeight;
-
-            // Фиксированная минимальная высота для верхней секции (после удаления заголовка)
-            const minTopHeight = 60; // минимальная высота для workout-blocks
-
-            // Получаем реальные размеры элементов для нижней секции
-            const activityHeader = activitySection.querySelector('.activity-header');
-            const calendarWrapper = document.querySelector('.calendar-wrapper');
-
-            // Находим дни недели в календаре
+        // Кэшируем минимальную высоту нижней секции (вызывается один раз)
+        function cacheMinBottomHeight() {
+            cachedViewportHeight = window.innerHeight;
             const dayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
-            let minBottomHeight = 200; // базовое значение
-
             if (dayLabels.length > 0) {
-                // Измеряем позицию последнего дня недели от верха activity-section
-                const activitySectionRect = activitySection.getBoundingClientRect();
-                const lastDayLabel = dayLabels[dayLabels.length - 1];
-                const lastDayRect = lastDayLabel.getBoundingClientRect();
-
-                // Минимальная высота нижней секции = 40% от высоты экрана
-                minBottomHeight = viewportHeight * 0.40;
+                cachedMinBottomHeight = cachedViewportHeight * 0.40;
             } else {
-                // Fallback: измеряем высоту заголовка и добавляем минимальную высоту календаря
+                const activityHeader = activitySection.querySelector('.activity-header');
                 const headerHeight = activityHeader ? activityHeader.offsetHeight : 60;
-                minBottomHeight = headerHeight + 250; // заголовок + минимальная высота календаря + запас
+                cachedMinBottomHeight = headerHeight + 250;
+            }
+        }
+
+        // Оптимизированная функция обновления размеров с requestAnimationFrame
+        function updateSizes(clientY) {
+            currentClientY = clientY;
+
+            // Отменяем предыдущий кадр, если есть
+            if (rafId) {
+                rafId = null;
             }
 
-            // Новая высота верхней секции
-            let newTopHeight = startTopHeight + deltaY;
+            // Используем requestAnimationFrame для плавности
+            rafId = requestAnimationFrame(() => {
+                const deltaY = currentClientY - startY;
+                const minTopHeight = 60; // минимальная высота для workout-blocks
 
-            // Ограничиваем сверху и снизу
-            newTopHeight = Math.max(minTopHeight, newTopHeight);
-            newTopHeight = Math.min(viewportHeight - divider.offsetHeight - minBottomHeight, newTopHeight);
+                // Новая высота верхней секции
+                let newTopHeight = startTopHeight + deltaY;
 
-            // Применяем высоту
-            workoutSection.style.height = newTopHeight + 'px';
+                // Ограничиваем сверху и снизу (используем кэшированные значения)
+                newTopHeight = Math.max(minTopHeight, newTopHeight);
+                newTopHeight = Math.min(cachedViewportHeight - divider.offsetHeight - cachedMinBottomHeight, newTopHeight);
+
+                // Применяем высоту
+                workoutSection.style.height = newTopHeight + 'px';
+            });
         }
 
         // Обработчики для мыши
@@ -4752,37 +4319,62 @@
             startTopHeight = workoutSection.offsetHeight;
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
+            // Добавляем will-change для оптимизации рендеринга
+            workoutSection.style.willChange = 'height';
+            activitySection.style.willChange = 'height';
             e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             updateSizes(e.clientY);
-        });
+        }, { passive: true });
 
         document.addEventListener('mouseup', () => {
             if (isDragging) {
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
+                // Убираем will-change после завершения
+                workoutSection.style.willChange = '';
+                activitySection.style.willChange = '';
+                // Отменяем pending RAF
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
             }
         });
 
-        // Обработчики для touch (мобильные устройства)
+        // Обработчики для touch (мобильные устройства) - ОПТИМИЗИРОВАННЫЕ
         dividerButton.addEventListener('touchstart', (e) => {
             isDragging = true;
             startY = e.touches[0].clientY;
             startTopHeight = workoutSection.offsetHeight;
+            // Добавляем will-change для оптимизации рендеринга
+            workoutSection.style.willChange = 'height';
+            activitySection.style.willChange = 'height';
             e.preventDefault();
         }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
+            // Используем requestAnimationFrame для синхронизации с экраном
             updateSizes(e.touches[0].clientY);
         }, { passive: false });
 
         document.addEventListener('touchend', () => {
-            isDragging = false;
+            if (isDragging) {
+                isDragging = false;
+                // Убираем will-change после завершения
+                workoutSection.style.willChange = '';
+                activitySection.style.willChange = '';
+                // Отменяем pending RAF
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+            }
         });
 
         // Предотвращаем выделение текста при клике на кнопку
