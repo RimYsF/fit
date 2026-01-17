@@ -111,9 +111,7 @@
             flex-shrink: 0;
             overflow-y: auto;
             min-height: 50px;
-            /* Оптимизация для плавного изменения высоты */
-            contain: layout style paint;
-            -webkit-overflow-scrolling: touch;
+            will-change: height;
         }
 
         .workout-header {
@@ -872,17 +870,11 @@
             left: 50%;
             transform: translate(-50%, -50%);
             box-shadow: 3px 3px 0 var(--neobrut-black);
-            cursor: grab;
-            transition: all 0.2s ease;
+            cursor: pointer;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
             z-index: 1;
-            /* Оптимизация для мобильных устройств */
-            touch-action: none;
             will-change: transform;
-            /* Аппаратное ускорение */
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            perspective: 1000px;
-            -webkit-perspective: 1000px;
+            touch-action: none;
         }
 
         .divider-button:hover {
@@ -894,7 +886,6 @@
         .divider-button:active {
             transform: translate(-50%, -50%) scale(0.95);
             box-shadow: 2px 2px 0 var(--neobrut-black);
-            cursor: grabbing;
         }
 
         /* Нижняя секция с активностью */
@@ -910,9 +901,6 @@
             box-shadow: 0 -4px 0 var(--neobrut-black);
             min-height: 0;
             position: relative;
-            /* Оптимизация для плавного изменения высоты */
-            contain: layout style paint;
-            -webkit-overflow-scrolling: touch;
         }
 
         .activity-header {
@@ -4245,16 +4233,19 @@
             }
         });
 
-        // Функционал перетаскивания разделителя (ОПТИМИЗИРОВАН)
+        // Функционал перетаскивания разделителя (оптимизирован для плавности)
         let isDragging = false;
         let startY = 0;
         let startTopHeight = 0;
-        let rafId = null; // RequestAnimationFrame ID
-        let currentClientY = 0;
+        let rafId = null;
 
-        // Кэшируем вычисляемые значения
-        let cachedViewportHeight = 0;
-        let cachedMinBottomHeight = 0;
+        // Кэшированные измерения для производительности
+        let cachedMeasurements = {
+            minTopHeight: 60,
+            minBottomHeight: 200,
+            dividerHeight: 0,
+            viewportHeight: 0
+        };
 
         const dividerButton = document.querySelector('.divider-button');
         const workoutSection = document.querySelector('.workout-section');
@@ -4264,51 +4255,51 @@
         // Устанавливаем начальную высоту после загрузки страницы
         setTimeout(() => {
             if (!workoutSection.style.height) {
-                cachedViewportHeight = window.innerHeight;
+                const viewportHeight = window.innerHeight;
                 const baseHeight = 160;
-                const additionalHeight = cachedViewportHeight * 0.05; // 5% от высоты экрана
+                const additionalHeight = viewportHeight * 0.05; // 5% от высоты экрана
                 workoutSection.style.height = (baseHeight + additionalHeight) + 'px';
             }
-            // Кэшируем минимальную высоту нижней секции при инициализации
-            cacheMinBottomHeight();
         }, 100);
 
-        // Кэшируем минимальную высоту нижней секции (вызывается один раз)
-        function cacheMinBottomHeight() {
-            cachedViewportHeight = window.innerHeight;
+        // Кэшируем измерения при начале перетаскивания (избегаем reflow во время движения)
+        function cacheMeasurements() {
+            cachedMeasurements.viewportHeight = window.innerHeight;
+            cachedMeasurements.dividerHeight = divider.offsetHeight;
+
+            // Находим дни недели в календаре (делаем это один раз)
             const dayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
+
             if (dayLabels.length > 0) {
-                cachedMinBottomHeight = cachedViewportHeight * 0.40;
+                // Минимальная высота нижней секции = 40% от высоты экрана
+                cachedMeasurements.minBottomHeight = cachedMeasurements.viewportHeight * 0.40;
             } else {
+                // Fallback
                 const activityHeader = activitySection.querySelector('.activity-header');
                 const headerHeight = activityHeader ? activityHeader.offsetHeight : 60;
-                cachedMinBottomHeight = headerHeight + 250;
+                cachedMeasurements.minBottomHeight = headerHeight + 250;
             }
         }
 
         // Оптимизированная функция обновления размеров с requestAnimationFrame
         function updateSizes(clientY) {
-            currentClientY = clientY;
+            // Используем requestAnimationFrame для синхронизации с частотой обновления экрана
+            if (rafId) return;
 
-            // Отменяем предыдущий кадр, если есть
-            if (rafId) {
-                rafId = null;
-            }
-
-            // Используем requestAnimationFrame для плавности
             rafId = requestAnimationFrame(() => {
-                const deltaY = currentClientY - startY;
-                const minTopHeight = 60; // минимальная высота для workout-blocks
-
-                // Новая высота верхней секции
+                const deltaY = clientY - startY;
                 let newTopHeight = startTopHeight + deltaY;
 
-                // Ограничиваем сверху и снизу (используем кэшированные значения)
-                newTopHeight = Math.max(minTopHeight, newTopHeight);
-                newTopHeight = Math.min(cachedViewportHeight - divider.offsetHeight - cachedMinBottomHeight, newTopHeight);
+                // Ограничиваем сверху и снизу
+                newTopHeight = Math.max(cachedMeasurements.minTopHeight, newTopHeight);
+                newTopHeight = Math.min(
+                    cachedMeasurements.viewportHeight - cachedMeasurements.dividerHeight - cachedMeasurements.minBottomHeight,
+                    newTopHeight
+                );
 
                 // Применяем высоту
                 workoutSection.style.height = newTopHeight + 'px';
+                rafId = null;
             });
         }
 
@@ -4319,62 +4310,40 @@
             startTopHeight = workoutSection.offsetHeight;
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
-            // Добавляем will-change для оптимизации рендеринга
-            workoutSection.style.willChange = 'height';
-            activitySection.style.willChange = 'height';
+            cacheMeasurements(); // Кэшируем измерения один раз при начале
             e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             updateSizes(e.clientY);
-        }, { passive: true });
+        });
 
         document.addEventListener('mouseup', () => {
             if (isDragging) {
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-                // Убираем will-change после завершения
-                workoutSection.style.willChange = '';
-                activitySection.style.willChange = '';
-                // Отменяем pending RAF
-                if (rafId) {
-                    cancelAnimationFrame(rafId);
-                    rafId = null;
-                }
+                rafId = null; // Сбрасываем RAF
             }
         });
 
-        // Обработчики для touch (мобильные устройства) - ОПТИМИЗИРОВАННЫЕ
+        // Обработчики для touch (мобильные устройства) - оптимизированы
         dividerButton.addEventListener('touchstart', (e) => {
             isDragging = true;
             startY = e.touches[0].clientY;
             startTopHeight = workoutSection.offsetHeight;
-            // Добавляем will-change для оптимизации рендеринга
-            workoutSection.style.willChange = 'height';
-            activitySection.style.willChange = 'height';
-            e.preventDefault();
-        }, { passive: false });
+            cacheMeasurements(); // Кэшируем измерения один раз при начале
+        }, { passive: true });
 
         document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            // Используем requestAnimationFrame для синхронизации с экраном
             updateSizes(e.touches[0].clientY);
-        }, { passive: false });
+        }, { passive: true });
 
         document.addEventListener('touchend', () => {
-            if (isDragging) {
-                isDragging = false;
-                // Убираем will-change после завершения
-                workoutSection.style.willChange = '';
-                activitySection.style.willChange = '';
-                // Отменяем pending RAF
-                if (rafId) {
-                    cancelAnimationFrame(rafId);
-                    rafId = null;
-                }
-            }
+            isDragging = false;
+            rafId = null; // Сбрасываем RAF
         });
 
         // Предотвращаем выделение текста при клике на кнопку
