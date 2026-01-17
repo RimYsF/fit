@@ -112,6 +112,14 @@
             overflow-y: auto;
             min-height: 50px;
             will-change: height;
+            contain: layout style;
+        }
+
+        /* Оптимизация при перетаскивании */
+        .workout-section.dragging {
+            backdrop-filter: none;
+            box-shadow: none;
+            will-change: height;
         }
 
         .workout-header {
@@ -4238,6 +4246,7 @@
         let startY = 0;
         let startTopHeight = 0;
         let rafId = null;
+        let currentY = 0; // Сохраняем последнее положение пальца
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
@@ -4281,35 +4290,42 @@
             }
         }
 
-        // Оптимизированная функция обновления размеров с requestAnimationFrame
+        // Функция обновления через RAF (вызывается каждый кадр)
+        function updateFrame() {
+            const deltaY = currentY - startY;
+            let newTopHeight = startTopHeight + deltaY;
+
+            // Ограничиваем сверху и снизу
+            newTopHeight = Math.max(cachedMeasurements.minTopHeight, newTopHeight);
+            newTopHeight = Math.min(
+                cachedMeasurements.viewportHeight - cachedMeasurements.dividerHeight - cachedMeasurements.minBottomHeight,
+                newTopHeight
+            );
+
+            // Применяем высоту
+            workoutSection.style.height = newTopHeight + 'px';
+        }
+
+        // Сохраняем позицию и запрашиваем кадр
         function updateSizes(clientY) {
-            // Используем requestAnimationFrame для синхронизации с частотой обновления экрана
-            if (rafId) return;
-
-            rafId = requestAnimationFrame(() => {
-                const deltaY = clientY - startY;
-                let newTopHeight = startTopHeight + deltaY;
-
-                // Ограничиваем сверху и снизу
-                newTopHeight = Math.max(cachedMeasurements.minTopHeight, newTopHeight);
-                newTopHeight = Math.min(
-                    cachedMeasurements.viewportHeight - cachedMeasurements.dividerHeight - cachedMeasurements.minBottomHeight,
-                    newTopHeight
-                );
-
-                // Применяем высоту
-                workoutSection.style.height = newTopHeight + 'px';
-                rafId = null;
-            });
+            currentY = clientY;
+            if (!rafId) {
+                rafId = requestAnimationFrame(() => {
+                    updateFrame();
+                    rafId = null;
+                });
+            }
         }
 
         // Обработчики для мыши
         dividerButton.addEventListener('mousedown', (e) => {
             isDragging = true;
             startY = e.clientY;
+            currentY = e.clientY;
             startTopHeight = workoutSection.offsetHeight;
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
+            workoutSection.classList.add('dragging'); // Отключаем тяжелые эффекты
             cacheMeasurements(); // Кэшируем измерения один раз при начале
             e.preventDefault();
         });
@@ -4324,26 +4340,38 @@
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-                rafId = null; // Сбрасываем RAF
+                workoutSection.classList.remove('dragging'); // Возвращаем эффекты
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
             }
         });
 
-        // Обработчики для touch (мобильные устройства) - оптимизированы
+        // Обработчики для touch (мобильные устройства)
         dividerButton.addEventListener('touchstart', (e) => {
             isDragging = true;
             startY = e.touches[0].clientY;
+            currentY = e.touches[0].clientY;
             startTopHeight = workoutSection.offsetHeight;
+            workoutSection.classList.add('dragging'); // Отключаем тяжелые эффекты
             cacheMeasurements(); // Кэшируем измерения один раз при начале
-        }, { passive: true });
+            e.preventDefault(); // Предотвращаем скролл страницы
+        }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
+            e.preventDefault(); // Предотвращаем скролл страницы
             updateSizes(e.touches[0].clientY);
-        }, { passive: true });
+        }, { passive: false });
 
         document.addEventListener('touchend', () => {
             isDragging = false;
-            rafId = null; // Сбрасываем RAF
+            workoutSection.classList.remove('dragging'); // Возвращаем эффекты
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
         });
 
         // Предотвращаем выделение текста при клике на кнопку
