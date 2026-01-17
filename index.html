@@ -3217,76 +3217,125 @@
             }
         }
 
-        // Получение геолокации по IP (через CORS прокси для Telegram)
-        async function getLocationByIP() {
-            // Используем CORS прокси для обхода ограничений Telegram
-            const apis = [
-                {
-                    // Через allorigins.win CORS прокси
-                    url: 'https://api.allorigins.win/raw?url=https://ipapi.co/json/',
-                    parse: (data) => data.latitude && data.longitude
-                        ? { lat: data.latitude, lon: data.longitude, city: data.city, country: data.country_name }
-                        : null
-                },
-                {
-                    // Прямой запрос к ipapi.co (иногда работает)
-                    url: 'https://ipapi.co/json/',
-                    parse: (data) => data.latitude && data.longitude
-                        ? { lat: data.latitude, lon: data.longitude, city: data.city, country: data.country_name }
-                        : null
-                },
-                {
-                    // Через allorigins.win для ip-api.com
-                    url: 'https://api.allorigins.win/raw?url=https://ip-api.com/json/',
-                    parse: (data) => data.status === 'success' && data.lat && data.lon
-                        ? { lat: data.lat, lon: data.lon, city: data.city, country: data.country }
-                        : null
-                },
-                {
-                    // ipify через прокси
-                    url: 'https://api.allorigins.win/raw?url=https://api.ipify.org?format=json',
-                    parse: (data) => data.ip // Возвращает только IP
-                        ? { lat: null, lon: null, ip: data.ip } // Нужен другой API для координат
-                        : null
+        // Определение координат по timezone пользователя (без внешних запросов!)
+        function getLocationByTimezone() {
+            try {
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                console.log('🕐 Detected timezone:', timezone);
+
+                // Маппинг timezone → примерные координаты (центры регионов)
+                const timezoneMap = {
+                    // Россия
+                    'Europe/Moscow': { lat: 55.7558, lon: 37.6173, city: 'Москва' },
+                    'Europe/Saint Petersburg': { lat: 59.9343, lon: 30.3351, city: 'СПб' },
+                    'Europe/Kaliningrad': { lat: 54.7104, lon: 20.4522, city: 'Калининград' },
+                    'Asia/Yekaterinburg': { lat: 56.8389, lon: 60.6057, city: 'Екатеринбург' },
+                    'Asia/Novosibirsk': { lat: 55.0084, lon: 82.9357, city: 'Новосибирск' },
+                    'Asia/Irkutsk': { lat: 52.2869, lon: 104.3050, city: 'Иркутск' },
+                    'Asia/Yakutsk': { lat: 62.0355, lon: 129.6755, city: 'Якутск' },
+                    'Asia/Vladivostok': { lat: 43.1332, lon: 131.9113, city: 'Владивосток' },
+                    'Asia/Kamchatka': { lat: 53.0677, lon: 158.5350, city: 'Камчатка' },
+                    'Asia/Samarkand': { lat: 39.6542, lon: 66.9597, city: 'Самарканд' },
+                    'Asia/Tashkent': { lat: 41.2995, lon: 69.2401, city: 'Ташкент' },
+                    'Asia/Almaty': { lat: 43.2220, lon: 76.8512, city: 'Алматы' },
+                    'Asia/Bishkek': { lat: 42.8746, lon: 74.5698, city: 'Бишкек' },
+                    'Asia/Dushanbe': { lat: 38.5598, lon: 68.7870, city: 'Душанбе' },
+                    'Asia/Ashgabat': { lat: 37.9601, lon: 58.3261, city: 'Ашхабад' },
+                    // Европа
+                    'Europe/London': { lat: 51.5074, lon: -0.1278, city: 'Лондон' },
+                    'Europe/Paris': { lat: 48.8566, lon: 2.3522, city: 'Париж' },
+                    'Europe/Berlin': { lat: 52.5200, lon: 13.4050, city: 'Берлин' },
+                    'Europe/Rome': { lat: 41.9028, lon: 12.4964, city: 'Рим' },
+                    'Europe/Madrid': { lat: 40.4168, lon: -3.7038, city: 'Мадрид' },
+                    'Europe/Kiev': { lat: 50.4501, lon: 30.5234, city: 'Киев' },
+                    'Europe/Minsk': { lat: 53.9000, lon: 27.5667, city: 'Минск' },
+                    'Europe/Warsaw': { lat: 52.2297, lon: 21.0122, city: 'Варшава' },
+                    'Europe/Prague': { lat: 50.0755, lon: 14.4378, city: 'Прага' },
+                    'Europe/Vienna': { lat: 48.2082, lon: 16.3738, city: 'Вена' },
+                    // Азия
+                    'Asia/Tokyo': { lat: 35.6762, lon: 139.6503, city: 'Токио' },
+                    'Asia/Seoul': { lat: 37.5665, lon: 126.9780, city: 'Сеул' },
+                    'Asia/Shanghai': { lat: 31.2304, lon: 121.4737, city: 'Шанхай' },
+                    'Asia/Beijing': { lat: 39.9042, lon: 116.4074, city: 'Пекин' },
+                    'Asia/Hong Kong': { lat: 22.3193, lon: 114.1694, city: 'Гонконг' },
+                    'Asia/Singapore': { lat: 1.3521, lon: 103.8198, city: 'Сингапур' },
+                    'Asia/Bangkok': { lat: 13.7563, lon: 100.5018, city: 'Бангкок' },
+                    'Asia/Dubai': { lat: 25.2048, lon: 55.2708, city: 'Дубай' },
+                    'Asia/Jerusalem': { lat: 31.7683, lon: 35.2137, city: 'Иерусалим' },
+                    'Asia/Karachi': { lat: 24.8607, lon: 67.0011, city: 'Карачи' },
+                    'Asia/Mumbai': { lat: 19.0760, lon: 72.8777, city: 'Мумбаи' },
+                    'Asia/Dhaka': { lat: 23.8103, lon: 90.4125, city: 'Дакка' },
+                    'Asia/Jakarta': { lat: -6.2088, lon: 106.8456, city: 'Джакарта' },
+                    'Asia/Manila': { lat: 14.5995, lon: 120.9842, city: 'Манила' },
+                    'Asia/Taipei': { lat: 25.0330, lon: 121.5654, city: 'Тайбэй' },
+                    // Америка
+                    'America/New_York': { lat: 40.7128, lon: -74.0060, city: 'Нью-Йорк' },
+                    'America/Los_Angeles': { lat: 34.0522, lon: -118.2437, city: 'LA' },
+                    'America/Chicago': { lat: 41.8781, lon: -87.6298, city: 'Чикаго' },
+                    'America/Toronto': { lat: 43.6532, lon: -79.3832, city: 'Торонто' },
+                    'America/Vancouver': { lat: 49.2827, lon: -123.1207, city: 'Ванкувер' },
+                    'America/Mexico_City': { lat: 19.4326, lon: -99.1332, city: 'Мехико' },
+                    'America/Sao_Paulo': { lat: -23.5505, lon: -46.6333, city: 'Сан-Паулу' },
+                    'America/Buenos_Aires': { lat: -34.6037, lon: -58.3816, city: 'Буэнос-Айрес' },
+                    'America/Lima': { lat: -12.0464, lon: -77.0428, city: 'Лима' },
+                    'America/Bogota': { lat: 4.7110, lon: -74.0721, city: 'Богота' },
+                    // Африка
+                    'Africa/Cairo': { lat: 30.0444, lon: 31.2357, city: 'Каир' },
+                    'Africa/Lagos': { lat: 6.5244, lon: 3.3792, city: 'Лагос' },
+                    'Africa/Johannesburg': { lat: -26.2041, lon: 28.0473, city: 'Йоханнесбург' },
+                    'Africa/Nairobi': { lat: -1.2921, lon: 36.8219, city: 'Найроби' },
+                    // Океания
+                    'Pacific/Auckland': { lat: -36.8485, lon: 174.7633, city: 'Окленд' },
+                    'Pacific/Sydney': { lat: -33.8688, lon: 151.2093, city: 'Сидней' },
+                    'Pacific/Melbourne': { lat: -37.8136, lon: 144.9631, city: 'Мельбурн' },
+                };
+
+                const location = timezoneMap[timezone];
+                if (location) {
+                    console.log('✅ Found location by timezone:', location.city);
+                    return location;
                 }
-            ];
 
-            for (const api of apis) {
-                try {
-                    console.log('🔍 Trying IP geolocation API:', api.url);
-                    const response = await fetch(api.url, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
+                // Если timezone не найден, пытаемся определить по смещению
+                const offset = -new Date().getTimezoneOffset() / 60;
+                console.log('⚠️ Timezone not in map, offset:', offset, 'hours');
 
-                    if (!response.ok) {
-                        console.log('❌ API response not OK:', response.status);
-                        continue;
-                    }
+                // Приближённые координаты по смещению UTC
+                const offsetMap = {
+                    3: { lat: 55.7558, lon: 37.6173, city: 'Москва (UTC+3)' },
+                    2: { lat: 48.8566, lon: 2.3522, city: 'Европа (UTC+2)' },
+                    1: { lat: 52.5200, lon: 13.4050, city: 'Центр. Европа (UTC+1)' },
+                    0: { lat: 51.5074, lon: -0.1278, city: 'Лондон (UTC+0)' },
+                    4: { lat: 55.7558, lon: 37.6173, city: 'Москва (UTC+4)' },
+                    5: { lat: 43.2220, lon: 76.8512, city: 'Центр. Азия (UTC+5)' },
+                    6: { lat: 55.0084, lon: 82.9357, city: 'Новосибирск (UTC+6)' },
+                    7: { lat: 52.2869, lon: 104.3050, city: 'Иркутск (UTC+7)' },
+                    8: { lat: 43.1332, lon: 131.9113, city: 'Владивосток (UTC+8)' },
+                    9: { lat: 35.6762, lon: 139.6503, city: 'Токио (UTC+9)' },
+                    10: { lat: -37.8136, lon: 144.9631, city: 'Сидней (UTC+10)' },
+                    12: { lat: -36.8485, lon: 174.7633, city: 'Окленд (UTC+12)' },
+                    '-5': { lat: 40.7128, lon: -74.0060, city: 'Нью-Йорк (UTC-5)' },
+                    '-8': { lat: 34.0522, lon: -118.2437, city: 'LA (UTC-8)' }
+                };
 
-                    const data = await response.json();
-                    const location = api.parse(data);
-
-                    if (location && location.lat && location.lon) {
-                        console.log('✅ IP geolocation success:', location.city, location.country);
-                        return location;
-                    }
-                } catch (error) {
-                    console.log('❌ API failed:', api.url, error.message);
-                    continue;
+                const offsetLocation = offsetMap[offset];
+                if (offsetLocation) {
+                    console.log('✅ Found location by offset:', offsetLocation.city);
+                    return offsetLocation;
                 }
+
+                console.error('❌ Could not determine location');
+                return null;
+            } catch (error) {
+                console.error('❌ Error getting timezone:', error);
+                return null;
             }
-
-            console.error('❌ All IP geolocation APIs failed');
-            return null;
         }
 
-        // Получение геолокации пользователя (только IP, GPS не работает в Telegram)
+        // Получение геолокации пользователя (по timezone, работает везде!)
         async function getUserLocation() {
-            console.log('📍 Getting location via IP...');
-            const location = await getLocationByIP();
+            console.log('📍 Getting location via timezone...');
+            const location = getLocationByTimezone();
             return location ? { lat: location.lat, lon: location.lon } : null;
         }
 
