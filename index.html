@@ -4496,16 +4496,10 @@
         let rafId = null;
         let currentY = 0;
 
-        // Определяем мобильное устройство
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-            || window.innerWidth < 768
-            || ('ontouchstart' in window);
-
         // Переменные для плавной интерполяции (lerp)
         let targetHeight = 0;
         let currentHeight = 0;
-        // На мобильных используем более быструю интерполяцию (меньше кадров = меньше нагрузка)
-        const lerpFactor = isMobile ? 0.6 : 0.15;
+        const lerpFactor = 0.18; // Плавное отставание для минимизации лагов
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
