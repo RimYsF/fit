@@ -109,6 +109,7 @@
             position: relative;
             box-shadow: 8px 8px 0 var(--neobrut-black);
             flex-shrink: 0;
+            flex-basis: var(--workout-basis, auto);
             overflow-y: auto;
             min-height: 50px;
             transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease;
@@ -118,10 +119,11 @@
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            will-change: flex-basis;
+            will-change: --workout-basis;
             contain: strict;
             transition: none;
             z-index: 1;
+            overflow-y: hidden;
         }
 
         .workout-section.dragging * {
@@ -4503,14 +4505,17 @@
         const activitySection = document.querySelector('.activity-section');
         const divider = document.querySelector('.divider');
 
+        // Кэшируем dayLabels (делаем один раз при инициализации)
+        let cachedDayLabels = null;
+        let hasCalendarChecked = false;
+
         // Устанавливаем начальную высоту после загрузки страницы
         setTimeout(() => {
-            if (!workoutSection.style.flexBasis) {
-                const viewportHeight = window.innerHeight;
-                const baseHeight = 160;
-                const additionalHeight = viewportHeight * 0.05; // 5% от высоты экрана
-                workoutSection.style.flexBasis = (baseHeight + additionalHeight) + 'px';
-            }
+            const viewportHeight = window.innerHeight;
+            const baseHeight = 160;
+            const additionalHeight = viewportHeight * 0.05;
+            const initialHeight = baseHeight + additionalHeight;
+            workoutSection.style.setProperty('--workout-basis', initialHeight + 'px');
         }, 100);
 
         // Кэшируем измерения при начале перетаскивания (избегаем reflow во время движения)
@@ -4518,10 +4523,13 @@
             cachedMeasurements.viewportHeight = window.innerHeight;
             cachedMeasurements.dividerHeight = divider.getBoundingClientRect().height;
 
-            // Находим дни недели в календаре (делаем это один раз)
-            const dayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
+            // Проверяем наличие календаря только один раз
+            if (!hasCalendarChecked) {
+                cachedDayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
+                hasCalendarChecked = true;
+            }
 
-            if (dayLabels.length > 0) {
+            if (cachedDayLabels && cachedDayLabels.length > 0) {
                 // Минимальная высота нижней секции = 40% от высоты экрана
                 cachedMeasurements.minBottomHeight = cachedMeasurements.viewportHeight * 0.40;
             } else {
@@ -4544,8 +4552,8 @@
                 newTopHeight
             );
 
-            // Применяем flex-basis вместо height (более производительно для flexbox)
-            workoutSection.style.flexBasis = newTopHeight + 'px';
+            // Применяем через CSS переменную (самый быстрый способ)
+            workoutSection.style.setProperty('--workout-basis', newTopHeight + 'px');
         }
 
         // Сохраняем позицию и запрашиваем кадр
