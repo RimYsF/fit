@@ -1853,7 +1853,7 @@
 
         .chat-wrapper .message.user-message {
             background: var(--neobrut-blue);
-            transform: rotate(1deg);
+            transform: rotate(0deg);
             align-self: flex-end;
         }
 
@@ -1863,7 +1863,7 @@
 
         .chat-wrapper .message.ai-message {
             background: var(--neobrut-white);
-            transform: rotate(-1deg);
+            transform: rotate(0deg);
         }
 
         .chat-wrapper .message.ai-message .message-content {
@@ -2201,6 +2201,18 @@
             box-shadow: 4px 4px 0 var(--neobrut-black);
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .ai-comment:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+        }
+
+        .ai-comment:active {
+            transform: translate(1px, 1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
         }
 
         .ai-comment::before {
@@ -2222,6 +2234,48 @@
             line-height: 1.5;
             position: relative;
             z-index: 1;
+        }
+
+        /* Typing cursor effect */
+        .ai-comment-text.typing::after {
+            content: '';
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--neobrut-white);
+            margin-left: 2px;
+            animation: blink-cursor 0.8s infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink-cursor {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Dark gray blinking dots */
+        .ai-comment-typing-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 4px;
+        }
+
+        .ai-comment-typing-dot {
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: typing-blink 1.4s infinite ease-in-out both;
+        }
+
+        .ai-comment-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .ai-comment-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        .ai-comment-typing-dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes typing-blink {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+            40% { transform: scale(1); opacity: 0.5; }
         }
 
         .ai-comment-loading {
@@ -2437,27 +2491,6 @@
         function validateConfig() {
             return true; // Для простоты
         }
-
-        // Программа тренировок
-        const workoutProgram = [
-            { day: 1, name: 'Понедельник', exercises: ['Отжимания', 'Приседания', 'Планка'] },
-            { day: 2, name: 'Вторник', exercises: ['Прыжки "Джек"', 'Выпады', 'Планка'] },
-            { day: 3, name: 'Среда', exercises: ['Отжимания', 'Берпи', 'Приседания'] },
-            { day: 4, name: 'Четверг', exercises: ['Планка', 'Выпады', 'Прыжки "Джек"'] },
-            { day: 5, name: 'Пятница', exercises: ['Отжимания', 'Приседания', 'Берпи'] },
-            { day: 6, name: 'Суббота', exercises: ['Прыжки "Джек"', 'Выпады', 'Планка'] },
-            { day: 7, name: 'Воскресенье', exercises: ['Отжимания', 'Берпи', 'Приседания'] }
-        ];
-
-        // Иконки упражнений
-        const exerciseIcons = {
-            'Отжимания': '💪',
-            'Приседания': '🦵',
-            'Планка': '🧘',
-            'Прыжки "Джек"': '⚡',
-            'Выпады': '🏃',
-            'Берпи': '🔥'
-        };
 
         // Инициализация приложения
         let currentYear = new Date().getFullYear();
@@ -2678,33 +2711,101 @@
             return html;
         }
 
-        // Получение даты для дня тренировки
-        function getWorkoutDate(workoutDay) {
-            const today = new Date();
+        // ===== СИНХРОНИЗАЦИЯ ДАТ =====
 
-            // День тренировки - это просто смещение от сегодняшнего дня
-            // День 1 = сегодня, День 2 = завтра, День 3 = послезавтра и т.д.
+        // Получить дату начала программы (когда выполнена первая задача)
+        function getStartDate() {
+            const saved = localStorage.getItem('fitTrackerStartDate');
+            if (saved) {
+                return new Date(saved);
+            }
+            return null;
+        }
+
+        // Установить дату начала программы
+        function setStartDate(date) {
+            localStorage.setItem('fitTrackerStartDate', date.toISOString());
+            console.log('Установлена дата начала программы:', date.toLocaleDateString('ru-RU'));
+        }
+
+        // Получить название дня недели для тренировочного дня
+        function getWorkoutDayName(workoutDay) {
+            const startDate = getStartDate();
+            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+
+            if (!startDate) {
+                // Если дата начала не установлена, возвращаем просто "День X"
+                return `День ${workoutDay}`;
+            }
+
+            // Вычисляем дату для этого тренировочного дня
             const dayOffset = workoutDay - 1;
+            const workoutDate = new Date(startDate);
+            workoutDate.setDate(startDate.getDate() + dayOffset);
 
-            // Создаем дату для дня тренировки
-            const workoutDate = new Date(today);
-            workoutDate.setDate(today.getDate() + dayOffset);
+            // Получаем день недели
+            return dayNames[workoutDate.getDay()];
+        }
 
-            console.log(`День ${workoutDay} -> ${workoutDate.toLocaleDateString('ru-RU')} (смещение: ${dayOffset} дней)`);
+        // Получить текущий день тренировки на основе календарной даты
+        function getCurrentWorkoutDay() {
+            const startDate = getStartDate();
+            if (!startDate) {
+                return 1; // По умолчанию День 1, если стартовая дата не установлена
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+
+            // Вычисляем разницу в днях
+            const diffTime = today - start;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            // День тренировки = смещение + 1
+            const workoutDay = diffDays + 1;
+
+            // Ограничиваем максимум 7 днями
+            return Math.min(Math.max(workoutDay, 1), 7);
+        }
+
+        // Получение даты для дня тренировки (на основе стартовой даты)
+        function getWorkoutDate(workoutDay) {
+            const startDate = getStartDate();
+
+            if (!startDate) {
+                // Если стартовая дата не установлена, используем старую логику
+                const today = new Date();
+                const dayOffset = workoutDay - 1;
+                const workoutDate = new Date(today);
+                workoutDate.setDate(today.getDate() + dayOffset);
+                console.log(`День ${workoutDay} -> ${workoutDate.toLocaleDateString('ru-RU')} (смещение: ${dayOffset} дней)`);
+                return workoutDate;
+            }
+
+            // Новая логика: День 1 = startDate, День 2 = startDate + 1 день, и т.д.
+            const dayOffset = workoutDay - 1;
+            const workoutDate = new Date(startDate);
+            workoutDate.setDate(startDate.getDate() + dayOffset);
+
+            console.log(`День ${workoutDay} -> ${workoutDate.toLocaleDateString('ru-RU')} (от ${startDate.toLocaleDateString('ru-RU')}, смещение: ${dayOffset} дней)`);
 
             return workoutDate;
         }
 
         // Проверка и запись активности на основе процентов выполнения
         function checkAndRecordActivity() {
-            // Проверяем, есть ли todo для выбранного дня тренировки
-            if (todoData[selectedWorkout]) {
-                // Получаем правильную дату для дня тренировки
-                const workoutDate = getWorkoutDate(selectedWorkout);
+            const currentWorkoutDay = getCurrentWorkoutDay();
 
-                // Рассчитываем общий процент выполнения для выбранного дня
-                const percentage = calculateCompletionPercentage(selectedWorkout);
-                console.log(`День ${selectedWorkout}: процент выполнения = ${percentage}%`);
+            // Проверяем, есть ли todo для текущего дня тренировки
+            if (todoData[currentWorkoutDay]) {
+                // Получаем правильную дату для дня тренировки
+                const workoutDate = getWorkoutDate(currentWorkoutDay);
+
+                // Рассчитываем общий процент выполнения для текущего дня
+                const percentage = calculateCompletionPercentage(currentWorkoutDay);
+                console.log(`День ${currentWorkoutDay}: процент выполнения = ${percentage}%`);
 
                 // Определяем уровень активности на основе процента
                 let activityLevel = 'none';
@@ -2885,6 +2986,13 @@
                                 // Задача только что выполнена - записываем время
                                 task.completed = true;
                                 task.completedAt = now.toISOString();
+
+                                // Если это первая выполненная задача - сохраняем дату начала программы
+                                if (!getStartDate()) {
+                                    setStartDate(now);
+                                    console.log('Первая задача выполнена! Установлена дата начала программы.');
+                                }
+
                                 // Слабая вибрация как фидбек
                                 if (window.Telegram?.WebApp?.HapticFeedback) {
                                     Telegram.WebApp.HapticFeedback.selectionChanged();
@@ -2939,24 +3047,19 @@
         function updateDashboardStrip() {
             const today = new Date();
             const streak = calculateStreak();
-            const percentage = calculateCompletionPercentage(selectedWorkout);
+            const currentWorkoutDay = getCurrentWorkoutDay();
+            const percentage = calculateCompletionPercentage(currentWorkoutDay);
 
-            // Обновляем дату
-            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-            const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-            const dayName = dayNames[today.getDay()];
-            const day = today.getDate();
-            const month = monthNames[today.getMonth()];
-
-            document.getElementById('strip-day').textContent = `${dayName}, ${day} ${month}`;
-            document.getElementById('strip-date').textContent = `День ${selectedWorkout}`;
+            // Обновляем дату - показываем только день тренировки, а не календарную дату
+            document.getElementById('strip-day').textContent = '';
+            document.getElementById('strip-date').textContent = `День ${currentWorkoutDay}`;
 
             // Обновляем серию
             document.getElementById('streak-count').textContent = `${streak} ${streak === 1 ? 'день' : (streak >= 2 && streak <= 4 ? 'дня' : 'дней')}`;
 
             // Обновляем прогресс
             document.getElementById('strip-progress-value').textContent = `${percentage}%`;
-            document.getElementById('strip-progress-sub').textContent = `День ${selectedWorkout} из 7`;
+            document.getElementById('strip-progress-sub').textContent = `День ${currentWorkoutDay} из 7`;
 
             // Обновляем круговой прогресс
             const progressCircle = document.getElementById('strip-progress-circle');
@@ -2990,13 +3093,91 @@
             return false;
         }
 
+        // Функция анимации печати текста
+        let typingTimeout = null;
+        function typeTextWithAnimation(element, text, speed = 30) {
+            // Очищаем предыдущую анимацию
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+
+            element.textContent = '';
+            element.classList.add('typing');
+
+            let index = 0;
+            const dots = '<span class="ai-comment-typing-dots"><span class="ai-comment-typing-dot"></span><span class="ai-comment-typing-dot"></span><span class="ai-comment-typing-dot"></span></span>';
+
+            function type() {
+                if (index < text.length) {
+                    element.textContent = text.substring(0, index + 1);
+                    // Добавляем точки пока печатается
+                    if (index < text.length - 1) {
+                        element.innerHTML += dots;
+                    }
+                    index++;
+                    typingTimeout = setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typing');
+                    element.textContent = text;
+                }
+            }
+
+            type();
+        }
+
+        // Ручное обновление AI комментария по клику
+        async function refreshAIComment() {
+            const commentElement = document.getElementById('ai-comment-text');
+            const currentWorkoutDay = getCurrentWorkoutDay();
+            const percentage = calculateCompletionPercentage(currentWorkoutDay);
+            const streak = calculateStreak();
+
+            // Показываем индикатор загрузки
+            commentElement.innerHTML = `
+                <div class="ai-comment-loading">
+                    <span>Анализирую прогресс</span>
+                    <div class="ai-comment-loading-dot"></div>
+                    <div class="ai-comment-loading-dot"></div>
+                    <div class="ai-comment-loading-dot"></div>
+                </div>
+            `;
+
+            try {
+                // Генерируем новый комментарий
+                const comment = await generateAICommentForDashboard(percentage, streak);
+
+                // Анимируем появление текста
+                typeTextWithAnimation(commentElement, comment, 25);
+
+                // Обновляем время и процент
+                lastAICommentUpdate = Date.now();
+                lastAICommentPercentage = percentage;
+
+                // Кешируем в localStorage
+                localStorage.setItem('fitTrackerAIComment', JSON.stringify({
+                    comment,
+                    timestamp: lastAICommentUpdate,
+                    percentage: lastAICommentPercentage
+                }));
+
+                // Вибрация
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    Telegram.WebApp.HapticFeedback.selectionChanged();
+                }
+            } catch (error) {
+                console.error('Error refreshing AI comment:', error);
+                commentElement.textContent = getFallbackComment(percentage, streak);
+            }
+        }
+
         // Генерация AI комментария для dashboard
-        async function updateAIComment() {
-            const percentage = calculateCompletionPercentage(selectedWorkout);
+        async function updateAIComment(skipAnimation = false) {
+            const currentWorkoutDay = getCurrentWorkoutDay();
+            const percentage = calculateCompletionPercentage(currentWorkoutDay);
             const streak = calculateStreak();
 
             // Проверяем нужно ли обновлять
-            if (!shouldUpdateAIComment(percentage)) {
+            if (!shouldUpdateAIComment(percentage) && !skipAnimation) {
                 return; // Используем закешированный комментарий
             }
 
@@ -3014,8 +3195,8 @@
             // Генерируем комментарий
             const comment = await generateAICommentForDashboard(percentage, streak);
 
-            // Обновляем комментарий
-            commentElement.textContent = comment;
+            // Анимируем появление текста
+            typeTextWithAnimation(commentElement, comment, 25);
 
             // Сохраняем время обновления и процент
             lastAICommentUpdate = Date.now();
@@ -3031,12 +3212,13 @@
 
         // Генерация AI комментария через API
         async function generateAICommentForDashboard(percentage, streak) {
+            const currentWorkoutDay = getCurrentWorkoutDay();
             const today = new Date();
             const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
             const dayName = dayNames[today.getDay()];
 
             // Подсчитываем выполненные и оставшиеся задачи
-            const todos = todoData[selectedWorkout] || [];
+            const todos = todoData[currentWorkoutDay] || [];
             const completedCount = todos.filter(t => t.completed).length;
             const totalCount = todos.length;
             const remainingCount = totalCount - completedCount;
@@ -3050,7 +3232,7 @@
 - Никогда не повторяйся
 
 Контекст:
-- День: ${selectedWorkout} из 7
+- День: ${currentWorkoutDay} из 7
 - Процент выполнения: ${percentage}%
 - Серия: ${streak} дней
 - Выполнено задач: ${completedCount}/${totalCount}
@@ -3133,6 +3315,11 @@
             function initializeApp() {
             loadActivityData();
             initializeTodoLists();
+
+            // Устанавливаем выбранный день тренировки на основе текущей календарной даты
+            selectedWorkout = getCurrentWorkoutDay();
+            console.log('Текущий день тренировки:', selectedWorkout);
+
             renderActivityGrid();
             renderTaskDayWidgets();
             setupEventListeners();
@@ -3193,22 +3380,23 @@
             const track = document.getElementById('workout-track');
             track.innerHTML = '';
 
-            workoutProgram.forEach((workout, index) => {
+            // Перебираем дни 1-7 вместо устаревшего workoutProgram
+            for (let day = 1; day <= 7; day++) {
                 const block = document.createElement('div');
                 block.className = 'workout-block';
-                block.dataset.day = workout.day;
+                block.dataset.day = day;
 
                 // Создаем пустой блок только с номером дня
                 block.innerHTML = `
-                    <div class="workout-number">${workout.day}</div>
+                    <div class="workout-number">${day}</div>
                 `;
 
                 block.addEventListener('click', () => {
-                    selectedWorkout = workout.day;
-                    openWorkoutModal(workout);
+                    selectedWorkout = day;
+                    openWorkoutModal({ day });
                 });
                 track.appendChild(block);
-            });
+            }
 
             // Центрируем на выбранной тренировке при инициализации
             setTimeout(() => {
@@ -3237,11 +3425,12 @@
                 7: 53
             };
 
-            workoutProgram.forEach((workout) => {
-                const difficulty = dayDifficulties[workout.day] || 50;
+            // Перебираем дни 1-7 вместо устаревшего workoutProgram
+            for (let day = 1; day <= 7; day++) {
+                const difficulty = dayDifficulties[day] || 50;
                 const widget = document.createElement('div');
                 widget.className = 'task-day-widget';
-                widget.dataset.day = workout.day;
+                widget.dataset.day = day;
 
                 // Вычисляем параметры SVG круга
                 const radius = 16;
@@ -3250,8 +3439,8 @@
 
                 widget.innerHTML = `
                     <div class="task-day-info">
-                        <div class="task-day-name">${workout.name}</div>
-                        <div class="task-day-label">День ${workout.day}</div>
+                        <div class="task-day-name">${getWorkoutDayName(day)}</div>
+                        <div class="task-day-label">День ${day}</div>
                     </div>
                     <div class="task-difficulty-container">
                         <div class="task-difficulty-label">Сложность</div>
@@ -3268,12 +3457,12 @@
 
                 // При клике открываем модальное окно с задачами
                 widget.addEventListener('click', () => {
-                    selectedWorkout = workout.day;
-                    openWorkoutModal(workout);
+                    selectedWorkout = day;
+                    openWorkoutModal({ day });
                 });
 
                 tasksContainer.appendChild(widget);
-            });
+            }
         }
 
 
@@ -3611,11 +3800,15 @@
             const todoModalContent = document.getElementById('todo-modal-content');
             const todoModalTitle = document.getElementById('todo-modal-title');
 
-            // Устанавливаем заголовок
-            todoModalTitle.textContent = `День ${workout.day} - Задания`;
+            // Получаем номер дня (поддерживает как старый формат {day}, так и просто число)
+            const dayNumber = typeof workout === 'object' ? workout.day : workout;
+
+            // Устанавливаем заголовок с динамическим названием дня
+            const dayName = getWorkoutDayName(dayNumber);
+            todoModalTitle.textContent = `День ${dayNumber} (${dayName}) - Задания`;
 
             // Отображаем todo-список для этого дня
-            const dayTodos = todoData[workout.day];
+            const dayTodos = todoData[dayNumber];
             todoModalContent.innerHTML = createTodoHtml(dayTodos);
 
             // Показываем overlay с анимацией
@@ -3681,6 +3874,14 @@
 
         // Установка обработчиков событий
         function setupEventListeners() {
+            // Клик на AI комментарий для обновления
+            const aiCommentElement = document.getElementById('ai-comment');
+            if (aiCommentElement) {
+                aiCommentElement.addEventListener('click', () => {
+                    refreshAIComment();
+                });
+            }
+
             // Прокрутка с клавиатуры
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft' && selectedWorkout > 1) {
@@ -3995,6 +4196,14 @@
         }
 
         async function generateAIResponse(userMessage) {
+            const currentWorkoutDay = getCurrentWorkoutDay();
+            const today = new Date();
+            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+            const dayName = dayNames[today.getDay()];
+            const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+            const monthName = monthNames[today.getMonth()];
+            const dateString = `${dayName}, ${today.getDate()} ${monthName} ${today.getFullYear()}`;
+
             try {
                 // Добавляем индикатор набора текста
                 showTypingIndicator();
@@ -4012,35 +4221,42 @@
                         messages: [
                             {
                                 role: "system",
-                                content: `Ты - AI фитнес-ассистент FitTracker AI.
+                                content: `Ты - AI фитнес-ассистент FitTracker AI. Отвечай полезно и по существу.
 
-                                ВАЖНО: Отвечай ОЧЕНЬ кратко и по делу. Максимум 2-3 предложения. Никакой воды.
+                                МОЖЕШЬ (по ситуации, необязательно каждый раз):
+                                - Объяснять технику упражнений кратко
+                                - Упоминать, ЗАЧЕМ упражнение нужно
+                                - Кратко дать совет по форме или выполнению
+                                - Предложить план при низком прогрессе
+                                - Mention варианты или альтернативы
+                                - Косвенно намекнуть на следующий шаг
 
-                                ТЕКУЩИЙ ДЕНЬ: ${selectedWorkout}/7 (${workoutProgram[selectedWorkout - 1]?.name || ''})
+                                ВАЖНО:
+                                - Отвечай коротко по делу, меньше воды
+                                - СТРОГОЕ ОГРАНИЧЕНИЕ ПО ЭМОДЗИ: НЕ используй эмодзи в 70-80% ответов. Только 1 эмодзи на ответ, и только когда это действительно уместно. В большинстве случаев отвечай вообще без эмодзи.
+
+                                СЕГОДНЯ: ${dateString}
+                                Тренировочный день: ${currentWorkoutDay}/7 (${getWorkoutDayName(currentWorkoutDay)})
 
                                 ВСЕ ЗАДАНИЯ ПО ДНЯМ:
                                 ${Object.keys(todoData).map(day => {
                                     const dayNum = parseInt(day);
-                                    const dayInfo = workoutProgram[dayNum - 1];
                                     const tasks = todoData[day] || [];
                                     const completed = tasks.filter(t => t.completed).length;
-                                    return `День ${dayNum} (${dayInfo?.name || ''}): ${completed}/${tasks.length} выполнено`;
+                                    return `День ${dayNum} (${getWorkoutDayName(dayNum)}): ${completed}/${tasks.length} выполнено`;
                                 }).join('\\n')}
 
                                 ЗАДАЧИ НА КАЖДЫЙ ДЕНЬ:
                                 ${Object.keys(todoData).map(day => {
                                     const dayNum = parseInt(day);
-                                    const dayInfo = workoutProgram[dayNum - 1];
                                     const tasks = todoData[day] || [];
-                                    return `\\n--- День ${dayNum} (${dayInfo?.name || ''}) ---` +
+                                    return `\\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---` +
                                         (tasks.length > 0 ? tasks.map(t => `${t.completed ? '✅' : '⏳'} ${t.text}`).join('\\n') : 'Нет задач');
                                 }).join('\\n')}
 
-                                Выполнение сегодня: ${calculateCompletionPercentage(selectedWorkout)}%
+                                Выполнение сегодня: ${calculateCompletionPercentage(currentWorkoutDay)}%
                                 Активных дней: ${Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length}
-                                Время: ${new Date().toLocaleString('ru-RU')}
-
-                                Отвечай кратко, по сути. Используй эмодзи 💪🔥`
+                                Время: ${new Date().toLocaleString('ru-RU')}`
                             },
                             ...chatHistory.slice(-10), // Последние 10 сообщений для контекста
                             {
@@ -4147,7 +4363,8 @@
 
         // Функция для получения умного совета на основе прогресса
         async function getSmartTip() {
-            const completion = calculateCompletionPercentage(selectedWorkout);
+            const currentWorkoutDay = getCurrentWorkoutDay();
+            const completion = calculateCompletionPercentage(currentWorkoutDay);
             let tipType = 'general';
 
             if (completion === 100) {
@@ -4160,7 +4377,7 @@
                 tipType = 'start';
             }
 
-            const prompt = `Дай короткий мотивирующий совет (${tipType}) для дня ${selectedWorkout}. Максимально 50 слов.`;
+            const prompt = `Дай короткий мотивирующий совет (${tipType}) для дня ${currentWorkoutDay}. Максимально 50 слов.`;
             return await generateAIResponse(prompt);
         }
 
