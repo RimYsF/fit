@@ -111,15 +111,21 @@
             flex-shrink: 0;
             overflow-y: auto;
             min-height: 50px;
-            will-change: height;
-            contain: layout style;
+            transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease;
         }
 
         /* Оптимизация при перетаскивании */
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            will-change: height;
+            will-change: flex-basis;
+            contain: strict;
+            transition: none;
+            z-index: 1;
+        }
+
+        .workout-section.dragging * {
+            will-change: transform;
         }
 
         .workout-header {
@@ -4177,7 +4183,7 @@
                 // Форматируем списки (строки начинающиеся с -)
                 .replace(/^(\s*[-•*]\s+(.+))$/gm, '<div class="ai-list-item">• $2</div>')
                 // Форматируем нумерованные списки
-                .replace(/^(\s*\d+\.\s+(.+))$/gm, '<div class="ai-list-item">$1 $2</div>')
+                .replace(/^(\s*\d+\.\s+.+)$/gm, '<div class="ai-list-item">$1</div>')
                 // Разбиваем на параграфы
                 .split('\n\n')
                 .map(paragraph => paragraph.trim())
@@ -4221,19 +4227,11 @@
                         messages: [
                             {
                                 role: "system",
-                                content: `Ты - AI фитнес-ассистент FitTracker AI. Отвечай полезно и по существу.
+                                content: `Ты - AI фитнес-ассистент FitTracker AI. Помогай пользователю с тренировками так, как считаешь нужным в каждой ситуации. Сам решай, что уместно: объяснить технику, дать совет, поддержать или просто ответить на вопрос. Будь дружелюбным и проявляй участие.
 
-                                МОЖЕШЬ (по ситуации, необязательно каждый раз):
-                                - Объяснять технику упражнений кратко
-                                - Упоминать, ЗАЧЕМ упражнение нужно
-                                - Кратко дать совет по форме или выполнению
-                                - Предложить план при низком прогрессе
-                                - Mention варианты или альтернативы
-                                - Косвенно намекнуть на следующий шаг
-
-                                ВАЖНО:
-                                - Отвечай коротко по делу, меньше воды
-                                - СТРОГОЕ ОГРАНИЧЕНИЕ ПО ЭМОДЗИ: НЕ используй эмодзи в 70-80% ответов. Только 1 эмодзи на ответ, и только когда это действительно уместно. В большинстве случаев отвечай вообще без эмодзи.
+                                БАЗОВЫЕ ПРАВИЛА:
+                                - Отвечай тепло, но коротко по делу
+                                - СТРОГОЕ ОГРАНИЧЕНИЕ ПО ЭМОДЗИ: НЕ используй эмодзи в 60-70% ответов. Только 1 эмодзи на ответ, и только когда это действительно уместно. В большинстве случаев отвечай вообще без эмодзи.
 
                                 СЕГОДНЯ: ${dateString}
                                 Тренировочный день: ${currentWorkoutDay}/7 (${getWorkoutDayName(currentWorkoutDay)})
@@ -4507,18 +4505,18 @@
 
         // Устанавливаем начальную высоту после загрузки страницы
         setTimeout(() => {
-            if (!workoutSection.style.height) {
+            if (!workoutSection.style.flexBasis) {
                 const viewportHeight = window.innerHeight;
                 const baseHeight = 160;
                 const additionalHeight = viewportHeight * 0.05; // 5% от высоты экрана
-                workoutSection.style.height = (baseHeight + additionalHeight) + 'px';
+                workoutSection.style.flexBasis = (baseHeight + additionalHeight) + 'px';
             }
         }, 100);
 
         // Кэшируем измерения при начале перетаскивания (избегаем reflow во время движения)
         function cacheMeasurements() {
             cachedMeasurements.viewportHeight = window.innerHeight;
-            cachedMeasurements.dividerHeight = divider.offsetHeight;
+            cachedMeasurements.dividerHeight = divider.getBoundingClientRect().height;
 
             // Находим дни недели в календаре (делаем это один раз)
             const dayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
@@ -4529,7 +4527,7 @@
             } else {
                 // Fallback
                 const activityHeader = activitySection.querySelector('.activity-header');
-                const headerHeight = activityHeader ? activityHeader.offsetHeight : 60;
+                const headerHeight = activityHeader ? activityHeader.getBoundingClientRect().height : 60;
                 cachedMeasurements.minBottomHeight = headerHeight + 250;
             }
         }
@@ -4546,8 +4544,8 @@
                 newTopHeight
             );
 
-            // Применяем высоту
-            workoutSection.style.height = newTopHeight + 'px';
+            // Применяем flex-basis вместо height (более производительно для flexbox)
+            workoutSection.style.flexBasis = newTopHeight + 'px';
         }
 
         // Сохраняем позицию и запрашиваем кадр
@@ -4566,11 +4564,11 @@
             isDragging = true;
             startY = e.clientY;
             currentY = e.clientY;
-            startTopHeight = workoutSection.offsetHeight;
+            startTopHeight = workoutSection.getBoundingClientRect().height;
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
-            workoutSection.classList.add('dragging'); // Отключаем тяжелые эффекты
-            cacheMeasurements(); // Кэшируем измерения один раз при начале
+            workoutSection.classList.add('dragging');
+            cacheMeasurements();
             e.preventDefault();
         });
 
@@ -4597,10 +4595,10 @@
             isDragging = true;
             startY = e.touches[0].clientY;
             currentY = e.touches[0].clientY;
-            startTopHeight = workoutSection.offsetHeight;
-            workoutSection.classList.add('dragging'); // Отключаем тяжелые эффекты
-            cacheMeasurements(); // Кэшируем измерения один раз при начале
-            e.preventDefault(); // Предотвращаем скролл страницы
+            startTopHeight = workoutSection.getBoundingClientRect().height;
+            workoutSection.classList.add('dragging');
+            cacheMeasurements();
+            e.preventDefault();
         }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
