@@ -124,10 +124,14 @@
             transition: none;
             z-index: 1;
             overflow-y: hidden;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         .workout-section.dragging * {
             will-change: transform;
+            transform: translateZ(0);
         }
 
         .workout-header {
@@ -4569,11 +4573,8 @@
             // Применяем текущую высоту
             workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
 
-            // Продолжаем анимацию если не достигли цели
-            if (isDragging && Math.abs(targetHeight - currentHeight) > 0.5) {
-                rafId = requestAnimationFrame(updateFrame);
-            } else if (isDragging) {
-                // Цель достигнута, но продолжаем слушать изменения
+            // Продолжаем цикл пока перетаскиваем
+            if (isDragging) {
                 rafId = requestAnimationFrame(updateFrame);
             }
         }
@@ -4582,10 +4583,6 @@
         function updateSizes(clientY) {
             currentY = clientY;
             targetHeight = calculateTargetHeight(clientY);
-
-            if (!rafId) {
-                rafId = requestAnimationFrame(updateFrame);
-            }
         }
 
         // Обработчики для мыши
@@ -4600,6 +4597,8 @@
             document.body.style.userSelect = 'none';
             workoutSection.classList.add('dragging');
             cacheMeasurements();
+            // Запускаем постоянный цикл
+            rafId = requestAnimationFrame(updateFrame);
             e.preventDefault();
         });
 
@@ -4644,6 +4643,8 @@
             targetHeight = startTopHeight;
             workoutSection.classList.add('dragging');
             cacheMeasurements();
+            // Запускаем постоянный цикл
+            rafId = requestAnimationFrame(updateFrame);
             e.preventDefault();
         }, { passive: false });
 
