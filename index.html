@@ -4504,12 +4504,8 @@
         // Переменные для плавной интерполяции (lerp)
         let targetHeight = 0;
         let currentHeight = 0;
-        // На мобильных используем более быструю интерполяцию для снижения нагрузки
-        const lerpFactor = isMobile ? 0.4 : 0.15;
-
-        // Throttling для мобильных (обновляем не каждый кадр)
-        let lastUpdateTime = 0;
-        const updateInterval = isMobile ? 16 : 0; // 16ms = ~60fps на мобильных
+        // На мобильных используем более быструю интерполяцию (меньше кадров = меньше нагрузка)
+        const lerpFactor = isMobile ? 0.6 : 0.15;
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
@@ -4575,24 +4571,13 @@
             return start + (end - start) * factor;
         }
 
-        // Функция обновления через RAF (постоянный цикл во время перетаскивания)
-        function updateFrame(timestamp) {
-            // Throttling для мобильных устройств
-            if (isMobile && updateInterval > 0) {
-                if (!lastUpdateTime || timestamp - lastUpdateTime >= updateInterval) {
-                    lastUpdateTime = timestamp;
+        // Функция обновления через RAF (работает на 60fps автоматически)
+        function updateFrame() {
+            // Плавно двигаем текущую высоту к цели
+            currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
 
-                    // Плавно двигаем текущую высоту к цели
-                    currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
-
-                    // Применяем текущую высоту
-                    workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
-                }
-            } else {
-                // На десктопе обновляем каждый кадр
-                currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
-                workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
-            }
+            // Применяем текущую высоту
+            workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
 
             // Продолжаем цикл пока перетаскиваем
             if (isDragging) {
