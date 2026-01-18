@@ -4496,10 +4496,20 @@
         let rafId = null;
         let currentY = 0;
 
+        // Определяем мобильное устройство
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            || window.innerWidth < 768
+            || ('ontouchstart' in window);
+
         // Переменные для плавной интерполяции (lerp)
         let targetHeight = 0;
         let currentHeight = 0;
-        const lerpFactor = 0.15; // Коэффициент сглаживания (0.1-0.2 для плавности)
+        // На мобильных используем более быструю интерполяцию для снижения нагрузки
+        const lerpFactor = isMobile ? 0.4 : 0.15;
+
+        // Throttling для мобильных (обновляем не каждый кадр)
+        let lastUpdateTime = 0;
+        const updateInterval = isMobile ? 16 : 0; // 16ms = ~60fps на мобильных
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
@@ -4566,12 +4576,23 @@
         }
 
         // Функция обновления через RAF (постоянный цикл во время перетаскивания)
-        function updateFrame() {
-            // Плавно двигаем текущую высоту к цели
-            currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
+        function updateFrame(timestamp) {
+            // Throttling для мобильных устройств
+            if (isMobile && updateInterval > 0) {
+                if (!lastUpdateTime || timestamp - lastUpdateTime >= updateInterval) {
+                    lastUpdateTime = timestamp;
 
-            // Применяем текущую высоту
-            workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                    // Плавно двигаем текущую высоту к цели
+                    currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
+
+                    // Применяем текущую высоту
+                    workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                }
+            } else {
+                // На десктопе обновляем каждый кадр
+                currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
+                workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+            }
 
             // Продолжаем цикл пока перетаскиваем
             if (isDragging) {
