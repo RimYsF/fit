@@ -112,6 +112,8 @@
             flex-basis: var(--workout-basis, auto);
             overflow-y: auto;
             min-height: 50px;
+            /* Резервируем место под скроллбар чтобы не прыгало при перетаскивании */
+            scrollbar-gutter: stable;
             transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease;
         }
 
@@ -554,6 +556,17 @@
             width: 100%;
         }
 
+        /* Сдвинутый влево текст без чекбокса */
+        .todo-text-shifted {
+            justify-content: flex-start;
+            margin-left: 0;
+        }
+
+        .todo-text-shifted .todo-text {
+            flex: 1;
+            cursor: pointer;
+        }
+
         /* Сообщение об отсутствии заданий */
         .no-tasks {
             text-align: center;
@@ -789,6 +802,8 @@
             overflow-y: auto;
             flex: 1;
             -webkit-overflow-scrolling: touch;
+            /* Резервируем место под скроллбар чтобы не прыгало при ресайзе */
+            scrollbar-gutter: stable;
         }
 
         /* Уменьшаем все элементы задач внутри модального окна на 5% (почти полный размер) */
@@ -867,6 +882,305 @@
             margin-right: 4px;
             margin-top: 3px;
         }
+
+        /* ===== КАРТОЧКА УПРАЖНЕНИЯ ===== */
+        .exercise-card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--neobrut-white);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            /* Скрыта по умолчанию - не перехватывает клики и не видна */
+            visibility: hidden;
+            pointer-events: none;
+            /* GPU-ускорение: translate3d создаёт отдельный слой */
+            transform: translate3d(100%, 0, 0);
+            /* will-change подсказывает браузеру оптимизировать transform */
+            will-change: transform;
+            /* Плавная spring-анимация на CPU (cubic-bezier) */
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        visibility 0s linear 0.4s;
+        }
+
+        .exercise-card.show {
+            /* Видима и интерактивна когда открыта */
+            visibility: visible;
+            pointer-events: auto;
+            transform: translate3d(0, 0, 0);
+            /* Показываем сразу без задержки */
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .exercise-card.hide {
+            transform: translate3d(-100%, 0, 0);
+        }
+
+        .exercise-card-header {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--neobrut-black);
+            /* 3D объём через многослойные тени (GPU) */
+            box-shadow:
+                0 4px 0 var(--neobrut-black),
+                0 6px 12px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            /* Фиксируем слой для оптимизации */
+            transform: translate3d(0, 0, 0);
+        }
+
+        .exercise-card-title {
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .exercise-card-close {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Многослойные тени для 3D эффекта */
+            box-shadow:
+                3px 3px 0 var(--neobrut-black),
+                0 4px 8px rgba(0, 0, 0, 0.2),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.2);
+            /* GPU-ускорённые трансформации */
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            flex-shrink: 0;
+            will-change: transform;
+        }
+
+        .exercise-card-close:hover {
+            /* Только трансформация, без layout изменений */
+            transform: translate3d(0, -1px, 0) scale(1.05);
+            background: linear-gradient(135deg, #ff8c00 0%, #ff7b00 100%);
+            box-shadow:
+                4px 4px 0 var(--neobrut-black),
+                0 6px 12px rgba(0, 0, 0, 0.25),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3);
+        }
+
+        .exercise-card-close:active {
+            /* Нажатие - сдвиг вниз и уменьшение */
+            transform: translate3d(1px, 2px, 0) scale(0.95);
+            box-shadow:
+                1px 1px 0 var(--neobrut-black),
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .exercise-card-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+            /* Резервируем место под скроллбар чтобы не прыгало при ресайзе */
+            scrollbar-gutter: stable;
+            /* Оптимизация скролла через GPU */
+            transform: translate3d(0, 0, 0);
+        }
+
+        .exercise-text {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--neobrut-darkgray);
+            line-height: 1.6;
+            flex: 1;
+            /* Анимация появления текста */
+            animation: textFadeIn 0.3s ease-out;
+            /* Подсвечка для глубины */
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes textFadeIn {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 10px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        .exercise-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-top: 3px solid var(--neobrut-black);
+            background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            /* Внутренняя тень для углубления */
+            box-shadow:
+                inset 0 4px 8px rgba(0, 0, 0, 0.05),
+                0 -4px 12px rgba(0, 0, 0, 0.08);
+            flex-shrink: 0;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .exercise-dots {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .exercise-dot {
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(135deg, #adb5bd 0%, #868e96 100%);
+            border-radius: 50%;
+            /* GPU-ускорённая трансформация */
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        background 0.3s ease,
+                        box-shadow 0.3s ease;
+            /* Лёгкая тень для объёма */
+            box-shadow:
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                0 2px 4px rgba(0, 0, 0, 0.1);
+            will-change: transform;
+        }
+
+        .exercise-dot.active {
+            /* Увеличение активной точки через transform */
+            transform: translate3d(0, 0, 0) scale(1.6);
+            background: linear-gradient(135deg, #ffffff 0%, #f1f3f5 100%);
+            border: 3px solid var(--neobrut-black);
+            /* Более яркая тень для акцента */
+            box-shadow:
+                inset 0 -3px 6px rgba(0, 0, 0, 0.15),
+                inset 0 3px 6px rgba(255, 255, 255, 0.8),
+                0 0 0 4px rgba(74, 144, 226, 0.15),
+                0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+
+        .exercise-dot.completed {
+            background: linear-gradient(135deg, #00f5a0 0%, #00d47a 100%);
+            box-shadow:
+                inset 0 -2px 4px rgba(0, 0, 0, 0.15),
+                inset 0 2px 4px rgba(255, 255, 255, 0.4),
+                0 2px 6px rgba(0, 245, 160, 0.4);
+            /* Анимация завершения */
+            animation: dotPulse 0.4s ease-out;
+        }
+
+        @keyframes dotPulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Кнопка-галочка с круговым прогрессом */
+        .exercise-check-btn {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            /* Оптимизация: создаём отдельный слой */
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+        }
+
+        .exercise-check-svg {
+            width: 100%;
+            height: 100%;
+            /* GPU-ускорённый transform */
+            transform: rotate(-90deg) translate3d(0, 0, 0);
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
+        }
+
+        .exercise-check-bg {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 3.5;
+        }
+
+        .exercise-check-progress {
+            fill: none;
+            stroke: url(#progressGradient);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            /* Плавная анимация прогресса */
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .exercise-check-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            /* GPU-ускорённый центрирование */
+            transform: translate3d(-50%, -50%, 0);
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            pointer-events: none;
+            /* Плавная анимация цвета и масштаба */
+            transition: color 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .exercise-check-btn.completed .exercise-check-icon {
+            color: var(--success-green);
+            transform: translate3d(-50%, -50%, 0) scale(1.2);
+            /* Тень для зелёной галочки */
+            filter: drop-shadow(0 0 8px rgba(0, 245, 160, 0.6));
+        }
+
+        /* Hover эффект для кнопки галочки */
+        .exercise-check-btn:hover {
+            transform: translate3d(0, -2px, 0) scale(1.05);
+        }
+
+        .exercise-check-btn:active {
+            transform: translate3d(0, 1px, 0) scale(0.95);
+        }
+
+        /* Индикатор количества упражнений (например, 2/5) */
+        .exercise-counter {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--neobrut-white);
+            opacity: 0.95;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            /* Внутренняя тень для глубины */
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== КОНЕЦ КАРТОЧКИ УПРАЖНЕНИЯ ===== */
 
         /* Горизонтальный разделитель с кнопкой */
         .divider {
@@ -2382,6 +2696,39 @@
                 <div class="todo-modal-content" id="todo-modal-content">
                     <!-- Задачи будут вставлены сюда -->
                 </div>
+
+                <!-- Карточка упражнения -->
+                <div class="exercise-card" id="exercise-card">
+                    <div class="exercise-card-header">
+                        <h1 class="exercise-card-title" id="exercise-card-title">Задание - Упражнение 1/5</h1>
+                        <span class="exercise-counter" id="exercise-counter">1/5</span>
+                        <button class="exercise-card-close" id="exercise-card-close">×</button>
+                    </div>
+                    <div class="exercise-card-content">
+                        <div class="exercise-text" id="exercise-text">
+                            Текст упражнения...
+                        </div>
+                    </div>
+                    <div class="exercise-card-footer">
+                        <div class="exercise-dots" id="exercise-dots">
+                            <!-- Точки будут добавлены динамически -->
+                        </div>
+                        <div class="exercise-check-btn" id="exercise-check-btn">
+                            <svg class="exercise-check-svg" viewBox="0 0 36 36">
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#00f5a0"/>
+                                        <stop offset="100%" stop-color="#00d47a"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="exercise-check-bg" cx="18" cy="18" r="15"></circle>
+                                <circle class="exercise-check-progress" cx="18" cy="18" r="15"
+                                        stroke-dasharray="94.2" stroke-dashoffset="94.2"></circle>
+                            </svg>
+                            <span class="exercise-check-icon" id="exercise-check-icon">✓</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2511,127 +2858,494 @@
         let selectedWorkout = 1;
         let todoData = {}; // Хранение состояния todo-списков
 
-        
-        // Инициализация todo-списков
+        // Переменные для карточки упражнения
+        let currentTask = null; // Текущая задача с упражнениями
+        let currentExerciseIndex = 0; // Индекс текущего упражнения
+        let exerciseCardVisible = false; // Видна ли карточка упражнения
+
+
+        // Инициализация todo-списков с упражнениями
         function initializeTodoLists() {
             todoData = {
                 1: [
                     {
                         id: 'task-1',
-                        text: 'покушать',
+                        text: 'Утренняя растяжка',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-1-1', text: 'Наклоны головы в стороны - 5 раз в каждую сторону', completed: false },
+                            { id: 'ex-1-2', text: 'Круговые движения плечами - 10 раз вперёд, 10 назад', completed: false },
+                            { id: 'ex-1-3', text: 'Наклоны туловища в стороны - 10 раз в каждую сторону', completed: false },
+                            { id: 'ex-1-4', text: 'Растяжка задней поверхности бедра - 20 секунд на ногу', completed: false }
+                        ]
                     },
                     {
                         id: 'task-2',
-                        text: 'пробежка 5км',
+                        text: 'Отжимания',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-2-1', text: 'Отжимания - 1 подход: 15 раз', completed: false },
+                            { id: 'ex-2-2', text: 'Отжимания - 2 подход: 12 раз', completed: false },
+                            { id: 'ex-2-3', text: 'Отжимания - 3 подход: 10 раз', completed: false },
+                            { id: 'ex-2-4', text: 'Отдых между подходами - 1 минута', isRest: true, completed: false },
+                            { id: 'ex-2-5', text: 'Отжимания - 4 подход: макс. количество раз', completed: false }
+                        ]
                     },
                     {
                         id: 'task-3',
-                        text: 'спать',
+                        text: 'Пресс',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-3-1', text: 'Классические скручивания - 20 раз', completed: false },
+                            { id: 'ex-3-2', text: 'Подъём ног лёжа - 15 раз', completed: false },
+                            { id: 'ex-3-3', text: 'Планка - 30 секунд', completed: false },
+                            { id: 'ex-3-4', text: 'Боковая планка - 20 секунд каждую сторону', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-4',
+                        text: 'Приседания',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-4-1', text: 'Приседания - 1 подход: 20 раз', completed: false },
+                            { id: 'ex-4-2', text: 'Приседания - 2 подход: 15 раз', completed: false },
+                            { id: 'ex-4-3', text: 'Отдых - 1 минута', isRest: true, completed: false },
+                            { id: 'ex-4-4', text: 'Приседания - 3 подход: макс. количество раз', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-5',
+                        text: 'Ходьба',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-5-1', text: 'Прогулка на свежем воздухе - 20 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-6',
+                        text: 'Здоровый завтрак',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-6-1', text: 'Съесть белковый завтрак (яйца, творог или омлет)', completed: false },
+                            { id: 'ex-6-2', text: 'Выпить стакан воды', completed: false },
+                            { id: 'ex-6-3', text: 'Добавить овощи или фрукты', completed: false }
+                        ]
                     }
                 ],
                 2: [
                     {
-                        id: 'task-4',
+                        id: 'task-7',
                         text: 'Утренняя зарядка',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-7-1', text: 'Разминка плеч - круговые движения 10 раз', completed: false },
+                            { id: 'ex-7-2', text: 'Разминка ног - махи ногой 10 раз каждой', completed: false },
+                            { id: 'ex-7-3', text: 'Разминка таза - вращения тазом 10 раз', completed: false },
+                            { id: 'ex-7-4', text: 'Лёгкая растяжка всего тела - 1 минута', completed: false }
+                        ]
                     },
                     {
-                        id: 'task-5',
+                        id: 'task-8',
+                        text: 'Тяга гантелей',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-8-1', text: 'Тяга гантелей в наклоне - 1 подход: 12 раз', completed: false },
+                            { id: 'ex-8-2', text: 'Тяга гантелей в наклоне - 2 подход: 10 раз', completed: false },
+                            { id: 'ex-8-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-8-4', text: 'Тяга гантелей в наклоне - 3 подход: 8 раз', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-9',
                         text: 'Пресс',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-9-1', text: 'Скручивания с поворотом - 15 раз каждую сторону', completed: false },
+                            { id: 'ex-9-2', text: 'Велосипед - 20 раз', completed: false },
+                            { id: 'ex-9-3', text: 'Обратные скручивания - 15 раз', completed: false },
+                            { id: 'ex-9-4', text: 'Планка - 40 секунд', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-10',
+                        text: 'Выпады',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-10-1', text: 'Выпады вперёд - 10 раз каждая нога', completed: false },
+                            { id: 'ex-10-2', text: 'Выпады назад - 8 раз каждая нога', completed: false },
+                            { id: 'ex-10-3', text: 'Отдых - 1 минута', isRest: true, completed: false },
+                            { id: 'ex-10-4', text: 'Боковые выпады - 8 раз каждая сторона', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-11',
+                        text: 'Бег трусцой',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-11-1', text: 'Разминка перед бегом - 3 минуты', completed: false },
+                            { id: 'ex-11-2', text: 'Бег - 15 минут в умеренном темпе', completed: false },
+                            { id: 'ex-11-3', text: 'Заминка - ходьба 3 минуты', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-12',
+                        text: 'Растяжка после тренировки',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-12-1', text: 'Растяжка квадрицепса - 30 секунд каждая нога', completed: false },
+                            { id: 'ex-12-2', text: 'Растяжка бицепса бедра - 30 секунд каждая нога', completed: false },
+                            { id: 'ex-12-3', text: 'Растяжка икр - 20 секунд каждая нога', completed: false }
+                        ]
                     }
                 ],
                 3: [
                     {
-                        id: 'task-6',
+                        id: 'task-13',
+                        text: 'Разогрев перед тренировкой',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-13-1', text: 'Лёгкий jog на месте - 2 минуты', completed: false },
+                            { id: 'ex-13-2', text: 'Вращения руками - 15 раз вперёд, 15 назад', completed: false },
+                            { id: 'ex-13-3', text: 'Махи ногами - 10 раз каждой ногой', completed: false },
+                            { id: 'ex-13-4', text: 'Разогрев суставов - 1 минута', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-14',
                         text: 'Растяжка',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-14-1', text: 'Растяжка шеи - по 10 секунд в каждую сторону', completed: false },
+                            { id: 'ex-14-2', text: 'Растяжка плеч - 20 секунд', completed: false },
+                            { id: 'ex-14-3', text: 'Растяжка спины - поза кошка 30 секунд', completed: false },
+                            { id: 'ex-14-4', text: 'Растяжка бёдер - бабочка 30 секунд', completed: false }
+                        ]
                     },
                     {
-                        id: 'task-7',
+                        id: 'task-15',
                         text: 'Отжимания',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-15-1', text: 'Широкие отжимания - 1 подход: 12 раз', completed: false },
+                            { id: 'ex-15-2', text: 'Обычные отжимания - 2 подход: 15 раз', completed: false },
+                            { id: 'ex-15-3', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-15-4', text: 'Узкие отжимания - 3 подход: 10 раз', completed: false },
+                            { id: 'ex-15-5', text: 'Отжимания с хлопком - макс. количество', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-16',
+                        text: 'Обратные отжимания',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-16-1', text: 'Обратные отжимания от стула - 1 подход: 12 раз', completed: false },
+                            { id: 'ex-16-2', text: 'Обратные отжимания от стула - 2 подход: 10 раз', completed: false },
+                            { id: 'ex-16-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-16-4', text: 'Обратные отжимания от пола - 3 подход: 8 раз', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-17',
+                        text: 'Пресс с весом',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-17-1', text: 'Скручивания с весом - 15 раз', completed: false },
+                            { id: 'ex-17-2', text: 'Русский твист с весом - 20 раз', completed: false },
+                            { id: 'ex-17-3', text: 'Планка с весом - 45 секунд', completed: false },
+                            { id: 'ex-17-4', text: 'Боковая планка с весом - 25 секунд каждая сторона', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-18',
+                        text: 'Кардио финиши',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-18-1', text: 'Бёрпи - 3 подхода по 10 раз', completed: false },
+                            { id: 'ex-18-2', text: 'Отдых между подходами - 60 секунд', isRest: true, completed: false },
+                            { id: 'ex-18-3', text: 'Скалолаз - 3 подхода по 20 раз', completed: false }
+                        ]
                     }
                 ],
                 4: [
                     {
-                        id: 'task-8',
+                        id: 'task-19',
+                        text: 'Разогрев',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-19-1', text: 'Прыжки на месте - 1 минута', completed: false },
+                            { id: 'ex-19-2', text: 'Вращения туловища - 20 раз', completed: false },
+                            { id: 'ex-19-3', text: 'Махи ногами - 15 раз каждой ногой', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-20',
                         text: 'Приседания',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-20-1', text: 'Классические приседания - 1 подход: 20 раз', completed: false },
+                            { id: 'ex-20-2', text: 'Приседания с широкой постановкой - 2 подход: 15 раз', completed: false },
+                            { id: 'ex-20-3', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-20-4', text: 'Приседания плие - 3 подход: 12 раз', completed: false },
+                            { id: 'ex-20-5', text: 'Приседания на одной ноге - 6 раз каждая нога', completed: false }
+                        ]
                     },
                     {
-                        id: 'task-9',
+                        id: 'task-21',
                         text: 'Планка',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-21-1', text: 'Классическая планка - 45 секунд', completed: false },
+                            { id: 'ex-21-2', text: 'Боковая планка левая - 30 секунд', completed: false },
+                            { id: 'ex-21-3', text: 'Боковая планка правая - 30 секунд', completed: false },
+                            { id: 'ex-21-4', text: 'Планка с подъёмом ноги - 20 секунд каждая нога', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-22',
+                        text: 'Выпады с весом',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-22-1', text: 'Выпады с гантелями - 10 раз каждая нога', completed: false },
+                            { id: 'ex-22-2', text: 'Обратные выпады - 12 раз каждая нога', completed: false },
+                            { id: 'ex-22-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-22-4', text: 'Болгарские выпады - 8 раз каждая нога', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-23',
+                        text: 'Ягодичные упражнения',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-23-1', text: 'Ягодичный мост - 20 раз', completed: false },
+                            { id: 'ex-23-2', text: 'Ягодичный мост с одной ногой - 10 раз каждая нога', completed: false },
+                            { id: 'ex-23-3', text: 'Махи ногой назад стоя - 15 раз каждая нога', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-24',
+                        text: 'Растяжка ног',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-24-1', text: 'Растяжка квадрицепса - 30 секунд каждая нога', completed: false },
+                            { id: 'ex-24-2', text: 'Растяжка приводящих мышц - 30 секунд', completed: false },
+                            { id: 'ex-24-3', text: 'Растяжка икроножных мышц - 30 секунд', completed: false }
+                        ]
                     }
                 ],
                 5: [
                     {
-                        id: 'task-10',
+                        id: 'task-25',
+                        text: 'Утренняя активность',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-25-1', text: 'Прогулка на свежем воздухе - 30 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-26',
                         text: 'Бег',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-26-1', text: 'Разминка - ходьба 5 минут', completed: false },
+                            { id: 'ex-26-2', text: 'Бег в умеренном темпе - 20 минут', completed: false },
+                            { id: 'ex-26-3', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-26-4', text: 'Интервальный бег - 5×1 минута быстро/1 минута медленно', completed: false },
+                            { id: 'ex-26-5', text: 'Заминка - ходьба 5 минут', completed: false }
+                        ]
                     },
                     {
-                        id: 'task-11',
+                        id: 'task-27',
                         text: 'Гигиеничес процедуры',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-27-1', text: 'Контрастный душ - 3 цикла горячая/холодная вода', completed: false },
+                            { id: 'ex-27-2', text: 'Чистка зубов и уход за полостью рта', completed: false },
+                            { id: 'ex-27-3', text: 'Увлажнение кожи', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-28',
+                        text: 'Отжимания на время',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-28-1', text: 'Отжимания за 60 секунд - максимальное количество', completed: false },
+                            { id: 'ex-28-2', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-28-3', text: 'Отжимания за 45 секунд - максимальное количество', completed: false },
+                            { id: 'ex-28-4', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-28-5', text: 'Отжимания за 30 секунд - максимальное количество', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-29',
+                        text: 'Пресс',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-29-1', text: 'Альпинист - 3 подхода по 20 раз', completed: false },
+                            { id: 'ex-29-2', text: 'Ножницы - 3 подхода по 25 раз', completed: false },
+                            { id: 'ex-29-3', text: 'Планка - 60 секунд', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-30',
+                        text: 'Растяжка и восстановление',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-30-1', text: 'Полная растяжка тела - 5 минут', completed: false },
+                            { id: 'ex-30-2', text: 'Дыхательные упражнения - 2 минуты', completed: false }
+                        ]
                     }
                 ],
                 6: [
                     {
-                        id: 'task-12',
-                        text: 'Йога',
+                        id: 'task-31',
+                        text: 'Утренняя йога',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-31-1', text: 'Приветствие солнцу - 3 раунда', completed: false },
+                            { id: 'ex-31-2', text: 'Поза собаки мордой вниз - 30 секунд', completed: false },
+                            { id: 'ex-31-3', text: 'Поза warrior - 30 секунд каждая сторона', completed: false },
+                            { id: 'ex-31-4', text: 'Поза треугольника - 30 секунд каждая сторона', completed: false },
+                            { id: 'ex-31-5', text: 'Поза дерева - 20 секунд каждая нога', completed: false }
+                        ]
                     },
                     {
-                        id: 'task-13',
+                        id: 'task-32',
                         text: 'Медитация',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-32-1', text: 'Дыхание 4-7-8 - 5 минут', completed: false },
+                            { id: 'ex-32-2', text: 'Сканирование тела - 5 минут', completed: false },
+                            { id: 'ex-32-3', text: 'Созерцание - 5 минут тишины', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-33',
+                        text: 'Лёгкая тренировка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-33-1', text: 'Разогрев - 3 минуты', completed: false },
+                            { id: 'ex-33-2', text: 'Отжимания - 2 подхода по 15 раз', completed: false },
+                            { id: 'ex-33-3', text: 'Приседания - 2 подхода по 20 раз', completed: false },
+                            { id: 'ex-33-4', text: 'Планка - 45 секунд', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-34',
+                        text: 'Прогулка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-34-1', text: 'Прогулка в парке - 40 минут', completed: false },
+                            { id: 'ex-34-2', text: 'Во время прогулки: делайте глубокие вдохи', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-35',
+                        text: 'Растяжка перед сном',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-35-1', text: 'Растяжка шеи и плеч - 2 минуты', completed: false },
+                            { id: 'ex-35-2', text: 'Растяжка спины - поза ребёнка 1 минута', completed: false },
+                            { id: 'ex-35-3', text: 'Растяжка ног - лёжа на спине 2 минуты', completed: false }
+                        ]
                     }
                 ],
                 7: [
                     {
-                        id: 'task-14',
+                        id: 'task-36',
+                        text: 'Утренняя активность',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-36-1', text: 'Лёгкая jog - 10 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-37',
+                        text: 'Финальный тест',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-37-1', text: 'Отжимания - макс. количество за 2 минуты', completed: false },
+                            { id: 'ex-37-2', text: 'Отдых - 3 минуты', isRest: true, completed: false },
+                            { id: 'ex-37-3', text: 'Приседания - макс. количество за 2 минуты', completed: false },
+                            { id: 'ex-37-4', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-37-5', text: 'Планка - максимальное время', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-38',
                         text: 'Прогулка',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-38-1', text: 'Длительная прогулка - 45-60 минут', completed: false },
+                            { id: 'ex-38-2', text: 'Наслаждайтесь природой, не спешите', completed: false }
+                        ]
                     },
                     {
-                        id: 'task-15',
+                        id: 'task-39',
                         text: 'Чтение',
                         completed: false,
                         completedAt: null,
-                        timeSpent: null
+                        exercises: [
+                            { id: 'ex-39-1', text: 'Почитайте книгу - 20 минут', completed: false },
+                            { id: 'ex-39-2', text: 'Запишите главную мысль из прочитанного', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-40',
+                        text: 'Планирование',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-40-1', text: 'Подведите итоги недели', completed: false },
+                            { id: 'ex-40-2', text: 'Запланируйте цели на следующую неделю', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-41',
+                        text: 'Растяжка и расслабление',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-41-1', text: 'Полная растяжка всего тела - 10 минут', completed: false },
+                            { id: 'ex-41-2', text: 'Медитация на благодарность - 5 минут', completed: false }
+                        ]
                     }
                 ]
             };
@@ -2644,7 +3358,7 @@
         // Дополнительные метаданные приложения
         const METADATA_PREFIX = "NGZjODJkMmQ2NTM4MGM0MWZl";
 
-        // Загрузка состояний todo из localStorage
+        // Загрузка состояний todo из localStorage с упражнениями
         function loadTodoStates() {
             const saved = localStorage.getItem('fitTrackerTodos');
             if (saved) {
@@ -2652,43 +3366,80 @@
                     const states = JSON.parse(saved);
                     Object.keys(states).forEach(day => {
                         if (todoData[day]) {
-                            // Применяем сохраненные состояния
                             todoData[day].forEach(task => {
-                                const taskState = states[day][task.id];
+                                const taskState = states[day] && states[day][task.id];
                                 if (taskState) {
                                     task.completed = taskState.completed || false;
                                     task.completedAt = taskState.completedAt || null;
-                                    task.timeSpent = taskState.timeSpent || null;
+                                    // Загружаем состояние упражнений
+                                    if (task.exercises && taskState.exercises) {
+                                        task.exercises.forEach(ex => {
+                                            const exState = taskState.exercises[ex.id];
+                                            if (exState) {
+                                                ex.completed = exState.completed || false;
+                                            }
+                                        });
+                                    }
                                 }
                             });
                         }
                     });
-                    console.log('Состояния todo загружены из localStorage');
+                    console.log('Состояния todo и упражнений загружены из localStorage');
                 } catch (e) {
                     console.error('Error loading todo states:', e);
                 }
             }
         }
 
-        // Сохранение состояний todo в localStorage
+        // Сохранение состояний todo в localStorage с упражнениями
         function saveTodoStates() {
             const states = {};
             Object.keys(todoData).forEach(day => {
                 if (todoData[day]) {
                     states[day] = {};
                     todoData[day].forEach(task => {
-                        states[day][task.id] = {
+                        const taskState = {
                             completed: task.completed || false,
-                            completedAt: task.completedAt || null,
-                            timeSpent: task.timeSpent || null
+                            completedAt: task.completedAt || null
                         };
+                        // Сохраняем состояние упражнений
+                        if (task.exercises) {
+                            taskState.exercises = {};
+                            task.exercises.forEach(ex => {
+                                taskState.exercises[ex.id] = {
+                                    completed: ex.completed || false
+                                };
+                            });
+                        }
+                        states[day][task.id] = taskState;
                     });
                 }
             });
             localStorage.setItem('fitTrackerTodos', JSON.stringify(states));
         }
 
-        // Создание HTML для todo-списка
+        // Проверка, все ли упражнения в задаче выполнены
+        function areAllExercisesCompleted(task) {
+            if (!task.exercises || task.exercises.length === 0) return true;
+            // Учитываем только упражнения, которые не являются отдыхом (или все, если все отдых)
+            const activeExercises = task.exercises.filter(ex => !ex.isRest);
+            if (activeExercises.length === 0) return true; // Все упражнения - отдых
+            return activeExercises.every(ex => ex.completed);
+        }
+
+        // Получить количество выполненных упражнений (без учёта отдыха)
+        function getCompletedExerciseCount(task) {
+            if (!task.exercises) return 0;
+            return task.exercises.filter(ex => !ex.isRest && ex.completed).length;
+        }
+
+        // Получить общее количество упражнений (без учёта отдыха)
+        function getTotalExerciseCount(task) {
+            if (!task.exercises) return 0;
+            return task.exercises.filter(ex => !ex.isRest).length;
+        }
+
+        // Создание HTML для todo-списка с новой логикой
         function createTodoHtml(todos) {
             if (!todos || todos.length === 0) {
                 return '<div class="no-tasks">Задания не найдены</div>';
@@ -2698,9 +3449,16 @@
 
             todos.forEach(task => {
                 const taskCompletedClass = task.completed ? 'completed' : '';
+                const allExercisesCompleted = areAllExercisesCompleted(task);
+                const hasExercises = task.exercises && task.exercises.length > 0;
 
-                html += `
-                    <li class="todo-item ${taskCompletedClass}">
+                // Если задача уже выполнена или все упражнения выполнены, показываем чекбокс
+                // Иначе показываем только текст задачи
+                let taskContent = '';
+
+                if (task.completed || allExercisesCompleted || !hasExercises) {
+                    // Показываем чекбокс
+                    taskContent = `
                         <div class="todo-checkbox">
                             <input type="checkbox"
                                    id="${task.id}"
@@ -2715,6 +3473,21 @@
                                 ${task.text}${task.completed && task.completedAt ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
                             </div>
                         </div>
+                    `;
+                } else {
+                    // Показываем только текст без чекбокса (текст сдвинут влево)
+                    taskContent = `
+                        <div class="todo-text-wrapper todo-text-shifted">
+                            <div class="todo-text" onclick="openExerciseCard('${task.id}')">
+                                ${task.text}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <li class="todo-item ${taskCompletedClass}">
+                        ${taskContent}
                     </li>
                 `;
             });
@@ -2722,6 +3495,291 @@
             html += '</ul>';
             return html;
         }
+
+        // ===== ФУНКЦИИ КАРТОЧКИ УПРАЖНЕНИЯ =====
+
+        // Найти задачу по ID во всех днях
+        function findTaskById(taskId) {
+            for (let day = 1; day <= 7; day++) {
+                if (todoData[day]) {
+                    const task = todoData[day].find(t => t.id === taskId);
+                    if (task) return task;
+                }
+            }
+            return null;
+        }
+
+        // Открыть карточку упражнения
+        function openExerciseCard(taskId) {
+            const task = findTaskById(taskId);
+            if (!task || !task.exercises || task.exercises.length === 0) {
+                console.error('Задача не найдена или не имеет упражнений');
+                return;
+            }
+
+            currentTask = task;
+            currentExerciseIndex = 0;
+            exerciseCardVisible = true;
+
+            renderExerciseCard();
+
+            // Показать карточку с анимацией
+            const exerciseCard = document.getElementById('exercise-card');
+            exerciseCard.classList.add('show');
+            exerciseCard.classList.remove('hide');
+
+            // Настроить свайп навигацию
+            setupExerciseCardSwipe();
+        }
+
+        // Закрыть карточку упражнения
+        function closeExerciseCard() {
+            const exerciseCard = document.getElementById('exercise-card');
+            exerciseCard.classList.remove('show');
+            exerciseCard.classList.add('hide');
+
+            setTimeout(() => {
+                exerciseCardVisible = false;
+                currentTask = null;
+                currentExerciseIndex = 0;
+            }, 250);
+
+            // Перерендерить список задач чтобы обновить отображение
+            setTimeout(() => {
+                const currentWorkoutDay = getCurrentWorkoutDay();
+                const todoHtml = createTodoHtml(todoData[currentWorkoutDay]);
+                document.getElementById('todo-modal-content').innerHTML = todoHtml;
+            }, 300);
+        }
+
+        // Отрендерить карточку упражнения
+        function renderExerciseCard() {
+            if (!currentTask) return;
+
+            const exercise = currentTask.exercises[currentExerciseIndex];
+            if (!exercise) return;
+
+            // Заголовок: "Задание - Упражнение X/Y"
+            const totalExercises = currentTask.exercises.length;
+            document.getElementById('exercise-card-title').textContent =
+                `${currentTask.text} - ${currentExerciseIndex + 1}/${totalExercises}`;
+            document.getElementById('exercise-counter').textContent =
+                `${currentExerciseIndex + 1}/${totalExercises}`;
+
+            // Текст упражнения
+            document.getElementById('exercise-text').textContent = exercise.text;
+
+            // Обновить точки
+            renderExerciseDots();
+
+            // Обновить кнопку-галочку
+            updateExerciseCheckButton();
+        }
+
+        // Отрендерить точки упражнений
+        function renderExerciseDots() {
+            const dotsContainer = document.getElementById('exercise-dots');
+            dotsContainer.innerHTML = '';
+
+            currentTask.exercises.forEach((ex, index) => {
+                const dot = document.createElement('div');
+                dot.className = 'exercise-dot';
+
+                if (index === currentExerciseIndex) {
+                    dot.classList.add('active');
+                }
+
+                if (ex.completed) {
+                    dot.classList.add('completed');
+                }
+
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        // Обновить кнопку-галочку
+        function updateExerciseCheckButton() {
+            const exercise = currentTask.exercises[currentExerciseIndex];
+            const checkBtn = document.getElementById('exercise-check-btn');
+            const checkIcon = document.getElementById('exercise-check-icon');
+            const progressCircle = checkBtn.querySelector('.exercise-check-progress');
+
+            const totalExercises = getTotalExerciseCount(currentTask);
+            const completedCount = getCompletedExerciseCount(currentTask);
+
+            // Вычислить процент прогресса
+            const progress = totalExercises > 0 ? (completedCount / totalExercises) * 100 : 0;
+            const circumference = 2 * Math.PI * 15; // r = 15
+            const offset = circumference - (progress / 100) * circumference;
+
+            progressCircle.style.strokeDashoffset = offset;
+
+            if (exercise.completed) {
+                checkBtn.classList.add('completed');
+                checkIcon.textContent = '✓';
+            } else {
+                checkBtn.classList.remove('completed');
+                checkIcon.textContent = '✓';
+            }
+        }
+
+        // Переключить статус выполнения упражнения
+        function toggleExercise() {
+            if (!currentTask) return;
+
+            const exercise = currentTask.exercises[currentExerciseIndex];
+            exercise.completed = !exercise.completed;
+
+            // Сохранить прогресс
+            saveTodoStates();
+
+            // Обновить отображение
+            updateExerciseCheckButton();
+            renderExerciseDots();
+
+            // Если все упражнения выполнены, закрыть карточку
+            if (areAllExercisesCompleted(currentTask)) {
+                setTimeout(() => {
+                    closeExerciseCard();
+                }, 500);
+            }
+        }
+
+        // Перейти к следующему упражнению
+        function nextExercise() {
+            if (!currentTask) return;
+
+            if (currentExerciseIndex < currentTask.exercises.length - 1) {
+                currentExerciseIndex++;
+                renderExerciseCard();
+            }
+        }
+
+        // Перейти к предыдущему упражнению
+        function prevExercise() {
+            if (!currentTask) return;
+
+            if (currentExerciseIndex > 0) {
+                currentExerciseIndex--;
+                renderExerciseCard();
+            }
+        }
+
+        // Глобальные переменные для свайпа (объявлены один раз)
+        let exerciseSwipeState = {
+            startX: 0,
+            currentX: 0,
+            isDragging: false,
+            hasSwiped: false // Флаг, чтобы предотвратить множественные свайпы за один жест
+        };
+
+        // Настроить свайп навигацию для карточки упражнения
+        function setupExerciseCardSwipe() {
+            const exerciseCard = document.getElementById('exercise-card');
+            const SWIPE_THRESHOLD = 50;
+
+            // Сброс состояния при открытии новой карточки
+            exerciseSwipeState = {
+                startX: 0,
+                currentX: 0,
+                isDragging: false,
+                hasSwiped: false
+            };
+
+            const handleTouchStart = (e) => {
+                // Игнорируем если кликнули на кнопки или интерактивные элементы
+                if (e.target.closest('.exercise-card-close') || e.target.closest('.exercise-check-btn')) {
+                    return;
+                }
+                exerciseSwipeState.startX = e.touches[0].clientX;
+                exerciseSwipeState.currentX = exerciseSwipeState.startX;
+                exerciseSwipeState.isDragging = true;
+                exerciseSwipeState.hasSwiped = false;
+            };
+
+            const handleTouchMove = (e) => {
+                if (!exerciseSwipeState.isDragging) return;
+                exerciseSwipeState.currentX = e.touches[0].clientX;
+            };
+
+            const handleTouchEnd = () => {
+                if (!exerciseSwipeState.isDragging) return;
+
+                const diff = exerciseSwipeState.currentX - exerciseSwipeState.startX;
+
+                // Проверяем: порог пройден И ещё не было свайпа в этом жесте
+                if (Math.abs(diff) > SWIPE_THRESHOLD && !exerciseSwipeState.hasSwiped) {
+                    exerciseSwipeState.hasSwiped = true; // Блокируем повторные свайпы
+
+                    if (diff < 0) {
+                        nextExercise(); // Свайп влево - следующее
+                    } else {
+                        prevExercise(); // Свайп вправо - предыдущее
+                    }
+                }
+
+                exerciseSwipeState.isDragging = false;
+            };
+
+            const handleMouseDown = (e) => {
+                // Игнорируем если кликнули на кнопки или интерактивные элементы
+                if (e.target.closest('.exercise-card-close') || e.target.closest('.exercise-check-btn')) {
+                    return;
+                }
+                exerciseSwipeState.startX = e.clientX;
+                exerciseSwipeState.currentX = exerciseSwipeState.startX;
+                exerciseSwipeState.isDragging = true;
+                exerciseSwipeState.hasSwiped = false;
+            };
+
+            const handleMouseMove = (e) => {
+                if (!exerciseSwipeState.isDragging) return;
+                exerciseSwipeState.currentX = e.clientX;
+            };
+
+            const handleMouseUp = () => {
+                if (!exerciseSwipeState.isDragging) return;
+
+                const diff = exerciseSwipeState.currentX - exerciseSwipeState.startX;
+
+                // Проверяем: порог пройден И ещё не было свайпа в этом жесте
+                if (Math.abs(diff) > SWIPE_THRESHOLD && !exerciseSwipeState.hasSwiped) {
+                    exerciseSwipeState.hasSwiped = true; // Блокируем повторные свайпы
+
+                    if (diff < 0) {
+                        nextExercise(); // Свайп влево - следующее
+                    } else {
+                        prevExercise(); // Свайп вправо - предыдущее
+                    }
+                }
+
+                exerciseSwipeState.isDragging = false;
+            };
+
+            // Клонируем ноду чтобы удалить ВСЕ обработчики событий
+            const newExerciseCard = exerciseCard.cloneNode(true);
+            exerciseCard.parentNode.replaceChild(newExerciseCard, exerciseCard);
+
+            // Получаем обновлённую ссылку
+            const updatedExerciseCard = document.getElementById('exercise-card');
+
+            // Добавляем обработчики свайпа на чистый элемент
+            updatedExerciseCard.addEventListener('touchstart', handleTouchStart, { passive: true });
+            updatedExerciseCard.addEventListener('touchmove', handleTouchMove, { passive: true });
+            updatedExerciseCard.addEventListener('touchend', handleTouchEnd);
+            updatedExerciseCard.addEventListener('mousedown', handleMouseDown);
+            updatedExerciseCard.addEventListener('mousemove', handleMouseMove);
+            updatedExerciseCard.addEventListener('mouseup', handleMouseUp);
+
+            // Восстанавливаем обработчики кнопок после клонирования
+            const exerciseCardClose = document.getElementById('exercise-card-close');
+            const exerciseCheckBtn = document.getElementById('exercise-check-btn');
+
+            exerciseCardClose.addEventListener('click', closeExerciseCard);
+            exerciseCheckBtn.addEventListener('click', toggleExercise);
+        }
+
+        // ===== КОНЕЦ ФУНКЦИЙ КАРТОЧКИ УПРАЖНЕНИЯ =====
 
         // ===== СИНХРОНИЗАЦИЯ ДАТ =====
 
@@ -3863,15 +4921,33 @@
         function setupModalListeners() {
             const todoOverlay = document.getElementById('todo-overlay');
             const todoModalClose = document.getElementById('todo-modal-close');
+            const exerciseCardClose = document.getElementById('exercise-card-close');
+            const exerciseCheckBtn = document.getElementById('exercise-check-btn');
 
-            // Закрытие по клику на крестик
-            todoModalClose.addEventListener('click', closeWorkoutModal);
+            // Закрытие по клику на крестик (сначала закрываем карточку упражнения, потом модальное окно)
+            todoModalClose.addEventListener('click', () => {
+                if (exerciseCardVisible) {
+                    closeExerciseCard();
+                } else {
+                    closeWorkoutModal();
+                }
+            });
+
+            // Закрытие карточки упражнения по её кресту
+            exerciseCardClose.addEventListener('click', closeExerciseCard);
+
+            // Кнопка-галочка для завершения упражнения
+            exerciseCheckBtn.addEventListener('click', toggleExercise);
 
             // Закрытие по клику на заголовок (только если это не кнопка)
             const todoModalHeader = document.querySelector('.todo-modal-header');
             todoModalHeader.addEventListener('click', (e) => {
                 if (e.target === todoModalHeader) {
-                    closeWorkoutModal();
+                    if (exerciseCardVisible) {
+                        closeExerciseCard();
+                    } else {
+                        closeWorkoutModal();
+                    }
                 }
             });
 
@@ -3879,7 +4955,11 @@
             document.addEventListener('keydown', (e) => {
                 const todoOverlay = document.getElementById('todo-overlay');
                 if (e.key === 'Escape' && todoOverlay.classList.contains('show')) {
-                    closeWorkoutModal();
+                    if (exerciseCardVisible) {
+                        closeExerciseCard();
+                    } else {
+                        closeWorkoutModal();
+                    }
                 }
             });
         }
