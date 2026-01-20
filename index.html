@@ -112,8 +112,6 @@
             flex-basis: var(--workout-basis, auto);
             overflow-y: auto;
             min-height: 50px;
-            /* Резервируем место под скроллбар чтобы не прыгало при перетаскивании */
-            scrollbar-gutter: stable;
             transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease;
         }
 
@@ -134,6 +132,19 @@
         .workout-section.dragging * {
             will-change: transform;
             transform: translateZ(0);
+        }
+
+        /* Исключаем галочку чекбокса из общего transform dragging, чтобы scale(0) работал */
+        .workout-section.dragging .checkbox-checkmark {
+            transform: translate(-50%, -50%) scale(0) !important;
+        }
+
+        .workout-section.dragging .todo-checkbox input:checked ~ .checkbox-checkmark {
+            transform: translate(-50%, -50%) rotate(-45deg) scale(1) !important;
+        }
+
+        .workout-section.dragging .todo-checkbox input:checked ~ .checkbox-visual {
+            transform: rotate(-5deg) !important;
         }
 
         .workout-header {
@@ -207,7 +218,6 @@
             cursor: pointer;
             position: relative;
             opacity: 0.8;
-            transform: scale(0.95) rotate(-2deg);
             scroll-snap-align: center;
             touch-action: manipulation;
             display: flex;
@@ -217,15 +227,14 @@
             overflow: hidden;
         }
 
-        /* Базовые элементы */
-        .workout-block {
-            opacity: 0.8;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        /* Обычные блоки (НЕ текущий день) */
+        .workout-block:not(.current) {
+            transform: scale(0.95) rotate(-2deg);
         }
 
-        .workout-block:hover {
+        .workout-block:not(.current):hover {
             background: var(--neobrut-white);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(0.98) rotate(-2deg);
             box-shadow:
                 8px 8px 0 var(--neobrut-black),
                 inset 2px 2px 0 rgba(0,0,0,0.1);
@@ -278,7 +287,8 @@
             opacity: 0.8;
         }
 
-      
+        /* Todo-список в стиле необрутализма */
+
         /* Todo-список в стиле необрутализма */
         .todo-list {
             list-style: none;
@@ -734,7 +744,6 @@
             opacity: 0;
             transform: translateY(-20px);
             transition: opacity 0.3s ease, transform 0.3s ease;
-            border-bottom: 4px solid var(--neobrut-black);
         }
 
         .todo-overlay.show {
@@ -802,16 +811,9 @@
             overflow-y: auto;
             flex: 1;
             -webkit-overflow-scrolling: touch;
-            /* Резервируем место под скроллбар чтобы не прыгало при ресайзе */
-            scrollbar-gutter: stable;
         }
 
-        /* Уменьшаем все элементы задач внутри модального окна на 5% (почти полный размер) */
-        .todo-modal-content {
-            transform: scale(0.95);
-            transform-origin: top left;
-            height: 105%;
-        }
+        /* Убираем масштабирование - оно вызывает layout shift при ресайзе */
 
         .todo-modal-content .todo-item {
             margin-bottom: 12px;
@@ -897,26 +899,39 @@
             /* Скрыта по умолчанию - не перехватывает клики и не видна */
             visibility: hidden;
             pointer-events: none;
+            opacity: 0;
             /* GPU-ускорение: translate3d создаёт отдельный слой */
             transform: translate3d(100%, 0, 0);
-            /* will-change подсказывает браузеру оптимизировать transform */
-            will-change: transform;
             /* Плавная spring-анимация на CPU (cubic-bezier) */
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        visibility 0s linear 0.4s;
+                        visibility 0s linear 0.4s,
+                        opacity 0s linear 0.4s;
         }
 
         .exercise-card.show {
             /* Видима и интерактивна когда открыта */
             visibility: visible;
             pointer-events: auto;
+            opacity: 1;
             transform: translate3d(0, 0, 0);
+            /* will-change только когда карточка открыта - для оптимизации анимации */
+            will-change: transform;
             /* Показываем сразу без задержки */
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        opacity 0.3s ease;
         }
 
         .exercise-card.hide {
             transform: translate3d(-100%, 0, 0);
+        }
+
+        /* Отключаем GPU-слои у дочерних элементов, когда карточка скрыта */
+        .exercise-card:not(.show) .exercise-check-btn,
+        .exercise-card:not(.show) .exercise-check-svg,
+        .exercise-card:not(.show) .exercise-check-icon,
+        .exercise-card:not(.show) .exercise-card-header {
+            transform: none !important;
+            will-change: auto !important;
         }
 
         .exercise-card-header {
@@ -997,8 +1012,6 @@
             -webkit-overflow-scrolling: touch;
             display: flex;
             flex-direction: column;
-            /* Резервируем место под скроллбар чтобы не прыгало при ресайзе */
-            scrollbar-gutter: stable;
             /* Оптимизация скролла через GPU */
             transform: translate3d(0, 0, 0);
         }
@@ -1381,6 +1394,23 @@
         .task-day-widget:active {
             transform: translate(1px, 1px);
             box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        /* Выделяем текущий день в виджетах задач */
+        .task-day-widget.current {
+            transform: translateY(-6px) !important;
+            box-shadow:
+                10px 10px 0 var(--neobrut-black),
+                inset 2px 2px 0 rgba(0,0,0,0.1) !important;
+            border-width: 4px !important;
+            opacity: 1 !important;
+        }
+
+        .task-day-widget.current:hover {
+            transform: translate(-2px, -8px) !important;
+            box-shadow:
+                12px 12px 0 var(--neobrut-black),
+                inset 2px 2px 0 rgba(0,0,0,0.1) !important;
         }
 
         .task-day-info {
@@ -3546,8 +3576,7 @@
 
             // Перерендерить список задач чтобы обновить отображение
             setTimeout(() => {
-                const currentWorkoutDay = getCurrentWorkoutDay();
-                const todoHtml = createTodoHtml(todoData[currentWorkoutDay]);
+                const todoHtml = createTodoHtml(todoData[selectedWorkout]);
                 document.getElementById('todo-modal-content').innerHTML = todoHtml;
             }, 300);
         }
@@ -3630,12 +3659,27 @@
             const exercise = currentTask.exercises[currentExerciseIndex];
             exercise.completed = !exercise.completed;
 
+            // Установить дату начала программы при первом выполнении упражнения
+            if (exercise.completed && !getStartDate()) {
+                setStartDate(new Date());
+                console.log('Установлена дата начала программы при первом выполнении упражнения');
+                // Обновляем виджеты дней, чтобы выделить текущий день
+                renderTaskDayWidgets();
+            }
+
             // Сохранить прогресс
             saveTodoStates();
 
             // Обновить отображение
             updateExerciseCheckButton();
             renderExerciseDots();
+
+            // Если упражнение выполнено, перейти к следующему
+            if (exercise.completed && !areAllExercisesCompleted(currentTask)) {
+                setTimeout(() => {
+                    nextExercise();
+                }, 300);
+            }
 
             // Если все упражнения выполнены, закрыть карточку
             if (areAllExercisesCompleted(currentTask)) {
@@ -4117,19 +4161,20 @@
         function updateDashboardStrip() {
             const today = new Date();
             const streak = calculateStreak();
-            const currentWorkoutDay = getCurrentWorkoutDay();
-            const percentage = calculateCompletionPercentage(currentWorkoutDay);
+            // Используем выбранный день тренировки вместо текущего
+            const displayDay = selectedWorkout;
+            const percentage = calculateCompletionPercentage(displayDay);
 
             // Обновляем дату - показываем только день тренировки, а не календарную дату
             document.getElementById('strip-day').textContent = '';
-            document.getElementById('strip-date').textContent = `День ${currentWorkoutDay}`;
+            document.getElementById('strip-date').textContent = `День ${displayDay}`;
 
             // Обновляем серию
             document.getElementById('streak-count').textContent = `${streak} ${streak === 1 ? 'день' : (streak >= 2 && streak <= 4 ? 'дня' : 'дней')}`;
 
             // Обновляем прогресс
             document.getElementById('strip-progress-value').textContent = `${percentage}%`;
-            document.getElementById('strip-progress-sub').textContent = `День ${currentWorkoutDay} из 7`;
+            document.getElementById('strip-progress-sub').textContent = `День ${displayDay} из 7`;
 
             // Обновляем круговой прогресс
             const progressCircle = document.getElementById('strip-progress-circle');
@@ -4242,8 +4287,8 @@
 
         // Генерация AI комментария для dashboard
         async function updateAIComment(skipAnimation = false) {
-            const currentWorkoutDay = getCurrentWorkoutDay();
-            const percentage = calculateCompletionPercentage(currentWorkoutDay);
+            const displayDay = selectedWorkout;
+            const percentage = calculateCompletionPercentage(displayDay);
             const streak = calculateStreak();
 
             // Проверяем нужно ли обновлять
@@ -4282,13 +4327,13 @@
 
         // Генерация AI комментария через API
         async function generateAICommentForDashboard(percentage, streak) {
-            const currentWorkoutDay = getCurrentWorkoutDay();
+            const displayDay = selectedWorkout;
             const today = new Date();
             const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
             const dayName = dayNames[today.getDay()];
 
             // Подсчитываем выполненные и оставшиеся задачи
-            const todos = todoData[currentWorkoutDay] || [];
+            const todos = todoData[displayDay] || [];
             const completedCount = todos.filter(t => t.completed).length;
             const totalCount = todos.length;
             const remainingCount = totalCount - completedCount;
@@ -4302,7 +4347,7 @@
 - Никогда не повторяйся
 
 Контекст:
-- День: ${currentWorkoutDay} из 7
+- День: ${displayDay} из 7
 - Процент выполнения: ${percentage}%
 - Серия: ${streak} дней
 - Выполнено задач: ${completedCount}/${totalCount}
@@ -4456,6 +4501,12 @@
                 block.className = 'workout-block';
                 block.dataset.day = day;
 
+                // Выделяем текущий день
+                const currentWorkoutDay = getCurrentWorkoutDay();
+                if (day === currentWorkoutDay) {
+                    block.classList.add('current');
+                }
+
                 // Создаем пустой блок только с номером дня
                 block.innerHTML = `
                     <div class="workout-number">${day}</div>
@@ -4501,6 +4552,12 @@
                 const widget = document.createElement('div');
                 widget.className = 'task-day-widget';
                 widget.dataset.day = day;
+
+                // Выделяем текущий день
+                const currentWorkoutDay = getCurrentWorkoutDay();
+                if (day === currentWorkoutDay) {
+                    widget.classList.add('current');
+                }
 
                 // Вычисляем параметры SVG круга
                 const radius = 16;
