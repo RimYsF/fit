@@ -119,14 +119,19 @@
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            will-change: height;
+            will-change: --workout-basis;
+            contain: strict;
             transition: none;
             z-index: 1;
             overflow-y: hidden;
+            transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-            /* Временно отключаем flex-basis, чтобы работал height */
-            flex-basis: auto !important;
+        }
+
+        .workout-section.dragging * {
+            will-change: transform;
+            transform: translateZ(0);
         }
 
         /* Исключаем галочку чекбокса из общего transform dragging, чтобы scale(0) работал */
@@ -5688,8 +5693,8 @@
             // Плавно двигаем текущую высоту к цели
             currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
 
-            // Применяем текущую высоту напрямую (быстрее, чем через CSS custom property)
-            workoutSection.style.height = currentHeight + 'px';
+            // Применяем текущую высоту
+            workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
 
             // Продолжаем цикл пока перетаскиваем
             if (isDragging) {
@@ -5705,31 +5710,24 @@
 
         // Обработчики для мыши
         dividerButton.addEventListener('mousedown', (e) => {
-            // Сначала добавляем dragging и получаем текущую высоту из --workout-basis
-            const computedStyle = getComputedStyle(workoutSection);
-            const currentBasis = computedStyle.getPropertyValue('--workout-basis');
-            startTopHeight = parseFloat(currentBasis) || workoutSection.getBoundingClientRect().height;
-
             isDragging = true;
             startY = e.clientY;
             currentY = e.clientY;
-
-            // Устанавливаем height перед добавлением класса
-            workoutSection.style.height = startTopHeight + 'px';
-            workoutSection.classList.add('dragging');
-
+            startTopHeight = workoutSection.getBoundingClientRect().height;
+            currentHeight = startTopHeight;
+            targetHeight = startTopHeight;
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
+            workoutSection.classList.add('dragging');
             cacheMeasurements();
+            // Запускаем постоянный цикл
+            rafId = requestAnimationFrame(updateFrame);
             e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-            // Обновляем напрямую без интерполяции
-            const newHeight = calculateTargetHeight(e.clientY);
-            workoutSection.style.height = newHeight + 'px';
-            targetHeight = newHeight;
+            updateSizes(e.clientY);
         });
 
         document.addEventListener('mouseup', () => {
@@ -5737,49 +5735,67 @@
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-                // Сразу восстанавливаем flex-basis и убираем height
-                const finalHeight = parseFloat(workoutSection.style.height) || targetHeight;
-                workoutSection.style.setProperty('--workout-basis', finalHeight + 'px');
-                workoutSection.style.height = '';
                 workoutSection.classList.remove('dragging');
+                // Финальное обновление до точной позиции
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+                // Плавно доводим до конечной позиции
+                const finishAnimation = () => {
+                    const diff = Math.abs(targetHeight - currentHeight);
+                    if (diff > 0.5) {
+                        currentHeight = lerp(currentHeight, targetHeight, 0.2);
+                        workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                        requestAnimationFrame(finishAnimation);
+                    } else {
+                        workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                    }
+                };
+                finishAnimation();
             }
         });
 
         // Обработчики для touch (мобильные устройства)
         dividerButton.addEventListener('touchstart', (e) => {
-            // Сначала получаем текущую высоту из --workout-basis
-            const computedStyle = getComputedStyle(workoutSection);
-            const currentBasis = computedStyle.getPropertyValue('--workout-basis');
-            startTopHeight = parseFloat(currentBasis) || workoutSection.getBoundingClientRect().height;
-
             isDragging = true;
             startY = e.touches[0].clientY;
             currentY = e.touches[0].clientY;
-
-            // Устанавливаем height перед добавлением класса
-            workoutSection.style.height = startTopHeight + 'px';
+            startTopHeight = workoutSection.getBoundingClientRect().height;
+            currentHeight = startTopHeight;
+            targetHeight = startTopHeight;
             workoutSection.classList.add('dragging');
-
             cacheMeasurements();
-        }, { passive: true });
+            // Запускаем постоянный цикл
+            rafId = requestAnimationFrame(updateFrame);
+            e.preventDefault();
+        }, { passive: false });
 
         document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            // Обновляем напрямую без интерполяции
-            const newHeight = calculateTargetHeight(e.touches[0].clientY);
-            workoutSection.style.height = newHeight + 'px';
-            targetHeight = newHeight;
-        }, { passive: true });
+            e.preventDefault();
+            updateSizes(e.touches[0].clientY);
+        }, { passive: false });
 
         document.addEventListener('touchend', () => {
-            if (isDragging) {
-                isDragging = false;
-                // Сразу восстанавливаем flex-basis и убираем height
-                const finalHeight = parseFloat(workoutSection.style.height) || targetHeight;
-                workoutSection.style.setProperty('--workout-basis', finalHeight + 'px');
-                workoutSection.style.height = '';
-                workoutSection.classList.remove('dragging');
+            isDragging = false;
+            workoutSection.classList.remove('dragging');
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
             }
+            // Финальная доводка
+            const finishAnimation = () => {
+                const diff = Math.abs(targetHeight - currentHeight);
+                if (diff > 0.5) {
+                    currentHeight = lerp(currentHeight, targetHeight, 0.2);
+                    workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                    requestAnimationFrame(finishAnimation);
+                } else {
+                    workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                }
+            };
+            finishAnimation();
         });
 
         // Предотвращаем выделение текста при клике на кнопку
