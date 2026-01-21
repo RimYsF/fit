@@ -5589,8 +5589,18 @@
                                 ${Object.keys(todoData).map(day => {
                                     const dayNum = parseInt(day);
                                     const tasks = todoData[day] || [];
+                                    if (tasks.length === 0) return `\\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---\\nНет задач`;
                                     return `\\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---` +
-                                        (tasks.length > 0 ? tasks.map(t => `${t.completed ? '✅' : '⏳'} ${t.text}`).join('\\n') : 'Нет задач');
+                                        tasks.map((t, taskIndex) => {
+                                            let taskStr = `\\n${t.completed ? '✅' : '⏳'} Задание ${taskIndex + 1}: ${t.text}`;
+                                            if (t.exercises && t.exercises.length > 0) {
+                                                taskStr += '\\n   Упражнения:';
+                                                t.exercises.forEach((ex, exIndex) => {
+                                                    taskStr += `\\n      ${exIndex + 1}. ${ex.completed ? '✅' : '⏳'} ${ex.text}${ex.isRest ? ' (отдых)' : ''}`;
+                                                });
+                                            }
+                                            return taskStr;
+                                        }).join('\\n');
                                 }).join('\\n')}
 
                                 Выполнение сегодня: ${calculateCompletionPercentage(currentWorkoutDay)}%
