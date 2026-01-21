@@ -119,19 +119,14 @@
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            will-change: --workout-basis;
-            contain: strict;
+            will-change: height;
             transition: none;
             z-index: 1;
             overflow-y: hidden;
-            transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-        }
-
-        .workout-section.dragging * {
-            will-change: transform;
-            transform: translateZ(0);
+            /* Временно отключаем flex-basis, чтобы работал height */
+            flex-basis: auto !important;
         }
 
         /* Исключаем галочку чекбокса из общего transform dragging, чтобы scale(0) работал */
@@ -177,114 +172,6 @@
             border-radius: 8px;
             color: var(--neobrut-black);
             transform: rotate(-2deg);
-        }
-
-        /* Контейнер с горизонтальной прокруткой */
-        .workout-carousel {
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            height: 100%;
-        }
-
-        .workout-track {
-            display: flex;
-            gap: 20px;
-            padding: 0 40px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
-        }
-
-        .workout-track::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Блоки тренировок - Квадратные пустые в стиле необрутализма */
-        .workout-block {
-            flex: 0 0 150px;
-            width: 150px;
-            height: 150px;
-            background: var(--neobrut-white);
-            border: 4px solid var(--neobrut-black);
-            border-radius: 16px;
-            box-shadow:
-                8px 8px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0,0,0,0.1);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            opacity: 0.8;
-            scroll-snap-align: center;
-            touch-action: manipulation;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        /* Обычные блоки (НЕ текущий день) */
-        .workout-block:not(.current) {
-            transform: scale(0.95) rotate(-2deg);
-        }
-
-        .workout-block:not(.current):hover {
-            background: var(--neobrut-white);
-            transform: translateY(-2px) scale(0.98) rotate(-2deg);
-            box-shadow:
-                8px 8px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0,0,0,0.1);
-        }
-
-        .workout-number {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-8deg);
-            width: 60px;
-            height: 60px;
-            background: var(--neobrut-orange);
-            border: 3px solid var(--neobrut-black);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: 900;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            color: var(--neobrut-white);
-            border-radius: 12px;
-            z-index: 2;
-        }
-
-        .workout-day {
-            position: absolute;
-            bottom: 20px;
-            font-size: 18px;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: var(--neobrut-black);
-            letter-spacing: 0.05em;
-            text-align: center;
-            width: 100%;
-        }
-
-        /* Декоративные элементы для пустых блоков */
-        .workout-block::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 20px;
-            height: 20px;
-            background: var(--neobrut-pink);
-            border: 2px solid var(--neobrut-black);
-            border-radius: 50%;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-            opacity: 0.8;
         }
 
         /* Todo-список в стиле необрутализма */
@@ -647,11 +534,6 @@
             font-size: 24px;
         }
 
-        .workout-section.show-todos .workout-carousel {
-            display: none;
-        }
-
-        
         /* Базовые стили для контента задач */
         #todo-content {
             display: none;
@@ -1864,22 +1746,6 @@
 
             .activity-title {
                 font-size: 18px;
-            }
-
-            .workout-block {
-                flex: 0 0 130px;
-                width: 130px;
-                height: 130px;
-            }
-        }
-
-        /* Отключаем hover-эффекты на мобильных устройствах при свайпе */
-        @media (hover: none) and (pointer: coarse) {
-            .workout-block:hover {
-                background: var(--neobrut-white);
-                box-shadow:
-                    6px 6px 0 var(--neobrut-black),
-                    inset 2px 2px 0 rgba(0,0,0,0.1);
             }
         }
 
@@ -4643,44 +4509,6 @@
             localStorage.setItem('fitTrackerActivity', JSON.stringify(activityData));
         }
 
-        // Рендеринг блоков тренировок
-        function renderWorkoutBlocks() {
-            const track = document.getElementById('workout-track');
-            track.innerHTML = '';
-
-            // Перебираем дни 1-7 вместо устаревшего workoutProgram
-            for (let day = 1; day <= 7; day++) {
-                const block = document.createElement('div');
-                block.className = 'workout-block';
-                block.dataset.day = day;
-
-                // Выделяем текущий день
-                const currentWorkoutDay = getCurrentWorkoutDay();
-                if (day === currentWorkoutDay) {
-                    block.classList.add('current');
-                }
-
-                // Создаем пустой блок только с номером дня
-                block.innerHTML = `
-                    <div class="workout-number">${day}</div>
-                `;
-
-                block.addEventListener('click', () => {
-                    selectedWorkout = day;
-                    openWorkoutModal({ day });
-                });
-                track.appendChild(block);
-            }
-
-            // Центрируем на выбранной тренировке при инициализации
-            setTimeout(() => {
-                const currentBlock = track.querySelector(`[data-day="${selectedWorkout}"]`);
-                if (currentBlock) {
-                    currentBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                }
-            }, 100);
-        }
-
         // Генерация виджетов дней для секции заданий
         function renderTaskDayWidgets() {
             const tasksContainer = document.getElementById('tasks-container');
@@ -5048,7 +4876,6 @@
 
             // Перерисовываем UI
             renderActivityGrid();
-            renderWorkoutBlocks();
 
             // Обновляем модалку если открыта
             const todoContent = document.getElementById('todo-content');
@@ -5097,38 +4924,18 @@
                 todoOverlay.classList.add('show');
             }, 10);
 
-            // Блокируем прокрутку карусели (если существует)
-            const workoutTrack = document.getElementById('workout-track');
-            if (workoutTrack) {
-                workoutTrack.style.overflow = 'hidden';
-                workoutTrack.style.pointerEvents = 'none';
-            }
-
             // Запоминаем текущий выбранный день
             selectedWorkout = workout.day;
         }
 
         function closeWorkoutModal() {
             const todoOverlay = document.getElementById('todo-overlay');
-            const workoutTrack = document.getElementById('workout-track');
 
             // Скрываем overlay с анимацией
             todoOverlay.classList.remove('show');
             setTimeout(() => {
                 todoOverlay.style.display = 'none';
             }, 300);
-
-            // Восстанавливаем прокрутку карусели (если существует)
-            if (workoutTrack) {
-                workoutTrack.style.overflow = 'auto';
-                workoutTrack.style.pointerEvents = 'auto';
-
-                // Прокручиваем к выбранному дню
-                const currentBlock = workoutTrack.querySelector(`[data-day="${selectedWorkout}"]`);
-                if (currentBlock) {
-                    currentBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                }
-            }
         }
 
         // Добавим обработчики для модального окна
@@ -5881,8 +5688,8 @@
             // Плавно двигаем текущую высоту к цели
             currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
 
-            // Применяем текущую высоту
-            workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+            // Применяем текущую высоту напрямую (быстрее, чем через CSS custom property)
+            workoutSection.style.height = currentHeight + 'px';
 
             // Продолжаем цикл пока перетаскиваем
             if (isDragging) {
@@ -5898,15 +5705,23 @@
 
         // Обработчики для мыши
         dividerButton.addEventListener('mousedown', (e) => {
+            // Сначала добавляем dragging и получаем текущую высоту из --workout-basis
+            const computedStyle = getComputedStyle(workoutSection);
+            const currentBasis = computedStyle.getPropertyValue('--workout-basis');
+            startTopHeight = parseFloat(currentBasis) || workoutSection.getBoundingClientRect().height;
+
             isDragging = true;
             startY = e.clientY;
             currentY = e.clientY;
-            startTopHeight = workoutSection.getBoundingClientRect().height;
             currentHeight = startTopHeight;
             targetHeight = startTopHeight;
+
+            // Устанавливаем height перед добавлением класса, чтобы избежать скачка
+            workoutSection.style.height = startTopHeight + 'px';
+            workoutSection.classList.add('dragging');
+
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
-            workoutSection.classList.add('dragging');
             cacheMeasurements();
             // Запускаем постоянный цикл
             rafId = requestAnimationFrame(updateFrame);
@@ -5923,7 +5738,7 @@
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-                workoutSection.classList.remove('dragging');
+                // НЕ удаляем dragging класс здесь - удалим после анимации
                 // Финальное обновление до точной позиции
                 if (rafId) {
                     cancelAnimationFrame(rafId);
@@ -5934,10 +5749,14 @@
                     const diff = Math.abs(targetHeight - currentHeight);
                     if (diff > 0.5) {
                         currentHeight = lerp(currentHeight, targetHeight, 0.2);
-                        workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                        workoutSection.style.height = currentHeight + 'px';
                         requestAnimationFrame(finishAnimation);
                     } else {
+                        // Сначала восстанавливаем flex-basis
                         workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                        // Затем убираем height и dragging класс
+                        workoutSection.style.height = '';
+                        workoutSection.classList.remove('dragging');
                     }
                 };
                 finishAnimation();
@@ -5946,28 +5765,35 @@
 
         // Обработчики для touch (мобильные устройства)
         dividerButton.addEventListener('touchstart', (e) => {
+            // Сначала получаем текущую высоту из --workout-basis
+            const computedStyle = getComputedStyle(workoutSection);
+            const currentBasis = computedStyle.getPropertyValue('--workout-basis');
+            startTopHeight = parseFloat(currentBasis) || workoutSection.getBoundingClientRect().height;
+
             isDragging = true;
             startY = e.touches[0].clientY;
             currentY = e.touches[0].clientY;
-            startTopHeight = workoutSection.getBoundingClientRect().height;
             currentHeight = startTopHeight;
             targetHeight = startTopHeight;
+
+            // Устанавливаем height перед добавлением класса, чтобы избежать скачка
+            workoutSection.style.height = startTopHeight + 'px';
             workoutSection.classList.add('dragging');
+
             cacheMeasurements();
             // Запускаем постоянный цикл
             rafId = requestAnimationFrame(updateFrame);
-            e.preventDefault();
-        }, { passive: false });
+        }, { passive: true });
 
         document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            e.preventDefault();
+            // touch-action: none на divider-button достаточно для предотвращения скролла
             updateSizes(e.touches[0].clientY);
-        }, { passive: false });
+        }, { passive: true });
 
         document.addEventListener('touchend', () => {
             isDragging = false;
-            workoutSection.classList.remove('dragging');
+            // НЕ удаляем dragging класс здесь - удалим после анимации
             if (rafId) {
                 cancelAnimationFrame(rafId);
                 rafId = null;
@@ -5977,10 +5803,14 @@
                 const diff = Math.abs(targetHeight - currentHeight);
                 if (diff > 0.5) {
                     currentHeight = lerp(currentHeight, targetHeight, 0.2);
-                    workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                    workoutSection.style.height = currentHeight + 'px';
                     requestAnimationFrame(finishAnimation);
                 } else {
+                    // Сначала восстанавливаем flex-basis
                     workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                    // Затем убираем height и dragging класс
+                    workoutSection.style.height = '';
+                    workoutSection.classList.remove('dragging');
                 }
             };
             finishAnimation();
