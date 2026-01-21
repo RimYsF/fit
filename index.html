@@ -1021,11 +1021,86 @@
             font-weight: 600;
             color: var(--neobrut-darkgray);
             line-height: 1.6;
-            flex: 1;
             /* Анимация появления текста */
             animation: textFadeIn 0.3s ease-out;
             /* Подсвечка для глубины */
             text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .exercise-video-button {
+            margin-top: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: auto;
+        }
+
+        .video-button-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .video-play-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+            color: var(--neobrut-darkgray);
+        }
+
+        .video-button-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--neobrut-darkgray);
+        }
+
+        .exercise-video-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            cursor: pointer;
+        }
+
+        .exercise-video-overlay.show {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .exercise-video-container {
+            width: 100vw;
+            aspect-ratio: 24 / 15;
+            background: var(--neobrut-black);
+            border: 4px solid var(--neobrut-white);
+            border-bottom: none;
+            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+            cursor: default;
+            animation: slideUpVideo 0.3s ease-out;
+        }
+
+        @keyframes slideUpVideo {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .exercise-video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: var(--neobrut-black);
         }
 
         @keyframes textFadeIn {
@@ -2738,6 +2813,15 @@
                         <div class="exercise-text" id="exercise-text">
                             Текст упражнения...
                         </div>
+                        <div class="exercise-video-button" id="exercise-video-button" style="display: none;">
+                            <div class="video-button-content">
+                                <svg class="video-play-icon" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" fill="currentColor"/>
+                                    <polygon points="10,8 16,12 10,16" fill="white"/>
+                                </svg>
+                                <span class="video-button-text">Техника упражнения</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="exercise-card-footer">
                         <div class="exercise-dots" id="exercise-dots">
@@ -2760,6 +2844,16 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Видео-оверлей для техники упражнения -->
+    <div class="exercise-video-overlay" id="exercise-video-overlay">
+        <div class="exercise-video-container" id="exercise-video-container">
+            <video class="exercise-video-player" id="exercise-video-player" playsinline loop autoplay muted>
+                <source src="отжимание.mp4" type="video/mp4">
+                Ваш браузер не поддерживает видео.
+            </video>
         </div>
     </div>
 
@@ -2915,6 +3009,7 @@
                         text: 'Отжимания',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-2-1', text: 'Отжимания - 1 подход: 15 раз', completed: false },
                             { id: 'ex-2-2', text: 'Отжимания - 2 подход: 12 раз', completed: false },
@@ -2928,6 +3023,7 @@
                         text: 'Пресс',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-3-1', text: 'Классические скручивания - 20 раз', completed: false },
                             { id: 'ex-3-2', text: 'Подъём ног лёжа - 15 раз', completed: false },
@@ -2940,6 +3036,7 @@
                         text: 'Приседания',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-4-1', text: 'Приседания - 1 подход: 20 раз', completed: false },
                             { id: 'ex-4-2', text: 'Приседания - 2 подход: 15 раз', completed: false },
@@ -2986,6 +3083,7 @@
                         text: 'Тяга гантелей',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-8-1', text: 'Тяга гантелей в наклоне - 1 подход: 12 раз', completed: false },
                             { id: 'ex-8-2', text: 'Тяга гантелей в наклоне - 2 подход: 10 раз', completed: false },
@@ -2998,6 +3096,7 @@
                         text: 'Пресс',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-9-1', text: 'Скручивания с поворотом - 15 раз каждую сторону', completed: false },
                             { id: 'ex-9-2', text: 'Велосипед - 20 раз', completed: false },
@@ -3010,6 +3109,7 @@
                         text: 'Выпады',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-10-1', text: 'Выпады вперёд - 10 раз каждая нога', completed: false },
                             { id: 'ex-10-2', text: 'Выпады назад - 8 раз каждая нога', completed: false },
@@ -3070,6 +3170,7 @@
                         text: 'Отжимания',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-15-1', text: 'Широкие отжимания - 1 подход: 12 раз', completed: false },
                             { id: 'ex-15-2', text: 'Обычные отжимания - 2 подход: 15 раз', completed: false },
@@ -3083,6 +3184,7 @@
                         text: 'Обратные отжимания',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-16-1', text: 'Обратные отжимания от стула - 1 подход: 12 раз', completed: false },
                             { id: 'ex-16-2', text: 'Обратные отжимания от стула - 2 подход: 10 раз', completed: false },
@@ -3095,6 +3197,7 @@
                         text: 'Пресс с весом',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-17-1', text: 'Скручивания с весом - 15 раз', completed: false },
                             { id: 'ex-17-2', text: 'Русский твист с весом - 20 раз', completed: false },
@@ -3107,6 +3210,7 @@
                         text: 'Кардио финиши',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-18-1', text: 'Бёрпи - 3 подхода по 10 раз', completed: false },
                             { id: 'ex-18-2', text: 'Отдых между подходами - 60 секунд', isRest: true, completed: false },
@@ -3131,6 +3235,7 @@
                         text: 'Приседания',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-20-1', text: 'Классические приседания - 1 подход: 20 раз', completed: false },
                             { id: 'ex-20-2', text: 'Приседания с широкой постановкой - 2 подход: 15 раз', completed: false },
@@ -3144,6 +3249,7 @@
                         text: 'Планка',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-21-1', text: 'Классическая планка - 45 секунд', completed: false },
                             { id: 'ex-21-2', text: 'Боковая планка левая - 30 секунд', completed: false },
@@ -3156,6 +3262,7 @@
                         text: 'Выпады с весом',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-22-1', text: 'Выпады с гантелями - 10 раз каждая нога', completed: false },
                             { id: 'ex-22-2', text: 'Обратные выпады - 12 раз каждая нога', completed: false },
@@ -3168,6 +3275,7 @@
                         text: 'Ягодичные упражнения',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-23-1', text: 'Ягодичный мост - 20 раз', completed: false },
                             { id: 'ex-23-2', text: 'Ягодичный мост с одной ногой - 10 раз каждая нога', completed: false },
@@ -3225,6 +3333,7 @@
                         text: 'Отжимания на время',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-28-1', text: 'Отжимания за 60 секунд - максимальное количество', completed: false },
                             { id: 'ex-28-2', text: 'Отдых - 2 минуты', isRest: true, completed: false },
@@ -3238,6 +3347,7 @@
                         text: 'Пресс',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-29-1', text: 'Альпинист - 3 подхода по 20 раз', completed: false },
                             { id: 'ex-29-2', text: 'Ножницы - 3 подхода по 25 раз', completed: false },
@@ -3285,6 +3395,7 @@
                         text: 'Лёгкая тренировка',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-33-1', text: 'Разогрев - 3 минуты', completed: false },
                             { id: 'ex-33-2', text: 'Отжимания - 2 подхода по 15 раз', completed: false },
@@ -3329,6 +3440,7 @@
                         text: 'Финальный тест',
                         completed: false,
                         completedAt: null,
+                        videoUrl: 'отжимание.mp4',
                         exercises: [
                             { id: 'ex-37-1', text: 'Отжимания - макс. количество за 2 минуты', completed: false },
                             { id: 'ex-37-2', text: 'Отдых - 3 минуты', isRest: true, completed: false },
@@ -3581,6 +3693,41 @@
             }, 300);
         }
 
+        // Открыть видео с техникой упражнения
+        function openExerciseVideo() {
+            console.log('openExerciseVideo called', { currentTask, videoUrl: currentTask?.videoUrl });
+            if (!currentTask || !currentTask.videoUrl) {
+                console.log('No currentTask or videoUrl');
+                return;
+            }
+
+            const videoOverlay = document.getElementById('exercise-video-overlay');
+            const videoPlayer = document.getElementById('exercise-video-player');
+
+            console.log('Elements found:', { videoOverlay, videoPlayer });
+
+            // Устанавливаем источник видео и перезагружаем
+            videoPlayer.src = currentTask.videoUrl;
+            videoPlayer.load();
+
+            // Показываем оверлей и запускаем воспроизведение
+            videoOverlay.classList.add('show');
+            videoPlayer.play().catch(e => console.log('Autoplay prevented:', e));
+        }
+
+        // Закрыть видео с техникой упражнения
+        function closeExerciseVideo() {
+            const videoOverlay = document.getElementById('exercise-video-overlay');
+            const videoPlayer = document.getElementById('exercise-video-player');
+
+            // Останавливаем видео
+            videoPlayer.pause();
+            videoPlayer.currentTime = 0;
+
+            // Скрываем оверлей
+            videoOverlay.classList.remove('show');
+        }
+
         // Отрендерить карточку упражнения
         function renderExerciseCard() {
             if (!currentTask) return;
@@ -3597,6 +3744,10 @@
 
             // Текст упражнения
             document.getElementById('exercise-text').textContent = exercise.text;
+
+            // Показываем кнопку видео если у задачи есть videoUrl
+            const videoButton = document.getElementById('exercise-video-button');
+            videoButton.style.display = currentTask.videoUrl ? 'inline-flex' : 'none';
 
             // Обновить точки
             renderExerciseDots();
@@ -3818,9 +3969,11 @@
             // Восстанавливаем обработчики кнопок после клонирования
             const exerciseCardClose = document.getElementById('exercise-card-close');
             const exerciseCheckBtn = document.getElementById('exercise-check-btn');
+            const exerciseVideoButton = document.getElementById('exercise-video-button');
 
             exerciseCardClose.addEventListener('click', closeExerciseCard);
             exerciseCheckBtn.addEventListener('click', toggleExercise);
+            exerciseVideoButton.addEventListener('click', openExerciseVideo);
         }
 
         // ===== КОНЕЦ ФУНКЦИЙ КАРТОЧКИ УПРАЖНЕНИЯ =====
@@ -4944,10 +5097,12 @@
                 todoOverlay.classList.add('show');
             }, 10);
 
-            // Блокируем прокрутку карусели
+            // Блокируем прокрутку карусели (если существует)
             const workoutTrack = document.getElementById('workout-track');
-            workoutTrack.style.overflow = 'hidden';
-            workoutTrack.style.pointerEvents = 'none';
+            if (workoutTrack) {
+                workoutTrack.style.overflow = 'hidden';
+                workoutTrack.style.pointerEvents = 'none';
+            }
 
             // Запоминаем текущий выбранный день
             selectedWorkout = workout.day;
@@ -4963,14 +5118,16 @@
                 todoOverlay.style.display = 'none';
             }, 300);
 
-            // Восстанавливаем прокрутку карусели
-            workoutTrack.style.overflow = 'auto';
-            workoutTrack.style.pointerEvents = 'auto';
+            // Восстанавливаем прокрутку карусели (если существует)
+            if (workoutTrack) {
+                workoutTrack.style.overflow = 'auto';
+                workoutTrack.style.pointerEvents = 'auto';
 
-            // Прокручиваем к выбранному дню
-            const currentBlock = workoutTrack.querySelector(`[data-day="${selectedWorkout}"]`);
-            if (currentBlock) {
-                currentBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                // Прокручиваем к выбранному дню
+                const currentBlock = workoutTrack.querySelector(`[data-day="${selectedWorkout}"]`);
+                if (currentBlock) {
+                    currentBlock.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
             }
         }
 
@@ -5018,7 +5175,24 @@
                         closeWorkoutModal();
                     }
                 }
+                // Также закрываем видео по Escape
+                const videoOverlay = document.getElementById('exercise-video-overlay');
+                if (e.key === 'Escape' && videoOverlay.classList.contains('show')) {
+                    closeExerciseVideo();
+                }
             });
+
+            // Закрытие видео по клику на фон
+            const videoOverlay = document.getElementById('exercise-video-overlay');
+            const videoContainer = document.getElementById('exercise-video-container');
+            if (videoOverlay && videoContainer) {
+                // Закрытие при клике на фон
+                videoOverlay.addEventListener('click', closeExerciseVideo);
+                // Предотвращение закрытия при клике на контейнер с видео
+                videoContainer.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+            }
         }
 
         // Установка обработчиков событий
