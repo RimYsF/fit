@@ -5713,24 +5713,23 @@
             isDragging = true;
             startY = e.clientY;
             currentY = e.clientY;
-            currentHeight = startTopHeight;
-            targetHeight = startTopHeight;
 
-            // Устанавливаем height перед добавлением класса, чтобы избежать скачка
+            // Устанавливаем height перед добавлением класса
             workoutSection.style.height = startTopHeight + 'px';
             workoutSection.classList.add('dragging');
 
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
             cacheMeasurements();
-            // Запускаем постоянный цикл
-            rafId = requestAnimationFrame(updateFrame);
             e.preventDefault();
         });
 
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-            updateSizes(e.clientY);
+            // Обновляем напрямую без интерполяции
+            const newHeight = calculateTargetHeight(e.clientY);
+            workoutSection.style.height = newHeight + 'px';
+            targetHeight = newHeight;
         });
 
         document.addEventListener('mouseup', () => {
@@ -5738,28 +5737,11 @@
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-                // НЕ удаляем dragging класс здесь - удалим после анимации
-                // Финальное обновление до точной позиции
-                if (rafId) {
-                    cancelAnimationFrame(rafId);
-                    rafId = null;
-                }
-                // Плавно доводим до конечной позиции
-                const finishAnimation = () => {
-                    const diff = Math.abs(targetHeight - currentHeight);
-                    if (diff > 0.5) {
-                        currentHeight = lerp(currentHeight, targetHeight, 0.2);
-                        workoutSection.style.height = currentHeight + 'px';
-                        requestAnimationFrame(finishAnimation);
-                    } else {
-                        // Сначала восстанавливаем flex-basis
-                        workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
-                        // Затем убираем height и dragging класс
-                        workoutSection.style.height = '';
-                        workoutSection.classList.remove('dragging');
-                    }
-                };
-                finishAnimation();
+                // Сразу восстанавливаем flex-basis и убираем height
+                const finalHeight = parseFloat(workoutSection.style.height) || targetHeight;
+                workoutSection.style.setProperty('--workout-basis', finalHeight + 'px');
+                workoutSection.style.height = '';
+                workoutSection.classList.remove('dragging');
             }
         });
 
@@ -5773,47 +5755,31 @@
             isDragging = true;
             startY = e.touches[0].clientY;
             currentY = e.touches[0].clientY;
-            currentHeight = startTopHeight;
-            targetHeight = startTopHeight;
 
-            // Устанавливаем height перед добавлением класса, чтобы избежать скачка
+            // Устанавливаем height перед добавлением класса
             workoutSection.style.height = startTopHeight + 'px';
             workoutSection.classList.add('dragging');
 
             cacheMeasurements();
-            // Запускаем постоянный цикл
-            rafId = requestAnimationFrame(updateFrame);
         }, { passive: true });
 
         document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            // touch-action: none на divider-button достаточно для предотвращения скролла
-            updateSizes(e.touches[0].clientY);
+            // Обновляем напрямую без интерполяции
+            const newHeight = calculateTargetHeight(e.touches[0].clientY);
+            workoutSection.style.height = newHeight + 'px';
+            targetHeight = newHeight;
         }, { passive: true });
 
         document.addEventListener('touchend', () => {
-            isDragging = false;
-            // НЕ удаляем dragging класс здесь - удалим после анимации
-            if (rafId) {
-                cancelAnimationFrame(rafId);
-                rafId = null;
+            if (isDragging) {
+                isDragging = false;
+                // Сразу восстанавливаем flex-basis и убираем height
+                const finalHeight = parseFloat(workoutSection.style.height) || targetHeight;
+                workoutSection.style.setProperty('--workout-basis', finalHeight + 'px');
+                workoutSection.style.height = '';
+                workoutSection.classList.remove('dragging');
             }
-            // Финальная доводка
-            const finishAnimation = () => {
-                const diff = Math.abs(targetHeight - currentHeight);
-                if (diff > 0.5) {
-                    currentHeight = lerp(currentHeight, targetHeight, 0.2);
-                    workoutSection.style.height = currentHeight + 'px';
-                    requestAnimationFrame(finishAnimation);
-                } else {
-                    // Сначала восстанавливаем flex-basis
-                    workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
-                    // Затем убираем height и dragging класс
-                    workoutSection.style.height = '';
-                    workoutSection.classList.remove('dragging');
-                }
-            };
-            finishAnimation();
         });
 
         // Предотвращаем выделение текста при клике на кнопку
