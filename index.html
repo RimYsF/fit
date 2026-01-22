@@ -2586,6 +2586,97 @@
             40% { transform: scale(1); opacity: 1; }
         }
 
+        /* ===== NAVIGATION BUTTONS ===== */
+        .nav-buttons-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .nav-button {
+            flex: 1;
+            aspect-ratio: 1 / 1;
+            max-height: 65px;
+            background: var(--neobrut-white);
+            border: 4px solid var(--neobrut-black);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0 var(--neobrut-black);
+            background: var(--neobrut-cream);
+        }
+
+        .nav-button:active {
+            transform: translate(3px, 3px);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .nav-button.active {
+            background: var(--success-green);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+            transform: translate(-1px, -1px);
+        }
+
+        .nav-button.active:hover {
+            background: var(--success-green);
+            box-shadow: 6px 6px 0 var(--neobrut-black);
+        }
+
+        /* PNG иконка чата */
+        .nav-icon-img {
+            width: 70%;
+            height: 70%;
+            object-fit: contain;
+        }
+
+        /* SVG иконки */
+        .nav-button svg {
+            width: 65%;
+            height: 65%;
+        }
+
+        .nav-button.active svg {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Для активной кнопки задач - галочки остаются белыми */
+        .nav-button.active svg path[stroke="white"] {
+            stroke: white;
+            filter: none;
+        }
+
+        .nav-button.shake {
+            animation: shake 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+
+        /* Activity colors for calendar icon - более яркие необруталистические */
+        .activity-block-low { fill: var(--neobrut-green); }
+        .activity-block-medium { fill: var(--neobrut-blue); }
+        .activity-block-high { fill: var(--neobrut-purple); }
+
+        /* Task colors - более яркие необруталистические */
+        .task-cube-done { fill: var(--neobrut-green); }
+        .task-cube-pending { stroke: var(--neobrut-black); stroke-width: 2; fill: var(--neobrut-lightgray); }
+        .task-checkmark { fill: var(--neobrut-white); }
+
         /* ===== ФИКСИРОВАННОЕ СООТНОШЕНИЕ ЭКРАНА ===== */
         body {
             height: 100vh;
@@ -2813,6 +2904,43 @@
                 <div class="ai-comment-text" id="ai-comment-text">
                     Загрузка AI комментария...
                 </div>
+            </div>
+
+            <!-- Навигационные кнопки -->
+            <div class="nav-buttons-container">
+                <!-- Кнопка чата -->
+                <button class="nav-button" id="nav-chat" data-slide="0" title="AI Чат">
+                    <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" class="nav-icon-img">
+                </button>
+
+                <!-- Кнопка календаря активности -->
+                <button class="nav-button active" id="nav-calendar" data-slide="1" title="Календарь активности">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="8" width="6" height="6" rx="1" class="activity-block-low"/>
+                        <rect x="10" y="8" width="6" height="6" rx="1" class="activity-block-medium"/>
+                        <rect x="18" y="8" width="6" height="6" rx="1" class="activity-block-high"/>
+                        <rect x="2" y="16" width="6" height="6" rx="1" class="activity-block-high"/>
+                        <rect x="10" y="16" width="6" height="6" rx="1" class="activity-block-low"/>
+                        <rect x="18" y="16" width="6" height="6" rx="1" class="activity-block-medium"/>
+                    </svg>
+                </button>
+
+                <!-- Кнопка задач -->
+                <button class="nav-button" id="nav-tasks" data-slide="2" title="Задания">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Левый верхний куб - выполнен -->
+                        <rect x="2" y="2" width="9" height="9" rx="2" class="task-cube-done"/>
+                        <path d="M4.5 6.5L6.5 8.5L8.5 5.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <!-- Правый верхний куб - выполнен -->
+                        <rect x="13" y="2" width="9" height="9" rx="2" class="task-cube-done"/>
+                        <path d="M15.5 6.5L17.5 8.5L19.5 5.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <!-- Левый нижний куб - выполнен -->
+                        <rect x="2" y="13" width="9" height="9" rx="2" class="task-cube-done"/>
+                        <path d="M4.5 17.5L6.5 19.5L8.5 16.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <!-- Правый нижний куб - не выполнен -->
+                        <rect x="13" y="13" width="9" height="9" rx="2" class="task-cube-pending"/>
+                    </svg>
+                </button>
             </div>
         </div>
 
@@ -5217,6 +5345,57 @@
                 container.style.transform = `translateX(${offset * 110}%)`;
                 container.style.zIndex = index === currentSlide ? '2' : '1';
             });
+
+            // ===== НАВИГАЦИОННЫЕ КНОПКИ =====
+            const navButtons = document.querySelectorAll('.nav-button');
+
+            // Функция для обновления активного состояния кнопок
+            function updateNavButtonsActive() {
+                navButtons.forEach(btn => {
+                    const slideIndex = parseInt(btn.dataset.slide);
+                    if (slideIndex === currentSlide) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // Инициализация активного состояния
+            updateNavButtonsActive();
+
+            // Обработчики кликов для навигационных кнопок
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetSlide = parseInt(button.dataset.slide);
+
+                    // Если уже на этом слайде - вибрация и shake анимация
+                    if (targetSlide === currentSlide) {
+                        // Вибрация
+                        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                            window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                        }
+
+                        // Shake анимация
+                        button.classList.add('shake');
+                        setTimeout(() => {
+                            button.classList.remove('shake');
+                        }, 300);
+                    } else {
+                        // Переключение слайда
+                        switchSlide(targetSlide);
+                        // Обновляем активное состояние кнопок
+                        updateNavButtonsActive();
+                    }
+                });
+            });
+
+            // Обновляем функцию switchSlide для обновления кнопок
+            const originalSwitchSlide = switchSlide;
+            switchSlide = function(targetSlide) {
+                originalSwitchSlide(targetSlide);
+                updateNavButtonsActive();
+            };
 
             // Элементы, с которых НЕ должен начинаться свайп
             const noSwipeElements = new Set([
