@@ -964,24 +964,23 @@
         }
 
         .exercise-video-overlay {
-            display: none;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.7);
             z-index: 9999;
             cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            will-change: opacity;
         }
 
         .exercise-video-overlay.show {
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            opacity: 1;
+            visibility: visible;
         }
 
         .exercise-video-container {
@@ -992,16 +991,12 @@
             border-bottom: none;
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
             cursor: default;
-            animation: slideUpVideo 0.3s ease-out;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes slideUpVideo {
-            from {
-                transform: translateY(100%);
-            }
-            to {
-                transform: translateY(0);
-            }
+        .exercise-video-overlay.show .exercise-video-container {
+            transform: translateY(0);
         }
 
         .exercise-video-player {
@@ -3074,13 +3069,12 @@
                         text: 'Отжимания',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-2-1', text: 'Отжимания - 1 подход: 15 раз', completed: false },
-                            { id: 'ex-2-2', text: 'Отжимания - 2 подход: 12 раз', completed: false },
-                            { id: 'ex-2-3', text: 'Отжимания - 3 подход: 10 раз', completed: false },
+                            { id: 'ex-2-1', text: 'Отжимания - 1 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-2-2', text: 'Отжимания - 2 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-2-3', text: 'Отжимания - 3 подход: 10 раз', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-2-4', text: 'Отдых между подходами - 1 минута', isRest: true, completed: false },
-                            { id: 'ex-2-5', text: 'Отжимания - 4 подход: макс. количество раз', completed: false }
+                            { id: 'ex-2-5', text: 'Отжимания - 4 подход: макс. количество раз', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3088,12 +3082,11 @@
                         text: 'Пресс',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-3-1', text: 'Классические скручивания - 20 раз', completed: false },
-                            { id: 'ex-3-2', text: 'Подъём ног лёжа - 15 раз', completed: false },
-                            { id: 'ex-3-3', text: 'Планка - 30 секунд', completed: false },
-                            { id: 'ex-3-4', text: 'Боковая планка - 20 секунд каждую сторону', completed: false }
+                            { id: 'ex-3-1', text: 'Классические скручивания - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-3-2', text: 'Подъём ног лёжа - 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-3-3', text: 'Планка - 30 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-3-4', text: 'Боковая планка - 20 секунд каждую сторону', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3101,12 +3094,11 @@
                         text: 'Приседания',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-4-1', text: 'Приседания - 1 подход: 20 раз', completed: false },
-                            { id: 'ex-4-2', text: 'Приседания - 2 подход: 15 раз', completed: false },
+                            { id: 'ex-4-1', text: 'Приседания - 1 подход: 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-4-2', text: 'Приседания - 2 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-4-3', text: 'Отдых - 1 минута', isRest: true, completed: false },
-                            { id: 'ex-4-4', text: 'Приседания - 3 подход: макс. количество раз', completed: false }
+                            { id: 'ex-4-4', text: 'Приседания - 3 подход: макс. количество раз', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3148,12 +3140,11 @@
                         text: 'Тяга гантелей',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-8-1', text: 'Тяга гантелей в наклоне - 1 подход: 12 раз', completed: false },
-                            { id: 'ex-8-2', text: 'Тяга гантелей в наклоне - 2 подход: 10 раз', completed: false },
+                            { id: 'ex-8-1', text: 'Тяга гантелей в наклоне - 1 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-8-2', text: 'Тяга гантелей в наклоне - 2 подход: 10 раз', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-8-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
-                            { id: 'ex-8-4', text: 'Тяга гантелей в наклоне - 3 подход: 8 раз', completed: false }
+                            { id: 'ex-8-4', text: 'Тяга гантелей в наклоне - 3 подход: 8 раз', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3161,12 +3152,11 @@
                         text: 'Пресс',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-9-1', text: 'Скручивания с поворотом - 15 раз каждую сторону', completed: false },
-                            { id: 'ex-9-2', text: 'Велосипед - 20 раз', completed: false },
-                            { id: 'ex-9-3', text: 'Обратные скручивания - 15 раз', completed: false },
-                            { id: 'ex-9-4', text: 'Планка - 40 секунд', completed: false }
+                            { id: 'ex-9-1', text: 'Скручивания с поворотом - 15 раз каждую сторону', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-9-2', text: 'Велосипед - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-9-3', text: 'Обратные скручивания - 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-9-4', text: 'Планка - 40 секунд', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3174,12 +3164,11 @@
                         text: 'Выпады',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-10-1', text: 'Выпады вперёд - 10 раз каждая нога', completed: false },
-                            { id: 'ex-10-2', text: 'Выпады назад - 8 раз каждая нога', completed: false },
+                            { id: 'ex-10-1', text: 'Выпады вперёд - 10 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-10-2', text: 'Выпады назад - 8 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-10-3', text: 'Отдых - 1 минута', isRest: true, completed: false },
-                            { id: 'ex-10-4', text: 'Боковые выпады - 8 раз каждая сторона', completed: false }
+                            { id: 'ex-10-4', text: 'Боковые выпады - 8 раз каждая сторона', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3235,13 +3224,12 @@
                         text: 'Отжимания',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-15-1', text: 'Широкие отжимания - 1 подход: 12 раз', completed: false },
-                            { id: 'ex-15-2', text: 'Обычные отжимания - 2 подход: 15 раз', completed: false },
+                            { id: 'ex-15-1', text: 'Широкие отжимания - 1 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-15-2', text: 'Обычные отжимания - 2 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-15-3', text: 'Отдых - 2 минуты', isRest: true, completed: false },
-                            { id: 'ex-15-4', text: 'Узкие отжимания - 3 подход: 10 раз', completed: false },
-                            { id: 'ex-15-5', text: 'Отжимания с хлопком - макс. количество', completed: false }
+                            { id: 'ex-15-4', text: 'Узкие отжимания - 3 подход: 10 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-15-5', text: 'Отжимания с хлопком - макс. количество', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3249,12 +3237,11 @@
                         text: 'Обратные отжимания',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-16-1', text: 'Обратные отжимания от стула - 1 подход: 12 раз', completed: false },
-                            { id: 'ex-16-2', text: 'Обратные отжимания от стула - 2 подход: 10 раз', completed: false },
+                            { id: 'ex-16-1', text: 'Обратные отжимания от стула - 1 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-16-2', text: 'Обратные отжимания от стула - 2 подход: 10 раз', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-16-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
-                            { id: 'ex-16-4', text: 'Обратные отжимания от пола - 3 подход: 8 раз', completed: false }
+                            { id: 'ex-16-4', text: 'Обратные отжимания от пола - 3 подход: 8 раз', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3262,12 +3249,11 @@
                         text: 'Пресс с весом',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-17-1', text: 'Скручивания с весом - 15 раз', completed: false },
-                            { id: 'ex-17-2', text: 'Русский твист с весом - 20 раз', completed: false },
-                            { id: 'ex-17-3', text: 'Планка с весом - 45 секунд', completed: false },
-                            { id: 'ex-17-4', text: 'Боковая планка с весом - 25 секунд каждая сторона', completed: false }
+                            { id: 'ex-17-1', text: 'Скручивания с весом - 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-17-2', text: 'Русский твист с весом - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-17-3', text: 'Планка с весом - 45 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-17-4', text: 'Боковая планка с весом - 25 секунд каждая сторона', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3275,11 +3261,10 @@
                         text: 'Кардио финиши',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-18-1', text: 'Бёрпи - 3 подхода по 10 раз', completed: false },
+                            { id: 'ex-18-1', text: 'Бёрпи - 3 подхода по 10 раз', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-18-2', text: 'Отдых между подходами - 60 секунд', isRest: true, completed: false },
-                            { id: 'ex-18-3', text: 'Скалолаз - 3 подхода по 20 раз', completed: false }
+                            { id: 'ex-18-3', text: 'Скалолаз - 3 подхода по 20 раз', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     }
                 ],
@@ -3300,13 +3285,12 @@
                         text: 'Приседания',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-20-1', text: 'Классические приседания - 1 подход: 20 раз', completed: false },
-                            { id: 'ex-20-2', text: 'Приседания с широкой постановкой - 2 подход: 15 раз', completed: false },
+                            { id: 'ex-20-1', text: 'Классические приседания - 1 подход: 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-20-2', text: 'Приседания с широкой постановкой - 2 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-20-3', text: 'Отдых - 2 минуты', isRest: true, completed: false },
-                            { id: 'ex-20-4', text: 'Приседания плие - 3 подход: 12 раз', completed: false },
-                            { id: 'ex-20-5', text: 'Приседания на одной ноге - 6 раз каждая нога', completed: false }
+                            { id: 'ex-20-4', text: 'Приседания плие - 3 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-20-5', text: 'Приседания на одной ноге - 6 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3314,12 +3298,11 @@
                         text: 'Планка',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-21-1', text: 'Классическая планка - 45 секунд', completed: false },
-                            { id: 'ex-21-2', text: 'Боковая планка левая - 30 секунд', completed: false },
-                            { id: 'ex-21-3', text: 'Боковая планка правая - 30 секунд', completed: false },
-                            { id: 'ex-21-4', text: 'Планка с подъёмом ноги - 20 секунд каждая нога', completed: false }
+                            { id: 'ex-21-1', text: 'Классическая планка - 45 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-21-2', text: 'Боковая планка левая - 30 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-21-3', text: 'Боковая планка правая - 30 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-21-4', text: 'Планка с подъёмом ноги - 20 секунд каждая нога', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3327,12 +3310,11 @@
                         text: 'Выпады с весом',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-22-1', text: 'Выпады с гантелями - 10 раз каждая нога', completed: false },
-                            { id: 'ex-22-2', text: 'Обратные выпады - 12 раз каждая нога', completed: false },
+                            { id: 'ex-22-1', text: 'Выпады с гантелями - 10 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-22-2', text: 'Обратные выпады - 12 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-22-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
-                            { id: 'ex-22-4', text: 'Болгарские выпады - 8 раз каждая нога', completed: false }
+                            { id: 'ex-22-4', text: 'Болгарские выпады - 8 раз каждую ногу', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3340,11 +3322,10 @@
                         text: 'Ягодичные упражнения',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-23-1', text: 'Ягодичный мост - 20 раз', completed: false },
-                            { id: 'ex-23-2', text: 'Ягодичный мост с одной ногой - 10 раз каждая нога', completed: false },
-                            { id: 'ex-23-3', text: 'Махи ногой назад стоя - 15 раз каждая нога', completed: false }
+                            { id: 'ex-23-1', text: 'Ягодичный мост - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-23-2', text: 'Ягодичный мост с одной ногой - 10 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-23-3', text: 'Махи ногой назад стоя - 15 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3398,13 +3379,12 @@
                         text: 'Отжимания на время',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-28-1', text: 'Отжимания за 60 секунд - максимальное количество', completed: false },
+                            { id: 'ex-28-1', text: 'Отжимания за 60 секунд - максимальное количество', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-28-2', text: 'Отдых - 2 минуты', isRest: true, completed: false },
-                            { id: 'ex-28-3', text: 'Отжимания за 45 секунд - максимальное количество', completed: false },
+                            { id: 'ex-28-3', text: 'Отжимания за 45 секунд - максимальное количество', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-28-4', text: 'Отдых - 90 секунд', isRest: true, completed: false },
-                            { id: 'ex-28-5', text: 'Отжимания за 30 секунд - максимальное количество', completed: false }
+                            { id: 'ex-28-5', text: 'Отжимания за 30 секунд - максимальное количество', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3412,11 +3392,10 @@
                         text: 'Пресс',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-29-1', text: 'Альпинист - 3 подхода по 20 раз', completed: false },
-                            { id: 'ex-29-2', text: 'Ножницы - 3 подхода по 25 раз', completed: false },
-                            { id: 'ex-29-3', text: 'Планка - 60 секунд', completed: false }
+                            { id: 'ex-29-1', text: 'Альпинист - 3 подхода по 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-29-2', text: 'Ножницы - 3 подхода по 25 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-29-3', text: 'Планка - 60 секунд', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3460,12 +3439,11 @@
                         text: 'Лёгкая тренировка',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-33-1', text: 'Разогрев - 3 минуты', completed: false },
-                            { id: 'ex-33-2', text: 'Отжимания - 2 подхода по 15 раз', completed: false },
-                            { id: 'ex-33-3', text: 'Приседания - 2 подхода по 20 раз', completed: false },
-                            { id: 'ex-33-4', text: 'Планка - 45 секунд', completed: false }
+                            { id: 'ex-33-1', text: 'Разогрев - 3 минуты', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-33-2', text: 'Отжимания - 2 подхода по 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-33-3', text: 'Приседания - 2 подхода по 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-33-4', text: 'Планка - 45 секунд', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3505,13 +3483,12 @@
                         text: 'Финальный тест',
                         completed: false,
                         completedAt: null,
-                        videoUrl: 'отжимание.mp4',
                         exercises: [
-                            { id: 'ex-37-1', text: 'Отжимания - макс. количество за 2 минуты', completed: false },
+                            { id: 'ex-37-1', text: 'Отжимания - макс. количество за 2 минуты', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-37-2', text: 'Отдых - 3 минуты', isRest: true, completed: false },
-                            { id: 'ex-37-3', text: 'Приседания - макс. количество за 2 минуты', completed: false },
+                            { id: 'ex-37-3', text: 'Приседания - макс. количество за 2 минуты', completed: false, videoUrl: 'отжимание.mp4' },
                             { id: 'ex-37-4', text: 'Отдых - 2 минуты', isRest: true, completed: false },
-                            { id: 'ex-37-5', text: 'Планка - максимальное время', completed: false }
+                            { id: 'ex-37-5', text: 'Планка - максимальное время', completed: false, videoUrl: 'отжимание.mp4' }
                         ]
                     },
                     {
@@ -3765,24 +3742,34 @@
 
         // Открыть видео с техникой упражнения
         function openExerciseVideo() {
-            console.log('openExerciseVideo called', { currentTask, videoUrl: currentTask?.videoUrl });
-            if (!currentTask || !currentTask.videoUrl) {
-                console.log('No currentTask or videoUrl');
+            console.log('openExerciseVideo called', { currentTask, currentExerciseIndex });
+            if (!currentTask || !currentTask.exercises || currentExerciseIndex < 0) {
+                console.log('No currentTask or invalid exercise index');
+                return;
+            }
+
+            const currentExercise = currentTask.exercises[currentExerciseIndex];
+            if (!currentExercise || !currentExercise.videoUrl) {
+                console.log('No currentExercise or no videoUrl');
                 return;
             }
 
             const videoOverlay = document.getElementById('exercise-video-overlay');
             const videoPlayer = document.getElementById('exercise-video-player');
 
-            console.log('Elements found:', { videoOverlay, videoPlayer });
+            console.log('Elements found:', { videoOverlay, videoPlayer, videoUrl: currentExercise.videoUrl });
 
-            // Устанавливаем источник видео и перезагружаем
-            videoPlayer.src = currentTask.videoUrl;
+            // Устанавливаем источник видео
+            videoPlayer.src = currentExercise.videoUrl;
             videoPlayer.load();
 
-            // Показываем оверлей и запускаем воспроизведение
+            // Показываем оверлей
             videoOverlay.classList.add('show');
-            videoPlayer.play().catch(e => console.log('Autoplay prevented:', e));
+
+            // Запускаем воспроизведение с небольшой задержкой для плавности
+            requestAnimationFrame(() => {
+                videoPlayer.play().catch(e => console.log('Autoplay prevented:', e));
+            });
         }
 
         // Закрыть видео с техникой упражнения
@@ -3815,9 +3802,9 @@
             // Текст упражнения
             document.getElementById('exercise-text').textContent = exercise.text;
 
-            // Показываем кнопку видео если у задачи есть videoUrl
+            // Показываем кнопку видео если у упражнения есть videoUrl
             const videoButton = document.getElementById('exercise-video-button');
-            videoButton.style.display = currentTask.videoUrl ? 'inline-flex' : 'none';
+            videoButton.style.display = exercise.videoUrl ? 'inline-flex' : 'none';
 
             // Обновить точки
             renderExerciseDots();
@@ -5596,7 +5583,7 @@
                                             if (t.exercises && t.exercises.length > 0) {
                                                 taskStr += '\\n   Упражнения:';
                                                 t.exercises.forEach((ex, exIndex) => {
-                                                    taskStr += `\\n      ${exIndex + 1}. ${ex.completed ? '✅' : '⏳'} ${ex.text}${ex.isRest ? ' (отдых)' : ''}`;
+                                                    taskStr += `\\n      ${exIndex + 1}. ${ex.completed ? '✅' : '⏳'} ${ex.videoUrl ? '🎥 ' : ''}${ex.text}${ex.isRest ? ' (отдых)' : ''}`;
                                                 });
                                             }
                                             return taskStr;
