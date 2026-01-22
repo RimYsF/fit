@@ -5426,14 +5426,17 @@
             // ===== PAN GESTURE (интерактивный свайп) =====
             let touchStartX = 0;
             let touchStartY = 0;
+            let touchStartTime = 0;
             let isPanning = false;
             let currentTranslate = 0; // Текущее смещение в пикселях
-            const SNAP_THRESHOLD = 40; // Порог для переключения (в пикселях)
+            const SNAP_THRESHOLD = 80; // Порог для переключения (в пикселях)
+            const FAST_SWIPE_TIME = 300; // Порог времени для быстрого свайпа (мс)
 
             activitySlider.addEventListener('touchstart', (e) => {
                 if (!canSwipeFrom(e.target)) return;
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
+                touchStartTime = Date.now();
                 isPanning = false;
                 currentTranslate = 0;
                 // Убираем transition для мгновенного отклика
@@ -5495,12 +5498,17 @@
                 });
 
                 const diff = currentTranslate;
+                const swipeTime = Date.now() - touchStartTime;
                 touchStartX = 0;
                 touchStartY = 0;
                 isPanning = false;
 
-                // Проверяем порог для переключения
-                if (Math.abs(diff) > SNAP_THRESHOLD) {
+                // Быстрый свайп (< 0.3 сек) → переключаем всегда
+                // Медленный свайп (>= 0.3 сек) → проверяем порог расстояния
+                const isFastSwipe = swipeTime < FAST_SWIPE_TIME;
+                const passedThreshold = Math.abs(diff) > SNAP_THRESHOLD;
+
+                if (isFastSwipe || passedThreshold) {
                     if (diff < 0) {
                         // Pan влево → следующий слайд
                         if (currentSlide < 2) switchSlide(currentSlide + 1);
@@ -5511,15 +5519,17 @@
                         else switchSlide(currentSlide); // Возврат на место
                     }
                 } else {
-                    // Не дошли до порога - возвращаемся на текущий слайд
+                    // Не дошли до порога и не быстрый свайп - возвращаемся на текущий слайд
                     switchSlide(currentSlide);
                 }
             });
 
             // Свайп мышью для десктопа (традиционный)
             let mouseStartX = 0;
+            let mouseStartTime = 0;
             let mouseIsDown = false;
             let mouseIsSwiping = false;
+            const MOUSE_SNAP_THRESHOLD = 50; // Порог для переключения мышью
 
             activitySlider.addEventListener('mousedown', (e) => {
                 if (e.target.classList.contains('activity-cell') ||
@@ -5529,6 +5539,7 @@
                     return;
                 }
                 mouseStartX = e.clientX;
+                mouseStartTime = Date.now();
                 mouseIsDown = true;
                 mouseIsSwiping = false;
             });
@@ -5545,7 +5556,13 @@
                 if (!mouseIsDown) return;
                 if (mouseIsSwiping) {
                     const diff = mouseStartX - e.clientX;
-                    if (Math.abs(diff) > 25) {
+                    const swipeTime = Date.now() - mouseStartTime;
+                    const isFastSwipe = swipeTime < FAST_SWIPE_TIME;
+                    const passedThreshold = Math.abs(diff) > MOUSE_SNAP_THRESHOLD;
+
+                    // Быстрый свайп (< 0.3 сек) → переключаем всегда
+                    // Медленный свайп (>= 0.3 сек) → проверяем порог расстояния
+                    if (isFastSwipe || passedThreshold) {
                         if (diff > 0) {
                             if (currentSlide < 2) switchSlide(currentSlide + 1);
                         } else {
