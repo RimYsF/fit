@@ -5536,7 +5536,7 @@
             activitySlider.addEventListener('mousemove', (e) => {
                 if (!mouseIsDown) return;
                 const deltaX = Math.abs(e.clientX - mouseStartX);
-                if (deltaX > 20) {
+                if (deltaX > 10) {
                     mouseIsSwiping = true;
                 }
             });
@@ -5545,7 +5545,7 @@
                 if (!mouseIsDown) return;
                 if (mouseIsSwiping) {
                     const diff = mouseStartX - e.clientX;
-                    if (Math.abs(diff) > 50) {
+                    if (Math.abs(diff) > 25) {
                         if (diff > 0) {
                             if (currentSlide < 2) switchSlide(currentSlide + 1);
                         } else {
