@@ -5425,13 +5425,15 @@
 
             // ===== PAN GESTURE (интерактивный свайп) =====
             let touchStartX = 0;
+            let touchStartY = 0;
             let isPanning = false;
             let currentTranslate = 0; // Текущее смещение в пикселях
-            const SNAP_THRESHOLD = 80; // Порог для переключения (в пикселях)
+            const SNAP_THRESHOLD = 40; // Порог для переключения (в пикселях)
 
             activitySlider.addEventListener('touchstart', (e) => {
                 if (!canSwipeFrom(e.target)) return;
                 touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
                 isPanning = false;
                 currentTranslate = 0;
                 // Убираем transition для мгновенного отклика
@@ -5443,7 +5445,14 @@
             activitySlider.addEventListener('touchmove', (e) => {
                 if (!touchStartX) return;
                 const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
                 const deltaX = currentX - touchStartX;
+                const deltaY = currentY - touchStartY;
+
+                // Если вертикальное движение больше горизонтального - это скролл, игнорируем
+                if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                    return;
+                }
 
                 // Ограничиваем pan по краям
                 const canGoLeft = currentSlide < 2;
@@ -5476,6 +5485,7 @@
             activitySlider.addEventListener('touchend', (e) => {
                 if (!isPanning) {
                     touchStartX = 0;
+                    touchStartY = 0;
                     return;
                 }
 
@@ -5486,6 +5496,7 @@
 
                 const diff = currentTranslate;
                 touchStartX = 0;
+                touchStartY = 0;
                 isPanning = false;
 
                 // Проверяем порог для переключения
