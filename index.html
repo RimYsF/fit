@@ -5326,6 +5326,8 @@
                 currentSlide = targetSlide;
                 calendarContainers.forEach((container, index) => {
                     const offset = index - currentSlide;
+                    // Добавляем transition для плавной анимации (если не в процессе panning)
+                    container.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
                     container.style.transform = `translateX(${offset * 110}%)`;
                     container.style.zIndex = index === currentSlide ? '2' : '1';
                 });
@@ -5421,48 +5423,92 @@
                 return true;
             }
 
-            // Обработчики для touch свайпов
+            // ===== PAN GESTURE (интерактивный свайп) =====
             let touchStartX = 0;
-            let isSwiping = false;
+            let isPanning = false;
+            let currentTranslate = 0; // Текущее смещение в пикселях
+            const SNAP_THRESHOLD = 80; // Порог для переключения (в пикселях)
 
             activitySlider.addEventListener('touchstart', (e) => {
                 if (!canSwipeFrom(e.target)) return;
                 touchStartX = e.touches[0].clientX;
-                isSwiping = false;
+                isPanning = false;
+                currentTranslate = 0;
+                // Убираем transition для мгновенного отклика
+                calendarContainers.forEach(container => {
+                    container.style.transition = 'none';
+                });
             }, { passive: true });
 
             activitySlider.addEventListener('touchmove', (e) => {
                 if (!touchStartX) return;
-                const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
-                if (deltaX > 20) {
-                    isSwiping = true;
+                const currentX = e.touches[0].clientX;
+                const deltaX = currentX - touchStartX;
+
+                // Ограничиваем pan по краям
+                const canGoLeft = currentSlide < 2;
+                const canGoRight = currentSlide > 0;
+
+                // Блокируем pan если пытаемся выйти за границы
+                if ((deltaX > 0 && !canGoRight) || (deltaX < 0 && !canGoLeft)) {
+                    return;
+                }
+
+                if (Math.abs(deltaX) > 5) {
+                    isPanning = true;
                     e.preventDefault();
+                }
+
+                if (isPanning) {
+                    currentTranslate = deltaX;
+                    // Применяем трансформацию в реальном времени
+                    calendarContainers.forEach((container, index) => {
+                        const baseOffset = index - currentSlide;
+                        const baseTranslate = baseOffset * 110; // в процентах
+                        const viewportWidth = window.innerWidth;
+                        const panPercent = (currentTranslate / viewportWidth) * 100;
+
+                        container.style.transform = `translateX(calc(${baseTranslate}% + ${panPercent}%))`;
+                    });
                 }
             }, { passive: false });
 
             activitySlider.addEventListener('touchend', (e) => {
-                if (!isSwiping) {
+                if (!isPanning) {
                     touchStartX = 0;
                     return;
                 }
-                const diff = touchStartX - e.changedTouches[0].clientX;
-                touchStartX = 0;
-                isSwiping = false;
 
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                        // Свайп влево → следующий слайд
+                // Возвращаем transition для плавной анимации
+                calendarContainers.forEach(container => {
+                    container.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                });
+
+                const diff = currentTranslate;
+                touchStartX = 0;
+                isPanning = false;
+
+                // Проверяем порог для переключения
+                if (Math.abs(diff) > SNAP_THRESHOLD) {
+                    if (diff < 0) {
+                        // Pan влево → следующий слайд
                         if (currentSlide < 2) switchSlide(currentSlide + 1);
+                        else switchSlide(currentSlide); // Возврат на место
                     } else {
-                        // Свайп вправо → предыдущий слайд
+                        // Pan вправо → предыдущий слайд
                         if (currentSlide > 0) switchSlide(currentSlide - 1);
+                        else switchSlide(currentSlide); // Возврат на место
                     }
+                } else {
+                    // Не дошли до порога - возвращаемся на текущий слайд
+                    switchSlide(currentSlide);
                 }
             });
 
-            // Свайп мышью для десктопа
+            // Свайп мышью для десктопа (традиционный)
             let mouseStartX = 0;
             let mouseIsDown = false;
+            let mouseIsSwiping = false;
 
             activitySlider.addEventListener('mousedown', (e) => {
                 if (e.target.classList.contains('activity-cell') ||
@@ -5473,19 +5519,20 @@
                 }
                 mouseStartX = e.clientX;
                 mouseIsDown = true;
+                mouseIsSwiping = false;
             });
 
             activitySlider.addEventListener('mousemove', (e) => {
                 if (!mouseIsDown) return;
                 const deltaX = Math.abs(e.clientX - mouseStartX);
                 if (deltaX > 20) {
-                    isSwiping = true;
+                    mouseIsSwiping = true;
                 }
             });
 
             activitySlider.addEventListener('mouseup', (e) => {
                 if (!mouseIsDown) return;
-                if (isSwiping) {
+                if (mouseIsSwiping) {
                     const diff = mouseStartX - e.clientX;
                     if (Math.abs(diff) > 50) {
                         if (diff > 0) {
@@ -5496,12 +5543,12 @@
                     }
                 }
                 mouseIsDown = false;
-                isSwiping = false;
+                mouseIsSwiping = false;
             });
 
             activitySlider.addEventListener('mouseleave', () => {
                 mouseIsDown = false;
-                isSwiping = false;
+                mouseIsSwiping = false;
             });
 
             // Устанавливаем обработчики для модального окна
