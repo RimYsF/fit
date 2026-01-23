@@ -837,7 +837,8 @@
         .exercise-card:not(.show) .exercise-check-btn,
         .exercise-card:not(.show) .exercise-check-svg,
         .exercise-card:not(.show) .exercise-check-icon,
-        .exercise-card:not(.show) .exercise-card-header {
+        .exercise-card:not(.show) .exercise-card-header,
+        .exercise-card:not(.show) .exercise-repost-btn {
             transform: none !important;
             will-change: auto !important;
         }
@@ -1154,6 +1155,63 @@
 
         .exercise-check-btn:active {
             transform: translate3d(0, 1px, 0) scale(0.95);
+        }
+
+        /* Кнопка репоста упражнения в AI */
+        .exercise-repost-btn {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            background: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translate3d(0, 0, 0);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            transition: all 0.1s;
+        }
+
+        .exercise-repost-btn:hover {
+            transform: translate3d(-1px, -2px, 0);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        .exercise-repost-btn:active {
+            transform: translate3d(1px, 1px, 0);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .exercise-repost-btn img {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+
+        .repost-send-icon {
+            bottom: 8px;
+            right: 12px;
+            z-index: 1;
+            width: 36px;
+            height: 36px;
+        }
+
+        .repost-ai-icon {
+            top: 8px;
+            left: 12px;
+            z-index: 2;
+            width: 9px;
+            height: 9px;
+        }
+
+        .exercise-repost-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--neobrut-gray);
         }
 
         /* Индикатор количества упражнений (например, 2/5) */
@@ -2256,6 +2314,65 @@
             border: 1px solid var(--neobrut-black);
         }
 
+        /* Индикатор репоста над полем ввода чата */
+        .chat-repost-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: var(--neobrut-yellow);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 10px;
+            margin: 0 12px 8px 12px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .repost-close-btn {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            background: var(--neobrut-black);
+            color: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            flex-shrink: 0;
+            transition: all 0.1s;
+        }
+
+        .repost-close-btn:hover {
+            background: var(--neobrut-red);
+            transform: translate(-1px, -1px);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .repost-close-btn:active {
+            transform: translate(0, 0);
+            box-shadow: none;
+        }
+
+        .repost-indicator-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .repost-indicator-text {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--neobrut-black);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         /* Область ввода */
         .chat-input-area {
             background: transparent;
@@ -3032,6 +3149,12 @@
                         <div class="exercise-dots" id="exercise-dots">
                             <!-- Точки будут добавлены динамически -->
                         </div>
+                        <div class="exercise-repost-btn" id="exercise-repost-btn" title="Переслать в AI">
+                            <img src="https://img.icons8.com/?size=100&id=2Gttw0aekoFr&format=png&color=000000"
+                                 class="repost-send-icon" alt="Send">
+                            <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000"
+                                 class="repost-ai-icon" alt="AI">
+                        </div>
                         <div class="exercise-check-btn" id="exercise-check-btn">
                             <svg class="exercise-check-svg" viewBox="0 0 36 36">
                                 <defs>
@@ -3083,6 +3206,12 @@
                             </div>
                         </div>
                         <div class="chat-input-area">
+                            <div class="chat-repost-indicator" id="chat-repost-indicator" style="display: none;">
+                                <button class="repost-close-btn" id="repost-close-btn" title="Удалить">×</button>
+                                <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000"
+                                     class="repost-indicator-icon" alt="AI">
+                                <span class="repost-indicator-text" id="repost-indicator-text"></span>
+                            </div>
                             <div class="chat-input-row">
                                 <input type="text" class="chat-input-neobrut" id="slider-chat-input" placeholder="Спроси меня что угодно...">
                                 <button class="chat-send-neobrut" id="slider-chat-send">
@@ -3187,6 +3316,7 @@
         let currentTask = null; // Текущая задача с упражнениями
         let currentExerciseIndex = 0; // Индекс текущего упражнения
         let exerciseCardVisible = false; // Видна ли карточка упражнения
+        let activeRepost = null; // Активный репост: { taskId, exerciseId, day, taskName, exerciseText }
 
 
         // Инициализация todo-списков с упражнениями
@@ -3836,6 +3966,17 @@
             return null;
         }
 
+        // Найти день (1-7) для задачи по ID
+        function findDayForTask(taskId) {
+            for (let day = 1; day <= 7; day++) {
+                if (todoData[day]) {
+                    const task = todoData[day].find(t => t.id === taskId);
+                    if (task) return day;
+                }
+            }
+            return null;
+        }
+
         // Открыть карточку упражнения
         function openExerciseCard(taskId) {
             const task = findTaskById(taskId);
@@ -3857,6 +3998,9 @@
 
             // Настроить свайп навигацию
             setupExerciseCardSwipe();
+
+            // Обновить состояние кнопки репоста
+            updateRepostButton();
         }
 
         // Закрыть карточку упражнения
@@ -3999,6 +4143,9 @@
                 checkBtn.classList.remove('completed');
                 checkIcon.textContent = '✓';
             }
+
+            // Обновить состояние кнопки репоста
+            updateRepostButton();
         }
 
         // Переключить статус выполнения упражнения
@@ -4023,6 +4170,9 @@
             updateExerciseCheckButton();
             renderExerciseDots();
 
+            // Обновляем виджеты дней для показа прогресса
+            renderTaskDayWidgets();
+
             // Если упражнение выполнено, перейти к следующему
             if (exercise.completed && !areAllExercisesCompleted(currentTask)) {
                 setTimeout(() => {
@@ -4038,6 +4188,96 @@
             }
         }
 
+        // ===== ФУНКЦИИ РЕПОСТА УПРАЖНЕНИЙ В AI =====
+
+        // Переслать упражнение в AI
+        function repostExercise() {
+            if (!currentTask) return;
+            const exercise = currentTask.exercises[currentExerciseIndex];
+            if (!exercise) return;
+
+            const day = findDayForTask(currentTask.id);
+            if (!day) return;
+
+            // Сохраняем информацию о репосте (только 1 активный)
+            activeRepost = {
+                taskId: currentTask.id,
+                exerciseId: exercise.id,
+                day: day,
+                taskName: currentTask.text,
+                exerciseText: exercise.text
+            };
+
+            localStorage.setItem('fitTrackerActiveRepost', JSON.stringify(activeRepost));
+            updateRepostIndicator();
+            updateRepostButton();
+            switchSlide(0);
+
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        // Удалить активный репост
+        function clearRepost() {
+            activeRepost = null;
+            localStorage.removeItem('fitTrackerActiveRepost');
+            updateRepostIndicator();
+            updateRepostButton();
+
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+            }
+        }
+
+        // Обновить индикатор репоста в чате
+        function updateRepostIndicator() {
+            const indicator = document.getElementById('chat-repost-indicator');
+            const text = document.getElementById('repost-indicator-text');
+
+            if (!activeRepost) {
+                indicator.style.display = 'none';
+                return;
+            }
+
+            // Формат: "День 1 • Разминка • Отжимания"
+            text.textContent = `День ${activeRepost.day} • ${activeRepost.taskName} • ${activeRepost.exerciseText}`;
+            indicator.style.display = 'flex';
+        }
+
+        // Обновить состояние кнопки репоста
+        function updateRepostButton() {
+            const repostBtn = document.getElementById('exercise-repost-btn');
+            if (!repostBtn || !currentTask) return;
+
+            const exercise = currentTask.exercises[currentExerciseIndex];
+            const isCurrentReposted = activeRepost &&
+                activeRepost.taskId === currentTask.id &&
+                activeRepost.exerciseId === exercise.id;
+
+            if (isCurrentReposted) {
+                repostBtn.classList.add('disabled');
+                repostBtn.title = 'Уже переслано';
+            } else {
+                repostBtn.classList.remove('disabled');
+                repostBtn.title = 'Переслать в AI';
+            }
+        }
+
+        // Загрузить сохраненный репост при старте
+        function loadActiveRepost() {
+            const saved = localStorage.getItem('fitTrackerActiveRepost');
+            if (saved) {
+                try {
+                    activeRepost = JSON.parse(saved);
+                    updateRepostIndicator();
+                } catch (e) {
+                    console.error('Error loading active repost:', e);
+                    activeRepost = null;
+                }
+            }
+        }
+
         // Перейти к следующему упражнению
         function nextExercise() {
             if (!currentTask) return;
@@ -4045,6 +4285,7 @@
             if (currentExerciseIndex < currentTask.exercises.length - 1) {
                 currentExerciseIndex++;
                 renderExerciseCard();
+                updateRepostButton();
             }
         }
 
@@ -4055,6 +4296,7 @@
             if (currentExerciseIndex > 0) {
                 currentExerciseIndex--;
                 renderExerciseCard();
+                updateRepostButton();
             }
         }
 
@@ -4081,7 +4323,7 @@
 
             const handleTouchStart = (e) => {
                 // Игнорируем если кликнули на кнопки или интерактивные элементы
-                if (e.target.closest('.exercise-card-close') || e.target.closest('.exercise-check-btn')) {
+                if (e.target.closest('.exercise-card-close') || e.target.closest('.exercise-check-btn') || e.target.closest('.exercise-repost-btn')) {
                     return;
                 }
                 exerciseSwipeState.startX = e.touches[0].clientX;
@@ -4116,7 +4358,7 @@
 
             const handleMouseDown = (e) => {
                 // Игнорируем если кликнули на кнопки или интерактивные элементы
-                if (e.target.closest('.exercise-card-close') || e.target.closest('.exercise-check-btn')) {
+                if (e.target.closest('.exercise-card-close') || e.target.closest('.exercise-check-btn') || e.target.closest('.exercise-repost-btn')) {
                     return;
                 }
                 exerciseSwipeState.startX = e.clientX;
@@ -4167,10 +4409,12 @@
             // Восстанавливаем обработчики кнопок после клонирования
             const exerciseCardClose = document.getElementById('exercise-card-close');
             const exerciseCheckBtn = document.getElementById('exercise-check-btn');
+            const exerciseRepostBtn = document.getElementById('exercise-repost-btn');
             const exerciseVideoButton = document.getElementById('exercise-video-button');
 
             exerciseCardClose.addEventListener('click', closeExerciseCard);
             exerciseCheckBtn.addEventListener('click', toggleExercise);
+            exerciseRepostBtn.addEventListener('click', repostExercise);
             exerciseVideoButton.addEventListener('click', openExerciseVideo);
         }
 
@@ -4559,6 +4803,9 @@
             // Сохраняем состояния
             saveTodoStates();
 
+            // Обновляем виджеты дней для показа прогресса
+            renderTaskDayWidgets();
+
             // Проверяем процент выполнения и записываем активность
             checkAndRecordActivity();
 
@@ -4845,6 +5092,7 @@
 
             function initializeApp() {
             loadActivityData();
+            loadActiveRepost();
             initializeTodoLists();
 
             // Устанавливаем выбранный день тренировки на основе текущей календарной даты
@@ -5037,6 +5285,9 @@
             });
             // Сохраняем обновленные состояния
             saveTodoStates();
+
+            // Обновляем виджеты дней для показа прогресса
+            renderTaskDayWidgets();
         }
 
         
@@ -5250,6 +5501,9 @@
                     });
                     saveTodoStates();
 
+                    // Обновляем виджеты дней для показа прогресса
+                    renderTaskDayWidgets();
+
                     // Если режим задач открыт для этого дня, обновляем его
                     const workoutSection = document.querySelector('.workout-section');
                     if (workoutSection.classList.contains('show-todos') && selectedWorkout === day) {
@@ -5289,6 +5543,9 @@
                 }
             });
             saveTodoStates();
+
+            // Обновляем виджеты дней для показа прогресса
+            renderTaskDayWidgets();
 
             // Перерисовываем UI
             renderActivityGrid();
@@ -5381,6 +5638,18 @@
 
             // Кнопка-галочка для завершения упражнения
             exerciseCheckBtn.addEventListener('click', toggleExercise);
+
+            // Кнопка репоста упражнения в AI
+            const exerciseRepostBtn = document.getElementById('exercise-repost-btn');
+            if (exerciseRepostBtn) {
+                exerciseRepostBtn.addEventListener('click', repostExercise);
+            }
+
+            // Кнопка закрытия репоста в чате
+            const repostCloseBtn = document.getElementById('repost-close-btn');
+            if (repostCloseBtn) {
+                repostCloseBtn.addEventListener('click', clearRepost);
+            }
 
             // Закрытие по клику на заголовок (только если это не кнопка)
             const todoModalHeader = document.querySelector('.todo-modal-header');
@@ -5959,6 +6228,10 @@
 
                                 Выполнение сегодня: ${calculateCompletionPercentage(currentWorkoutDay)}%
                                 Активных дней: ${Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length}
+                                ${activeRepost ? `
+ПЕРЕСЛАННОЕ УПРАЖНЕНИЕ:
+Пользователь переслал упражнение для обсуждения: День ${activeRepost.day} (${getWorkoutDayName(activeRepost.day)}) • Задание: ${activeRepost.taskName} • Упражнение: ${activeRepost.exerciseText}
+Отвечая на вопрос пользователя, учитывай контекст этого конкретного упражнения. Если пользователь задаёт общий вопрос без упоминания упражнения, сосредоточься на пересланном упражнении.` : ''}
                                 Время: ${new Date().toLocaleString('ru-RU')}`
                             },
                             ...chatHistory.slice(-10), // Последние 10 сообщений для контекста
