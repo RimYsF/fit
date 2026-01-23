@@ -119,19 +119,26 @@
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            will-change: --workout-basis;
-            contain: strict;
+            will-change: height;
+            contain: layout style;
             transition: none;
             z-index: 1;
             overflow-y: hidden;
             transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            pointer-events: none; /* Отключаем события внутри при перетаскивании */
         }
 
-        .workout-section.dragging * {
-            will-change: transform;
-            transform: translateZ(0);
+        /* Включаем pointer-events только для самого элемента */
+        .workout-section.dragging > * {
+            pointer-events: auto;
+        }
+
+        /* Оптимизация только для тяжелых элементов, не для всех */
+        .workout-section.dragging .strip-progress-circle,
+        .workout-section.dragging .ai-comment-text {
+            will-change: contents;
         }
 
         /* Исключаем галочку чекбокса из общего transform dragging, чтобы scale(0) работал */
@@ -145,6 +152,17 @@
 
         .workout-section.dragging .todo-checkbox input:checked ~ .checkbox-visual {
             transform: rotate(-5deg) !important;
+        }
+
+        /* Оптимизация для activity-section при перетаскивании */
+        body.dragging-mode .activity-section {
+            contain: layout style;
+            will-change: height;
+            pointer-events: none;
+        }
+
+        body.dragging-mode .activity-section > * {
+            pointer-events: auto;
         }
 
         .workout-header {
@@ -6587,6 +6605,7 @@
             targetHeight = startTopHeight;
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
+            document.body.classList.add('dragging-mode');
             workoutSection.classList.add('dragging');
             cacheMeasurements();
             // Запускаем постоянный цикл
@@ -6604,6 +6623,7 @@
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
+                document.body.classList.remove('dragging-mode');
                 workoutSection.classList.remove('dragging');
                 // Финальное обновление до точной позиции
                 if (rafId) {
@@ -6633,6 +6653,7 @@
             startTopHeight = workoutSection.getBoundingClientRect().height;
             currentHeight = startTopHeight;
             targetHeight = startTopHeight;
+            document.body.classList.add('dragging-mode');
             workoutSection.classList.add('dragging');
             cacheMeasurements();
             // Запускаем постоянный цикл
@@ -6647,24 +6668,27 @@
         }, { passive: false });
 
         document.addEventListener('touchend', () => {
-            isDragging = false;
-            workoutSection.classList.remove('dragging');
-            if (rafId) {
-                cancelAnimationFrame(rafId);
-                rafId = null;
-            }
-            // Финальная доводка
-            const finishAnimation = () => {
-                const diff = Math.abs(targetHeight - currentHeight);
-                if (diff > 0.5) {
-                    currentHeight = lerp(currentHeight, targetHeight, 0.2);
-                    workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
-                    requestAnimationFrame(finishAnimation);
-                } else {
-                    workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+            if (isDragging) {
+                isDragging = false;
+                document.body.classList.remove('dragging-mode');
+                workoutSection.classList.remove('dragging');
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
                 }
-            };
-            finishAnimation();
+                // Финальная доводка
+                const finishAnimation = () => {
+                    const diff = Math.abs(targetHeight - currentHeight);
+                    if (diff > 0.5) {
+                        currentHeight = lerp(currentHeight, targetHeight, 0.2);
+                        workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                        requestAnimationFrame(finishAnimation);
+                    } else {
+                        workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                    }
+                };
+                finishAnimation();
+            }
         });
 
         // Предотвращаем выделение текста при клике на кнопку
