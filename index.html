@@ -3447,13 +3447,304 @@
                 transform: translateY(-4px);
             }
         }
+
+        /* ===== PRICING BLOCK (Welcome Screen Step 2) ===== */
+        .pricing-block {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease-out;
+        }
+
+        .pricing-block.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .pricing-card {
+            background: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            box-shadow: 6px 6px 0 var(--neobrut-black);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            max-width: 280px;
+            margin: 0 auto;
+            animation: pricingSlideUp 0.5s ease-out;
+        }
+
+        @keyframes pricingSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pricing-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin: 0 0 0.35rem 0;
+            color: var(--neobrut-black);
+        }
+
+        .pricing-tagline {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--neobrut-gray);
+            margin: 0 0 0.85rem 0;
+        }
+
+        .pricing-description {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--neobrut-darkgray);
+            margin: 0 0 0.85rem 0;
+            text-align: left;
+        }
+
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem 0;
+            text-align: left;
+        }
+
+        .pricing-features li {
+            font-size: 0.78rem;
+            padding: 0.3rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.4rem;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: var(--success-green);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 3px;
+            font-size: 0.65rem;
+            font-weight: 900;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .pricing-price {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 0.15rem;
+            margin: 1rem 0;
+            padding: 0.6rem;
+            background: var(--neobrut-yellow);
+            border: 3px solid var(--neobrut-black);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            border-radius: 8px;
+        }
+
+        .pricing-price-amount {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            line-height: 1;
+        }
+
+        .pricing-price-currency {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--neobrut-black);
+        }
+
+        .pricing-price-period {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--neobrut-darkgray);
+        }
+
+        .pricing-buy-btn {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--neobrut-white);
+            background: var(--neobrut-green);
+            border: 3px solid var(--neobrut-black);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .pricing-buy-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+        }
+
+        .pricing-buy-btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        /* "Show more" link button */
+        .pricing-show-more {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--neobrut-blue);
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0.5rem 0 0 0;
+            cursor: pointer;
+            text-decoration: underline;
+            text-align: left;
+            width: fit-content;
+        }
+
+        .pricing-show-more:hover {
+            color: var(--neobrut-purple);
+        }
+
+        /* ===== FEATURES MODAL ===== */
+        .features-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10001;
+            opacity: 0;
+            transition: opacity 0.3s ease-out;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .features-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .features-modal-content {
+            background: var(--neobrut-white);
+            border: 4px solid var(--neobrut-black);
+            box-shadow: 10px 10px 0 var(--neobrut-black);
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-width: 340px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: featuresSlideUp 0.4s ease-out;
+        }
+
+        @keyframes featuresSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .features-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid var(--neobrut-black);
+        }
+
+        .features-modal-title {
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin: 0;
+            color: var(--neobrut-black);
+        }
+
+        .features-modal-close {
+            width: 32px;
+            height: 32px;
+            background: var(--neobrut-red);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--neobrut-white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .features-modal-close:hover {
+            transform: scale(1.1);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .features-modal-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .features-modal-list li {
+            font-size: 0.85rem;
+            padding: 0.6rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            border-bottom: 1px dashed var(--neobrut-gray);
+        }
+
+        .features-modal-list li:last-child {
+            border-bottom: none;
+        }
+
+        .features-modal-list li::before {
+            content: '✓';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: var(--success-green);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* Hide initial content when pricing is shown */
+        .welcome-content.has-pricing .welcome-pulse,
+        .welcome-content.has-pricing .welcome-hint {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
     <!-- Приветственный экран (Welcome Screen) -->
     <div class="welcome-screen" id="welcome-screen">
-        <div class="welcome-content">
+        <div class="welcome-content" id="welcome-content">
             <h1 class="welcome-title">FitTracker AI</h1>
             <p class="welcome-tagline">Твой умный помощник в фитнесе</p>
             <div class="welcome-pulse">
@@ -3462,6 +3753,73 @@
                 <div class="pulse-ring"></div>
             </div>
             <p class="welcome-hint">Коснись экрана, чтобы начать</p>
+
+            <!-- Pricing Block (shown on tap) -->
+            <div class="pricing-block" id="pricing-block">
+                <div class="pricing-card">
+                    <h2 class="pricing-title">Начни своё преобразование</h2>
+                    <p class="pricing-tagline">7-дневная программа тренировок</p>
+
+                    <p class="pricing-description">
+                        Эффективная фитнес-программа для тех, кто хочет привести себя в форму за короткий срок. Каждая тренировка разработана так, чтобы дать максимальный результат за минимальное время.
+                    </p>
+
+                    <ul class="pricing-features">
+                        <li>159 упражнений, из них 42 с видео-демонстрациями</li>
+                        <li>7 полноценных тренировочных дней</li>
+                        <li>Умный помощник для вопросов и советов 24/7</li>
+                        <li>Календарь активности и прогресса</li>
+                        <li>Мотивационная система серий</li>
+                        <li>Итоговая статистика по проделанной работе</li>
+                    </ul>
+
+                    <button class="pricing-show-more" id="pricing-show-more">Показать больше</button>
+
+                    <div class="pricing-price">
+                        <span class="pricing-price-amount">3 900</span>
+                        <span class="pricing-price-currency">₽</span>
+                        <span class="pricing-price-period">/единоразово</span>
+                    </div>
+
+                    <button class="pricing-buy-btn" id="pricing-buy-btn">Купить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Modal -->
+    <div class="features-modal" id="features-modal">
+        <div class="features-modal-content">
+            <div class="features-modal-header">
+                <h3 class="features-modal-title">Все возможности</h3>
+                <button class="features-modal-close" id="features-modal-close">×</button>
+            </div>
+            <ul class="features-modal-list">
+                <li>159 упражнений в программе</li>
+                <li>42 упражнения с видео-демонстрациями</li>
+                <li>7 полноценных тренировочных дней</li>
+                <li>AI-коуч с персональными комментариями к прогрессу</li>
+                <li>Карточки упражнений с адаптивным свайпом</li>
+                <li>Круговой прогресс выполнения упражнений</li>
+                <li>GitHub-календарь активности на весь год</li>
+                <li>Анимированная система серий с огнём</li>
+                <li>Итоговая статистика с круговыми диаграммами</li>
+                <li>Пересылка упражнений в AI-чат для вопросов</li>
+                <li>Изменяемый размер панелей (drag-to-resize)</li>
+                <li>Трёхпозиционный слайдер с навигацией</li>
+                <li>Два чат-интерфейса (overlay и slider)</li>
+                <li>Автосохранение прогресса после каждого действия</li>
+                <li>Telegram Mini App с haptic feedback</li>
+                <li>Адаптивный интерфейс для всех устройств</li>
+                <li>Анимированные переходы между экранами</li>
+                <li>Persistence в localStorage без сервера</li>
+                <li>SVG-графика для визуализации прогресса</li>
+                <li>Асинхронные API вызовы с OpenRouter</li>
+                <li>Тач-события для мобильной навигации</li>
+                <li>CSS transitions с GPU acceleration</li>
+                <li>Debounced scroll handlers для производительности</li>
+                <li>requestAnimationFrame для плавных анимаций</li>
+            </ul>
         </div>
     </div>
 
@@ -7786,6 +8144,26 @@
 
         // ===== ПРИВЕТСТВЕННЫЙ ЭКРАН (Welcome Screen) =====
         const welcomeScreen = document.getElementById('welcome-screen');
+        const welcomeContent = document.getElementById('welcome-content');
+        const pricingBlock = document.getElementById('pricing-block');
+        const pricingBuyBtn = document.getElementById('pricing-buy-btn');
+
+        // Состояние: показан ли pricing block
+        let pricingShown = false;
+
+        // Функция показа pricing block
+        function showPricingBlock() {
+            if (!welcomeContent || !pricingBlock) return;
+
+            pricingShown = true;
+            welcomeContent.classList.add('has-pricing');
+            pricingBlock.classList.add('show');
+
+            // Haptic feedback
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            }
+        }
 
         // Функция закрытия приветственного экрана
         function closeWelcomeScreen() {
@@ -7805,13 +8183,92 @@
             }
         }
 
-        // Обработчик клика/тапа на приветственном экране
-        if (welcomeScreen) {
+        // Обработчик клика/тапа на приветственном экране (показать pricing)
+        if (welcomeScreen && !pricingShown) {
             // Поддержка как клика мышкой, так и тача
-            welcomeScreen.addEventListener('click', closeWelcomeScreen);
+            welcomeScreen.addEventListener('click', (e) => {
+                // Если клик на pricing buy button, не показывать pricing снова
+                if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
+                    return;
+                }
+                if (!pricingShown) {
+                    showPricingBlock();
+                }
+            });
             welcomeScreen.addEventListener('touchend', (e) => {
                 e.preventDefault();
+                // Если тач на pricing buy button, не показывать pricing снова
+                if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
+                    return;
+                }
+                if (!pricingShown) {
+                    showPricingBlock();
+                }
+            });
+        }
+
+        // Обработчик кнопки "Купить"
+        if (pricingBuyBtn) {
+            pricingBuyBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Предотвращаем всплытие события
                 closeWelcomeScreen();
+            });
+            pricingBuyBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                closeWelcomeScreen();
+            });
+        }
+
+        // ===== FEATURES MODAL =====
+        const featuresModal = document.getElementById('features-modal');
+        const featuresModalClose = document.getElementById('features-modal-close');
+        const pricingShowMore = document.getElementById('pricing-show-more');
+
+        // Открытие модального окна
+        function openFeaturesModal() {
+            if (!featuresModal) return;
+            featuresModal.classList.add('show');
+            // Haptic feedback
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        }
+
+        // Закрытие модального окна
+        function closeFeaturesModal() {
+            if (!featuresModal) return;
+            featuresModal.classList.remove('show');
+        }
+
+        // Обработчик кнопки "Показать больше"
+        if (pricingShowMore) {
+            pricingShowMore.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openFeaturesModal();
+            });
+            pricingShowMore.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openFeaturesModal();
+            });
+        }
+
+        // Обработчик закрытия модального окна
+        if (featuresModalClose) {
+            featuresModalClose.addEventListener('click', closeFeaturesModal);
+            featuresModalClose.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                closeFeaturesModal();
+            });
+        }
+
+        // Закрытие по клику вне контента
+        if (featuresModal) {
+            featuresModal.addEventListener('click', (e) => {
+                if (e.target === featuresModal) {
+                    closeFeaturesModal();
+                }
             });
         }
     </script>
