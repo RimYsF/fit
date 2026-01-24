@@ -6480,7 +6480,22 @@
             initializeApp();
         });
 
-            function initializeApp() {
+            async function initializeApp() {
+            // === ПРОВЕРКА ПОДПИСКИ ПРИ ЗАГРУЗКЕ ===
+            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            const telegramId = user?.id;
+
+            // Проверяем статус подписки
+            let isSubscribed = false;
+            if (telegramId && typeof checkSubscriptionStatus === 'function') {
+                isSubscribed = await checkSubscriptionStatus(telegramId);
+            }
+
+            // Сохраняем статус глобально
+            window.isSubscribed = isSubscribed;
+
+            console.log('📊 Статус подписки при загрузке:', isSubscribed ? 'АКТИВНА' : 'НЕАКТИВНА');
+
             loadActivityData();
             loadActiveRepost();
             initializeTodoLists();
@@ -8515,7 +8530,7 @@
             }
         }
 
-        // Обработчик клика/тапа на приветственном экране (показать pricing)
+        // Обработчик клика/тапа на приветственном экране (показать pricing или закрыть)
         if (welcomeScreen && !pricingShown) {
             // Поддержка как клика мышкой, так и тача
             welcomeScreen.addEventListener('click', (e) => {
@@ -8524,6 +8539,15 @@
                     // Не останавливаем всплытие - даём событию дойти до обработчика кнопки
                     return;
                 }
+
+                // Если подписка уже есть - сразу закрываем welcome screen
+                if (window.isSubscribed) {
+                    console.log('✅ Подписка активна, открываем главный экран');
+                    closeWelcomeScreen();
+                    return;
+                }
+
+                // Если подписки нет - показываем pricing block
                 if (!pricingShown) {
                     showPricingBlock();
                 }
@@ -8535,8 +8559,18 @@
                     // Не останавливаем всплытие - даём событию дойти до обработчика кнопки
                     return;
                 }
+
+                // Если подписка уже есть - сразу закрываем welcome screen
+                if (window.isSubscribed) {
+                    console.log('✅ Подписка активна, открываем главный экран');
+                    closeWelcomeScreen();
+                    return;
+                }
+
                 // Останавливаем всплытие только если клик не на кнопке
                 e.stopPropagation();
+
+                // Если подписки нет - показываем pricing block
                 if (!pricingShown) {
                     showPricingBlock();
                 }

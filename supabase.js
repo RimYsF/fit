@@ -32,3 +32,55 @@ async function testSupabaseConnection() {
 
 // Автоматически проверяем соединение при загрузке
 testSupabaseConnection();
+
+// Глобальная переменная для кэширования статуса подписки
+window.hasSubscription = null;
+
+/**
+ * Проверяет наличие активной подписки у пользователя по telegram_id
+ * @param {number} telegramId - ID пользователя из Telegram
+ * @returns {Promise<boolean>} - true если есть активная подписка
+ */
+async function checkSubscriptionStatus(telegramId) {
+    if (!window.supabaseClient) {
+        console.log('⚠️ Supabase клиент не инициализирован');
+        return false;
+    }
+
+    if (!telegramId) {
+        console.log('⚠️ telegramId не предоставлен');
+        return false;
+    }
+
+    try {
+        console.log('🔍 Проверка подписки для telegram_id:', telegramId);
+
+        const { data, error } = await window.supabaseClient
+            .from('subscriptions')
+            .select('status, created_at')
+            .eq('telegram_id', telegramId)
+            .eq('status', 'active')
+            .maybeSingle(); // maybeSingle возвращает null если нет записей
+
+        if (error) {
+            console.error('❌ Ошибка проверки подписки:', error);
+            window.hasSubscription = false;
+            return false;
+        }
+
+        const hasSub = !!data;
+        window.hasSubscription = hasSub;
+
+        if (hasSub) {
+            console.log('✅ Активная подписка найдена:', data);
+        } else {
+            console.log('⚠️ Подписка не найдена для telegram_id:', telegramId);
+        }
+
+        return hasSub;
+    } catch (err) {
+        console.error('❌ Ошибка при проверке подписки:', err);
+        window.hasSubscription = false;
+        return false;
+    }
+}

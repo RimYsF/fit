@@ -323,6 +323,11 @@ async function executePurchase(email) {
 
         console.log('✅ Подписка успешно создана!', data);
 
+        // Обновляем глобальный статус подписки
+        window.isSubscribed = true;
+        window.hasSubscription = true;
+        console.log('📊 Статус подписки обновлён: АКТИВНА');
+
         // Показываем успех
         showEmailSuccessState(email);
 
