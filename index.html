@@ -8521,7 +8521,7 @@
             welcomeScreen.addEventListener('click', (e) => {
                 // Если клик на pricing buy button, не показывать pricing снова
                 if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
-                    e.stopPropagation();
+                    // Не останавливаем всплытие - даём событию дойти до обработчика кнопки
                     return;
                 }
                 if (!pricingShown) {
@@ -8530,11 +8530,13 @@
             });
             welcomeScreen.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                e.stopPropagation();
                 // Если тач на pricing buy button, не показывать pricing снова
                 if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
+                    // Не останавливаем всплытие - даём событию дойти до обработчика кнопки
                     return;
                 }
+                // Останавливаем всплытие только если клик не на кнопке
+                e.stopPropagation();
                 if (!pricingShown) {
                     showPricingBlock();
                 }
