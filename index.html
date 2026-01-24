@@ -2114,6 +2114,7 @@
 
         .ai-message .message-content span[style*="font-size: 1.2em"] {
             vertical-align: middle;
+            font-size: 1em !important;
         }
 
         .chat-input-container {
@@ -2485,6 +2486,120 @@
         }
 
         /* ===== КОНЕЦ НЕОБРУТАЛИСТИЧЕСКОГО ЧАТА ===== */
+
+        /* ===== TOAST "НОВЫЙ ЧАТ" ===== */
+        .new-chat-toast {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 8px 14px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+            cursor: grab;
+            opacity: 0;
+            transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s ease-out;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .new-chat-toast.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .new-chat-toast.show.shake {
+            animation: toastShakeHint 0.6s ease-in-out;
+        }
+
+        .new-chat-toast.swiping {
+            transition: none;
+        }
+
+        .new-chat-toast.hiding {
+            transform: translateX(calc(-50% + 400px)) !important;
+            opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out !important;
+        }
+
+        /* Подёргивание вправо как hint для свайпа */
+        @keyframes toastShakeHint {
+            0%, 100% { transform: translateX(-50%); }
+            20% { transform: translateX(calc(-50% + 8px)); }
+            40% { transform: translateX(calc(-50% - 4px)); }
+            60% { transform: translateX(calc(-50% + 4px)); }
+            80% { transform: translateX(calc(-50% - 2px)); }
+        }
+
+        .new-chat-toast-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--neobrut-black);
+        }
+
+        .new-chat-toast-btn {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--neobrut-black);
+            background: var(--success-green);
+            font-size: 11px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+            transition: all 0.1s;
+            flex-shrink: 0;
+        }
+
+        .new-chat-toast-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .new-chat-toast-btn:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 var(--neobrut-black);
+        }
+
+        /* SVG таймер вокруг toast */
+        .new-chat-timer-svg {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: visible;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .new-chat-toast.show .new-chat-timer-svg {
+            opacity: 1;
+        }
+
+        .new-chat-timer-rect {
+            fill: none;
+            stroke: var(--swamp-green);
+            stroke-width: 6;
+        }
+
+        .new-chat-timer-rect.active {
+            animation: svgTimerCountdown 10s linear forwards;
+        }
+
+        @keyframes svgTimerCountdown {
+            from { stroke-dashoffset: var(--perimeter); }
+            to { stroke-dashoffset: 0; }
+        }
 
         /* ===== STREAK АНИМАЦИЯ (как в Duolingo) ===== */
         .streak-overlay {
@@ -3226,6 +3341,15 @@
                 <!-- AI Чат слева -->
                 <div class="calendar-container chat-calendar">
                     <div class="calendar-wrapper chat-wrapper">
+                        <!-- Toast "Новый чат" -->
+                        <div class="new-chat-toast" id="new-chat-toast">
+                            <svg class="new-chat-timer-svg" id="new-chat-timer-svg">
+                                <rect class="new-chat-timer-rect" id="new-chat-timer-rect" x="0" y="0" width="100%" height="100%" rx="14" ry="14"/>
+                            </svg>
+                            <span class="new-chat-toast-text">Начать новый чат?</span>
+                            <button class="new-chat-toast-btn" id="new-chat-toast-btn">✓</button>
+                        </div>
+
                         <div class="chat-messages" id="slider-chat-messages">
                             <div class="message">
                                 <div class="message-content">
@@ -3233,6 +3357,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="chat-input-area">
                             <div class="chat-repost-indicator" id="chat-repost-indicator" style="display: none;">
                                 <button class="repost-close-btn" id="repost-close-btn" title="Удалить">×</button>
@@ -3332,6 +3457,12 @@
         function validateConfig() {
             return true; // Для простоты
         }
+
+        // Chat history constants
+        const CHAT_HISTORY_KEY = 'fitTrackerChatHistory';
+        const MAX_CHAT_HISTORY = 15;
+        const USER_MESSAGES_FOR_NEW_CHAT = 10; // Показывать toast после каждого N-го сообщения пользователя
+        const NEW_CHAT_TOAST_DURATION = 10000; // 10 секунд
 
         // Инициализация приложения
         let currentYear = new Date().getFullYear();
@@ -5131,9 +5262,42 @@
             loadActiveRepost();
             initializeTodoLists();
 
+            // Проверяем наличие сохраненной истории чата и показываем toast
+            const savedHistory = localStorage.getItem(CHAT_HISTORY_KEY);
+            if (savedHistory) {
+                try {
+                    const history = JSON.parse(savedHistory);
+                    if (history && history.length > 0) {
+                        // Загружаем историю
+                        chatHistory = history;
+
+                        // Подсчитываем сообщения пользователя
+                        userMessageCount = countUserMessages();
+
+                        // Восстанавливаем сообщения в UI
+                        const overlayMessages = document.getElementById('chat-messages');
+                        const sliderMessages = document.getElementById('slider-chat-messages');
+
+                        if (overlayMessages) overlayMessages.innerHTML = '';
+                        if (sliderMessages) sliderMessages.innerHTML = '';
+
+                        chatHistory.forEach(msg => {
+                            addMessageToContainer('chat-messages', msg.content, msg.role === 'user');
+                            addMessageToContainer('slider-chat-messages', msg.content, msg.role === 'user');
+                        });
+
+                        // Устанавливаем флаг для показа toast при открытии чата
+                        if (userMessageCount >= 1) {
+                            pendingNewChatToast = true;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Ошибка проверки истории чата:', e);
+                }
+            }
+
             // Устанавливаем выбранный день тренировки на основе текущей календарной даты
             selectedWorkout = getCurrentWorkoutDay();
-            console.log('Текущий день тренировки:', selectedWorkout);
 
             renderActivityGrid();
             renderTaskDayWidgets();
@@ -5731,6 +5895,9 @@
 
         // Установка обработчиков событий
         function setupEventListeners() {
+            // Настройка toast для нового чата
+            setupToastSwipe();
+
             // Клик на AI комментарий для обновления
             const aiCommentElement = document.getElementById('ai-comment');
             if (aiCommentElement) {
@@ -5833,6 +6000,14 @@
             switchSlide = function(targetSlide) {
                 originalSwitchSlide(targetSlide);
                 updateNavButtonsActive();
+
+                // Показываем toast при открытии чата
+                if (targetSlide === 0 && pendingNewChatToast) {
+                    setTimeout(() => {
+                        showNewChatToast();
+                        pendingNewChatToast = false; // Сбрасываем флаг после показа
+                    }, 300);
+                }
             };
 
             // Элементы, с которых НЕ должен начинаться свайп
@@ -6021,6 +6196,9 @@
 
         // AI Chat функции
         let chatHistory = [];
+        let userMessageCount = 0; // Счётчик сообщений пользователя для показа toast
+        let toastTimer = null; // Таймер для автозакрытия toast
+        let pendingNewChatToast = false; // Флаг что нужно показать toast при открытии чата
         let conversationContext = {
             userName: null,
             userLevel: 'beginner',
@@ -6028,6 +6206,227 @@
             totalWorkouts: 0,
             currentStreak: 0
         };
+
+        // Функции для сохранения и загрузки истории чата
+        function saveChatHistory() {
+            try {
+                localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(chatHistory));
+            } catch (e) {
+                console.error('Ошибка сохранения истории чата:', e);
+            }
+        }
+
+        function loadChatHistory() {
+            try {
+                const saved = localStorage.getItem(CHAT_HISTORY_KEY);
+                if (saved) {
+                    chatHistory = JSON.parse(saved);
+                    return true;
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки истории чата:', e);
+            }
+            return false;
+        }
+
+        // ===== ФУНКЦИИ ДЛЯ TOAST "НОВЫЙ ЧАТ" =====
+
+        // Подсчёт сообщений пользователя в истории
+        function countUserMessages() {
+            return chatHistory.filter(msg => msg.role === 'user').length;
+        }
+
+        // Показать toast с предложением начать новый чат
+        let toastTimeout = null;
+
+        function showNewChatToast() {
+            const toast = document.getElementById('new-chat-toast');
+            const svg = document.getElementById('new-chat-timer-svg');
+            const rect = document.getElementById('new-chat-timer-rect');
+            if (!toast) return;
+
+            // Очищаем предыдущий таймер если есть
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+            }
+
+            // Показываем toast
+            toast.classList.remove('hiding', 'shake');
+            void toast.offsetWidth;
+            toast.classList.add('show');
+
+            // Добавляем shake через 3 секунды
+            setTimeout(() => {
+                toast.classList.add('shake');
+            }, 3000);
+
+            // Настраиваем SVG таймер после появления
+            setTimeout(() => {
+                if (svg && rect) {
+                    const width = toast.offsetWidth;
+                    const height = toast.offsetHeight;
+                    svg.setAttribute('viewBox', `0 0 ${width + 8} ${height + 8}`);
+                    rect.setAttribute('x', '2');
+                    rect.setAttribute('y', '2');
+                    rect.setAttribute('width', width + 4);
+                    rect.setAttribute('height', height + 4);
+
+                    const perimeter = 2 * (width + height + 8);
+                    rect.style.setProperty('--perimeter', perimeter);
+                    rect.style.strokeDasharray = perimeter;
+                    rect.style.strokeDashoffset = perimeter;
+
+                    requestAnimationFrame(() => {
+                        rect.classList.add('active');
+                    });
+                }
+            }, 50);
+
+            // Автоматически скрываем через 10 секунд
+            toastTimeout = setTimeout(() => {
+                hideNewChatToast();
+            }, NEW_CHAT_TOAST_DURATION);
+        }
+
+        function hideNewChatToast() {
+            const toast = document.getElementById('new-chat-toast');
+            const rect = document.getElementById('new-chat-timer-rect');
+            if (!toast) return;
+
+            // Останавливаем анимацию таймера
+            if (rect) {
+                rect.classList.remove('active');
+            }
+
+            // Очищаем таймеры
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+                toastTimeout = null;
+            }
+
+            // Сбрасываем inline стили перед анимацией скрытия
+            toast.style.transform = '';
+
+            // Анимация скрытия со свайпом вправо
+            toast.classList.add('hiding');
+            setTimeout(() => {
+                toast.classList.remove('show', 'hiding');
+            }, 300);
+        }
+
+        // Начать новый чат
+        function startNewChat() {
+            // Скрываем toast
+            hideNewChatToast();
+
+            // Очищаем историю
+            chatHistory = [];
+            userMessageCount = 0; // Сбрасываем счётчик
+            saveChatHistory();
+
+            // Очищаем UI
+            const overlayMessages = document.getElementById('chat-messages');
+            const sliderMessages = document.getElementById('slider-chat-messages');
+
+            if (overlayMessages) overlayMessages.innerHTML = '';
+            if (sliderMessages) sliderMessages.innerHTML = '';
+
+            // Добавляем приветственное сообщение
+            const welcomeMessage = `
+                <div class="message">
+                    <div class="message-content">
+                        <p>Привет! Я ваш AI ассистент. Чем могу помочь?</p>
+                    </div>
+                </div>
+            `;
+            if (overlayMessages) overlayMessages.innerHTML = welcomeMessage;
+            if (sliderMessages) sliderMessages.innerHTML = welcomeMessage;
+        }
+
+        // Настройка свайпа для toast
+        function setupToastSwipe() {
+            const toast = document.getElementById('new-chat-toast');
+            if (!toast) return;
+
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            // Touch события
+            toast.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                toast.classList.add('swiping');
+            }, { passive: true });
+
+            toast.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentX = e.touches[0].clientX;
+                const diff = currentX - startX;
+                toast.style.transform = `translateX(calc(-50% + ${diff}px))`;
+            }, { passive: true });
+
+            toast.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                toast.classList.remove('swiping');
+
+                const diff = currentX - startX;
+                const threshold = 50; // Порог для свайпа
+
+                if (Math.abs(diff) > threshold) {
+                    // Свайп detected - закрываем toast
+                    hideNewChatToast();
+                } else {
+                    // Возвращаем на место
+                    toast.style.transform = '';
+                }
+
+                startX = 0;
+                currentX = 0;
+            }, { passive: true });
+
+            // Mouse события для desktop
+            toast.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                toast.classList.add('swiping');
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                currentX = e.clientX;
+                const diff = currentX - startX;
+                toast.style.transform = `translateX(calc(-50% + ${diff}px))`;
+            });
+
+            document.addEventListener('mouseup', (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+                toast.classList.remove('swiping');
+
+                const diff = currentX - startX;
+                const threshold = 50;
+
+                if (Math.abs(diff) > threshold) {
+                    hideNewChatToast();
+                } else {
+                    toast.style.transform = '';
+                }
+
+                startX = 0;
+                currentX = 0;
+            });
+
+            // Кнопка для запуска нового чата
+            const toastBtn = document.getElementById('new-chat-toast-btn');
+            if (toastBtn) {
+                toastBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    startNewChat();
+                });
+            }
+        }
 
         function openAIChat() {
             const overlay = document.getElementById('ai-chat-overlay');
@@ -6095,10 +6494,23 @@
                 content: content
             });
 
-            // Ограничиваем историю последними 30 сообщениями
-            if (chatHistory.length > 30) {
-                chatHistory = chatHistory.slice(-30);
+            // Если это сообщение пользователя - проверяем счётчик
+            if (isUser) {
+                userMessageCount++;
+
+                // Показываем toast после каждого N-го сообщения пользователя
+                if (userMessageCount % USER_MESSAGES_FOR_NEW_CHAT === 0) {
+                    showNewChatToast();
+                }
             }
+
+            // Ограничиваем историю последними 15 сообщениями
+            if (chatHistory.length > MAX_CHAT_HISTORY) {
+                chatHistory = chatHistory.slice(-MAX_CHAT_HISTORY);
+            }
+
+            // Сохраняем историю в localStorage
+            saveChatHistory();
         }
 
         async function sendMessage() {
@@ -6154,7 +6566,7 @@
                 .replace(/\n{3,}/g, '\n\n')
                 // Оборачиваем эмодзи в спаны
                 .replace(/([\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2600-\u27BF])/g,
-                    '<span style="font-size: 1.2em; margin-right: 4px;">$&</span>')
+                    '<span style="font-size: 1em; vertical-align: baseline; margin-right: 2px;">$&</span>')
                 // Форматируем заголовки (строки начинающиеся с #)
                 .replace(/^(#{1,3})\s+(.+)$/gm, '<h3 style="color: var(--accent-blue); margin: 12px 0 8px; font-weight: 600;">$2</h3>')
                 // Форматируем жирный текст
@@ -6210,7 +6622,7 @@
 
                                 БАЗОВЫЕ ПРАВИЛА:
                                 - Отвечай тепло, коротко и по делу
-                                - ЭМОДЗИ: используй ТОЛЬКО в 50% ответов, максимум 1 эмодзи на ответ. В половине случаев отвечай вообще без эмодзи. Разрешённые: 💪🔥⚡🏋️🎯. ЗАПРЕЩЁНЫЕ: 💕💃✨💖🌸😍🥰💗💝💘
+                                - ЭМОДЗИ: СТРОГОЕ ОГРАНИЧЕНИЕ — используй максимум 1 эмодзи на 10 сообщений. 90% ответов должны быть БЕЗ эмодзи. Можно использовать любые эмодзи по ситуации, но не чаще одного раза на 10 сообщений
                                 - Давай конкретику: упражнения, числа, сроки, а не общие фразы
                                 - Помни: пользователь инвестировал в себя — поддерживай это решение
 
