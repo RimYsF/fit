@@ -1,77 +1,268 @@
-// purchase.js - Обработчик покупки подписки
+// purchase.js - Обработчик покупки подписки с модальным окном
+
+// Глобальные переменные для модального окна
+let emailModal = null;
+let emailModalInput = null;
+let emailModalError = null;
+let currentUser = null;
 
 /**
- * Обрабатывает покупку подписки
- * Получает данные пользователя из Telegram WebApp, запрашивает email и отправляет в Supabase
+ * Инициализация модального окна email
  */
-async function handlePurchase() {
-    console.log('🛒 Начало процесса покупки...');
+function initEmailModal() {
+    console.log('🔧 Инициализация email modal...');
 
-    // Проверяем доступность Telegram WebApp
-    if (!window.Telegram || !window.Telegram.WebApp) {
-        console.error('❌ Telegram WebApp не доступен');
-        alert('Ошибка: Telegram WebApp не доступен. Откройте приложение через Telegram.');
+    emailModal = document.getElementById('email-modal');
+    emailModalInput = document.getElementById('email-modal-input');
+    emailModalError = document.getElementById('email-modal-error');
+
+    if (!emailModal) {
+        console.error('❌ Email modal не найден');
         return;
     }
 
-    const tg = window.Telegram.WebApp;
-    console.log('📱 Telegram WebApp загружен:', tg);
+    console.log('✅ Email modal найден');
 
-    // Получаем данные пользователя
-    const user = tg.initDataUnsafe?.user;
-
-    if (!user || !user.id) {
-        console.error('❌ Не удалось получить данные пользователя:', user);
-        alert('Ошибка: Не удалось получить данные пользователя. Попробуйте открыть приложение через Telegram.');
-        return;
-    }
-
-    console.log('👤 Данные пользователя получены:', {
-        id: user.id,
-        first_name: user.first_name,
-        username: user.username
+    // Закрытие по клику на фон
+    emailModal.addEventListener('click', (e) => {
+        if (e.target === emailModal) {
+            closeEmailModal();
+        }
     });
 
-    // Запрашиваем email для чека
-    const email = prompt('Введите email для получения чека:');
+    // Кнопка "Отмена"
+    const cancelBtn = document.getElementById('email-modal-cancel');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeEmailModal);
+    }
 
-    if (!email || email.trim() === '') {
-        console.log('⚠️ Email не введён, отмена покупки');
-        alert('Покупка отменена: Email не указан.');
+    // Кнопка отмены в состоянии ошибки
+    const cancelErrorBtn = document.getElementById('email-modal-cancel-error');
+    if (cancelErrorBtn) {
+        cancelErrorBtn.addEventListener('click', closeEmailModal);
+    }
+
+    // Кнопка "Купить" (подтвердить email)
+    const confirmBtn = document.getElementById('email-modal-confirm');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmEmailPurchase);
+    }
+
+    // Enter в поле input
+    if (emailModalInput) {
+        emailModalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                confirmEmailPurchase();
+            }
+        });
+    }
+
+    // Кнопка "Попробовать снова"
+    const retryBtn = document.getElementById('email-modal-retry');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+            showEmailInputState();
+        });
+    }
+
+    // Кнопка "Закрыть" (успех)
+    const closeSuccessBtn = document.getElementById('email-modal-close-success');
+    if (closeSuccessBtn) {
+        closeSuccessBtn.addEventListener('click', () => {
+            closeEmailModal();
+            // Закрываем приветственный экран после успешной покупки
+            closeWelcomeScreen();
+        });
+    }
+
+    console.log('✅ Email modal обработчики добавлены');
+}
+
+/**
+ * Показать модальное окно
+ */
+function showEmailModal() {
+    if (!emailModal) {
+        console.error('❌ Email modal не инициализирован');
         return;
     }
 
-    // Простая валидация email
+    // Сбрасываем состояние
+    showEmailInputState();
+    if (emailModalInput) {
+        emailModalInput.value = '';
+        emailModalInput.classList.remove('error');
+    }
+    if (emailModalError) {
+        emailModalError.textContent = '';
+    }
+
+    // Показываем модал
+    emailModal.classList.add('show');
+
+    // Фокус на input
+    setTimeout(() => {
+        if (emailModalInput) {
+            emailModalInput.focus();
+        }
+    }, 100);
+
+    console.log('📧 Email modal открыт');
+}
+
+/**
+ * Закрыть модальное окно
+ */
+function closeEmailModal() {
+    if (!emailModal) return;
+
+    emailModal.classList.remove('show');
+    console.log('📧 Email modal закрыт');
+}
+
+/**
+ * Показать состояние ввода email
+ */
+function showEmailInputState() {
+    hideAllModalBodies();
+    document.getElementById('email-modal-body-input').classList.remove('email-modal-body-hidden');
+}
+
+/**
+ * Показать состояние загрузки
+ */
+function showEmailLoadingState() {
+    hideAllModalBodies();
+    document.getElementById('email-modal-body-loading').classList.remove('email-modal-body-hidden');
+}
+
+/**
+ * Показать состояние успеха
+ */
+function showEmailSuccessState(email) {
+    hideAllModalBodies();
+    const successBody = document.getElementById('email-modal-body-success');
+    successBody.classList.remove('email-modal-body-hidden');
+
+    const emailDisplay = document.getElementById('email-modal-email-display');
+    if (emailDisplay) {
+        emailDisplay.textContent = `Чек отправлен на: ${email}`;
+    }
+}
+
+/**
+ * Показать состояние ошибки
+ */
+function showEmailErrorState(message) {
+    hideAllModalBodies();
+    const errorBody = document.getElementById('email-modal-body-error');
+    errorBody.classList.remove('email-modal-body-hidden');
+
+    const errorText = document.getElementById('email-modal-error-text');
+    if (errorText) {
+        errorText.textContent = message;
+    }
+}
+
+/**
+ * Скрыть все body модального окна
+ */
+function hideAllModalBodies() {
+    const bodies = emailModal.querySelectorAll('.email-modal-body');
+    bodies.forEach(body => {
+        body.classList.add('email-modal-body-hidden');
+    });
+}
+
+/**
+ * Валидация email
+ */
+function validateEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-        console.error('❌ Некорректный email:', email);
-        alert('Пожалуйста, введите корректный email адрес.');
+    return emailRegex.test(email.trim());
+}
+
+/**
+ * Подтверждение email и выполнение покупки
+ */
+async function confirmEmailPurchase() {
+    if (!emailModalInput) return;
+
+    const email = emailModalInput.value.trim();
+
+    // Валидация
+    if (!email) {
+        showInputError('Введите email');
         return;
     }
 
-    console.log('📧 Email введён:', email.trim());
+    if (!validateEmail(email)) {
+        showInputError('Некорректный формат email');
+        return;
+    }
 
-    // Проверяем доступность Supabase
+    // Скрываем ошибку если есть
+    if (emailModalError) {
+        emailModalError.textContent = '';
+    }
+    emailModalInput.classList.remove('error');
+
+    // Показываем загрузку
+    showEmailLoadingState();
+
+    // Выполняем покупку
+    await executePurchase(email);
+}
+
+/**
+ * Показать ошибку в поле input
+ */
+function showInputError(message) {
+    if (emailModalInput) {
+        emailModalInput.classList.add('error');
+    }
+    if (emailModalError) {
+        emailModalError.textContent = message;
+    }
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+    }
+}
+
+/**
+ * Выполнить покупку
+ */
+async function executePurchase(email) {
+    console.log('🛒 Выполнение покупки для email:', email);
+
+    // Проверяем Supabase
     if (!window.supabaseClient) {
-        console.error('❌ Supabase клиент не инициализирован');
-        alert('Ошибка: База данных не доступна. Попробуйте позже.');
+        console.error('❌ Supabase не доступен');
+        showEmailErrorState('База данных не доступна. Попробуйте позже.');
+        return;
+    }
+
+    // Проверяем пользователя
+    if (!currentUser || !currentUser.id) {
+        console.error('❌ Данные пользователя не доступны');
+        showEmailErrorState('Не удалось получить данные пользователя. Откройте приложение через Telegram.');
         return;
     }
 
     try {
-        console.log('💾 Отправка данных в Supabase...');
-
-        // Подготававливаем данные для вставки
+        // Подготававливаем данные
         const subscriptionData = {
-            telegram_id: user.id,
-            telegram_name: user.first_name || user.username || 'Пользователь',
-            email: email.trim(),
+            telegram_id: currentUser.id,
+            telegram_name: currentUser.first_name || currentUser.username || 'Пользователь',
+            email: email,
             status: 'active'
         };
 
         console.log('📦 Данные для отправки:', subscriptionData);
 
-        // Вставляем запись в таблицу subscriptions
+        // Отправляем в Supabase
         const { data, error } = await window.supabaseClient
             .from('subscriptions')
             .insert([subscriptionData])
@@ -80,68 +271,123 @@ async function handlePurchase() {
         if (error) {
             console.error('❌ Ошибка Supabase:', error);
 
-            // Проверяем ошибку уникальности (пользователь уже покупал)
-            if (error.code === '23505') { // PostgreSQL unique violation
-                console.log('⚠️ Пользователь уже имеет подписку');
-                alert('Вы уже приобретали эту подписку! Проверьте свой email.');
+            if (error.code === '23505') {
+                // Пользователь уже покупал
+                showEmailErrorState('Вы уже приобретали эту подписку! Проверьте свой email.');
             } else {
-                console.error('❌ Детали ошибки:', {
-                    code: error.code,
-                    message: error.message,
-                    details: error.details,
-                    hint: error.hint
-                });
-                alert(`Ошибка при покупке: ${error.message}\nКод: ${error.code}`);
+                showEmailErrorState(`Ошибка: ${error.message} (код: ${error.code})`);
+            }
+
+            // Haptic feedback
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
             }
             return;
         }
 
-        console.log('✅ Подписка успешно создана!');
-        console.log('📋 Ответ от Supabase:', data);
+        console.log('✅ Подписка успешно создана!', data);
 
-        // Успешная покупка
-        alert(`🎉 Покупка успешна!\n\nСпасибо за покупку, ${user.first_name}!\nЧек отправлен на: ${email.trim()}`);
+        // Показываем успех
+        showEmailSuccessState(email);
 
-        // Опционально: отправляем событие в Telegram
-        if (tg.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
+        // Haptic feedback
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
         }
 
     } catch (err) {
         console.error('❌ Непредвиденная ошибка:', err);
-        alert(`Произошла неожиданная ошибка: ${err.message}`);
+        showEmailErrorState(`Произошла ошибка: ${err.message}`);
+
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+        }
     }
 }
 
 /**
+ * Закрыть приветственный экран
+ */
+function closeWelcomeScreen() {
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.classList.add('hidden');
+        setTimeout(() => {
+            welcomeScreen.style.display = 'none';
+        }, 600);
+    }
+}
+
+/**
+ * Начать процесс покупки
+ */
+function handlePurchase() {
+    console.log('🛒 Начало процесса покупки...');
+
+    // Проверяем Telegram WebApp
+    if (!window.Telegram || !window.Telegram.WebApp) {
+        console.error('❌ Telegram WebApp не доступен');
+        showEmailErrorState('Telegram WebApp не доступен. Откройте приложение через Telegram.');
+        showEmailModal();
+        return;
+    }
+
+    const tg = window.Telegram.WebApp;
+    const user = tg.initDataUnsafe?.user;
+
+    if (!user || !user.id) {
+        console.error('❌ Не удалось получить данные пользователя');
+        showEmailErrorState('Не удалось получить данные пользователя. Попробуйте открыть через Telegram.');
+        showEmailModal();
+        return;
+    }
+
+    // Сохраняем пользователя
+    currentUser = user;
+
+    console.log('👤 Данные пользователя:', {
+        id: user.id,
+        first_name: user.first_name,
+        username: user.username
+    });
+
+    // Показываем модальное окно для ввода email
+    showEmailModal();
+}
+
+/**
  * Инициализация обработчика покупки
- * Добавляется после загрузки DOM
  */
 function initPurchaseHandler() {
     console.log('🔧 Инициализация обработчика покупки...');
 
+    // Инициализируем модальное окно
+    initEmailModal();
+
+    // Находим кнопку покупки
     const buyButton = document.getElementById('pricing-buy-btn');
 
     if (buyButton) {
-        console.log('✅ Кнопка покупки найдена:', buyButton);
+        console.log('✅ Кнопка покупки найдена');
 
-        // Удаляем старые обработчики (если есть)
+        // Удаляем старые обработчики
         buyButton.onclick = null;
 
         // Добавляем новый обработчик
         buyButton.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             console.log('🖱️ Клик по кнопке покупки');
             handlePurchase();
         });
 
         console.log('✅ Обработчик покупки добавлен');
     } else {
-        console.error('❌ Кнопка покупки не найдена (id="pricing-buy-btn")');
+        console.error('❌ Кнопка покупки не найдена');
     }
 }
 
-// Инициализируем после загрузки DOM
+// Инициализация после загрузки DOM
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPurchaseHandler);
 } else {

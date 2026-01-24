@@ -3738,6 +3738,288 @@
         .welcome-content.has-pricing .welcome-hint {
             display: none;
         }
+
+        /* ===== EMAIL MODAL (Purchase) ===== */
+        .email-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .email-modal.show {
+            display: flex;
+            animation: emailModalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes emailModalFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .email-modal-content {
+            background: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            box-shadow: 8px 8px 0 var(--neobrut-black);
+            border-radius: 12px;
+            max-width: 360px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: emailModalSlideUp 0.3s ease-out;
+        }
+
+        @keyframes emailModalSlideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .email-modal-header {
+            padding: 1rem;
+            border-bottom: 2px solid var(--neobrut-black);
+            background: var(--neobrut-yellow);
+        }
+
+        .email-modal-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--neobrut-black);
+        }
+
+        .email-modal-body {
+            padding: 1rem;
+        }
+
+        .email-modal-body-hidden {
+            display: none;
+        }
+
+        .email-modal-description {
+            margin: 0 0 0.8rem 0;
+            font-size: 0.85rem;
+            color: var(--neobrut-darkgray);
+            text-align: center;
+        }
+
+        .email-modal-input {
+            width: 100%;
+            padding: 0.7rem;
+            font-size: 0.9rem;
+            font-family: inherit;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 6px;
+            background: var(--neobrut-white);
+            box-sizing: border-box;
+            transition: all 0.15s ease;
+        }
+
+        .email-modal-input:focus {
+            outline: none;
+            border-color: var(--neobrut-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .email-modal-input.error {
+            border-color: var(--neobrut-red);
+            background: #fef2f2;
+        }
+
+        .email-modal-error {
+            margin: 0.5rem 0 0 0;
+            font-size: 0.75rem;
+            color: #dc2626;
+            min-height: 1rem;
+            text-align: center;
+        }
+
+        .email-modal-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .email-modal-btn {
+            flex: 1;
+            padding: 0.7rem;
+            font-size: 0.85rem;
+            font-family: inherit;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .email-modal-btn-cancel {
+            background: var(--neobrut-gray);
+            color: var(--neobrut-black);
+        }
+
+        .email-modal-btn-cancel:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .email-modal-btn-cancel:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 var(--neobrut-black);
+        }
+
+        .email-modal-btn-confirm {
+            background: var(--neobrut-green);
+            color: var(--neobrut-white);
+        }
+
+        .email-modal-btn-confirm:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .email-modal-btn-confirm:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 var(--neobrut-black);
+        }
+
+        .email-modal-btn-close {
+            background: var(--neobrut-blue);
+            color: var(--neobrut-white);
+        }
+
+        .email-modal-btn-close:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .email-modal-btn-retry {
+            background: var(--neobrut-orange);
+            color: var(--neobrut-white);
+        }
+
+        .email-modal-btn-retry:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        /* Loading state */
+        .email-modal-loading {
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .email-modal-spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            border: 4px solid var(--neobrut-gray);
+            border-top-color: var(--neobrut-green);
+            border-radius: 50%;
+            animation: emailModalSpin 0.8s linear infinite;
+        }
+
+        @keyframes emailModalSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .email-modal-loading p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--neobrut-darkgray);
+        }
+
+        /* Success state */
+        .email-modal-success {
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+
+        .email-modal-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--neobrut-black);
+            border-radius: 50%;
+            font-size: 1.8rem;
+            font-weight: 900;
+        }
+
+        .email-modal-icon-success {
+            background: var(--success-green);
+            color: var(--neobrut-white);
+        }
+
+        .email-modal-success h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--neobrut-black);
+        }
+
+        .email-modal-success p {
+            margin: 0.3rem 0;
+            font-size: 0.85rem;
+            color: var(--neobrut-darkgray);
+        }
+
+        .email-modal-email-display {
+            font-weight: 600;
+            color: var(--neobrut-black);
+            padding: 0.5rem;
+            background: var(--neobrut-yellow);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+
+        /* Error state */
+        .email-modal-error-content {
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+
+        .email-modal-icon-error {
+            background: #dc2626;
+            color: var(--neobrut-white);
+        }
+
+        .email-modal-error-content h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--neobrut-black);
+        }
+
+        .email-modal-error-content p {
+            margin: 0.3rem 0;
+            font-size: 0.85rem;
+            color: var(--neobrut-darkgray);
+        }
     </style>
 </head>
 
@@ -3820,6 +4102,56 @@
                 <li>Debounced scroll handlers для производительности</li>
                 <li>requestAnimationFrame для плавных анимаций</li>
             </ul>
+        </div>
+    </div>
+
+    <!-- Email Modal (Purchase) -->
+    <div class="email-modal" id="email-modal">
+        <div class="email-modal-content">
+            <div class="email-modal-header">
+                <h3 class="email-modal-title">Оформление покупки</h3>
+            </div>
+
+            <div class="email-modal-body" id="email-modal-body-input">
+                <p class="email-modal-description">Введите email для получения чека:</p>
+                <input type="email" class="email-modal-input" id="email-modal-input" placeholder="example@mail.com" autocomplete="email">
+                <p class="email-modal-error" id="email-modal-error"></p>
+                <div class="email-modal-buttons">
+                    <button class="email-modal-btn email-modal-btn-cancel" id="email-modal-cancel">Отмена</button>
+                    <button class="email-modal-btn email-modal-btn-confirm" id="email-modal-confirm">Купить</button>
+                </div>
+            </div>
+
+            <div class="email-modal-body email-modal-body-hidden" id="email-modal-body-loading">
+                <div class="email-modal-loading">
+                    <div class="email-modal-spinner"></div>
+                    <p>Обработка покупки...</p>
+                </div>
+            </div>
+
+            <div class="email-modal-body email-modal-body-hidden" id="email-modal-body-success">
+                <div class="email-modal-success">
+                    <div class="email-modal-icon email-modal-icon-success">✓</div>
+                    <h4>Покупка успешна!</h4>
+                    <p>Спасибо за покупку!</p>
+                    <p class="email-modal-email-display" id="email-modal-email-display"></p>
+                </div>
+                <div class="email-modal-buttons">
+                    <button class="email-modal-btn email-modal-btn-close" id="email-modal-close-success">Закрыть</button>
+                </div>
+            </div>
+
+            <div class="email-modal-body email-modal-body-hidden" id="email-modal-body-error">
+                <div class="email-modal-error-content">
+                    <div class="email-modal-icon email-modal-icon-error">✕</div>
+                    <h4>Ошибка</h4>
+                    <p id="email-modal-error-text"></p>
+                </div>
+                <div class="email-modal-buttons">
+                    <button class="email-modal-btn email-modal-btn-retry" id="email-modal-retry">Попробовать снова</button>
+                    <button class="email-modal-btn email-modal-btn-cancel" id="email-modal-cancel-error">Отмена</button>
+                </div>
+            </div>
         </div>
     </div>
 
