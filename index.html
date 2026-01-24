@@ -3465,8 +3465,8 @@
             border: 3px solid var(--neobrut-black);
             box-shadow: 6px 6px 0 var(--neobrut-black);
             border-radius: 12px;
-            padding: 1.25rem 1rem;
-            max-width: 280px;
+            padding: 0.9rem 1.1rem;
+            max-width: 340px;
             margin: 0 auto;
             animation: pricingSlideUp 0.5s ease-out;
         }
@@ -3483,42 +3483,42 @@
         }
 
         .pricing-title {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.03em;
-            margin: 0 0 0.35rem 0;
+            margin: 0 0 0.25rem 0;
             color: var(--neobrut-black);
         }
 
         .pricing-tagline {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             color: var(--neobrut-gray);
-            margin: 0 0 0.85rem 0;
+            margin: 0 0 0.6rem 0;
         }
 
         .pricing-description {
-            font-size: 0.8rem;
-            line-height: 1.5;
+            font-size: 0.78rem;
+            line-height: 1.4;
             color: var(--neobrut-darkgray);
-            margin: 0 0 0.85rem 0;
+            margin: 0 0 0.6rem 0;
             text-align: left;
         }
 
         .pricing-features {
             list-style: none;
             padding: 0;
-            margin: 0 0 1rem 0;
+            margin: 0 0 0.7rem 0;
             text-align: left;
         }
 
         .pricing-features li {
-            font-size: 0.78rem;
-            padding: 0.3rem 0;
+            font-size: 0.75rem;
+            padding: 0.25rem 0;
             display: flex;
             align-items: flex-start;
-            gap: 0.4rem;
+            gap: 0.35rem;
         }
 
         .pricing-features li::before {
@@ -3542,8 +3542,8 @@
             align-items: baseline;
             justify-content: center;
             gap: 0.15rem;
-            margin: 1rem 0;
-            padding: 0.6rem;
+            margin: 0.7rem 0;
+            padding: 0.5rem;
             background: var(--neobrut-yellow);
             border: 3px solid var(--neobrut-black);
             box-shadow: 4px 4px 0 var(--neobrut-black);
@@ -3551,28 +3551,28 @@
         }
 
         .pricing-price-amount {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 900;
             color: var(--neobrut-black);
             line-height: 1;
         }
 
         .pricing-price-currency {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: var(--neobrut-black);
         }
 
         .pricing-price-period {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: var(--neobrut-darkgray);
         }
 
         .pricing-buy-btn {
             width: 100%;
-            padding: 0.75rem;
-            font-size: 0.95rem;
+            padding: 0.65rem;
+            font-size: 0.9rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.03em;
@@ -3597,13 +3597,13 @@
 
         /* "Show more" link button */
         .pricing-show-more {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--neobrut-blue);
             background: none;
             border: none;
             padding: 0;
-            margin: 0.5rem 0 0 0;
+            margin: 0.3rem 0 0 0;
             cursor: pointer;
             text-decoration: underline;
             text-align: left;
@@ -8272,6 +8272,11 @@
             });
         }
     </script>
+
+    <!-- Подключение Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/purchase.js"></script>
 </body>
 
 </html>
