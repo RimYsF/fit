@@ -82,6 +82,11 @@ function initEmailModal() {
  * Показать модальное окно
  */
 function showEmailModal() {
+    // Инициализируем модал, если ещё не инициализирован
+    if (!emailModal) {
+        initEmailModal();
+    }
+
     if (!emailModal) {
         console.error('❌ Email modal не инициализирован');
         return;
@@ -118,31 +123,47 @@ function closeEmailModal() {
 
     emailModal.classList.remove('show');
     console.log('📧 Email modal закрыт');
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
 }
 
 /**
  * Показать состояние ввода email
  */
 function showEmailInputState() {
+    if (!emailModal) return;
     hideAllModalBodies();
-    document.getElementById('email-modal-body-input').classList.remove('email-modal-body-hidden');
+    const inputBody = document.getElementById('email-modal-body-input');
+    if (inputBody) {
+        inputBody.classList.remove('email-modal-body-hidden');
+    }
 }
 
 /**
  * Показать состояние загрузки
  */
 function showEmailLoadingState() {
+    if (!emailModal) return;
     hideAllModalBodies();
-    document.getElementById('email-modal-body-loading').classList.remove('email-modal-body-hidden');
+    const loadingBody = document.getElementById('email-modal-body-loading');
+    if (loadingBody) {
+        loadingBody.classList.remove('email-modal-body-hidden');
+    }
 }
 
 /**
  * Показать состояние успеха
  */
 function showEmailSuccessState(email) {
+    if (!emailModal) return;
     hideAllModalBodies();
     const successBody = document.getElementById('email-modal-body-success');
-    successBody.classList.remove('email-modal-body-hidden');
+    if (successBody) {
+        successBody.classList.remove('email-modal-body-hidden');
+    }
 
     const emailDisplay = document.getElementById('email-modal-email-display');
     if (emailDisplay) {
@@ -154,9 +175,22 @@ function showEmailSuccessState(email) {
  * Показать состояние ошибки
  */
 function showEmailErrorState(message) {
+    // Инициализируем модал, если ещё не инициализирован
+    if (!emailModal) {
+        initEmailModal();
+    }
+
+    // Если модал всё ещё не найден - выходим
+    if (!emailModal) {
+        console.error('❌ Email modal не доступен');
+        return;
+    }
+
     hideAllModalBodies();
     const errorBody = document.getElementById('email-modal-body-error');
-    errorBody.classList.remove('email-modal-body-hidden');
+    if (errorBody) {
+        errorBody.classList.remove('email-modal-body-hidden');
+    }
 
     const errorText = document.getElementById('email-modal-error-text');
     if (errorText) {
@@ -168,6 +202,8 @@ function showEmailErrorState(message) {
  * Скрыть все body модального окна
  */
 function hideAllModalBodies() {
+    if (!emailModal) return;
+
     const bodies = emailModal.querySelectorAll('.email-modal-body');
     bodies.forEach(body => {
         body.classList.add('email-modal-body-hidden');
