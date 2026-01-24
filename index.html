@@ -8521,6 +8521,7 @@
             welcomeScreen.addEventListener('click', (e) => {
                 // Если клик на pricing buy button, не показывать pricing снова
                 if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
+                    e.stopPropagation();
                     return;
                 }
                 if (!pricingShown) {
@@ -8529,6 +8530,7 @@
             });
             welcomeScreen.addEventListener('touchend', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 // Если тач на pricing buy button, не показывать pricing снова
                 if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
                     return;
@@ -8539,18 +8541,7 @@
             });
         }
 
-        // Обработчик кнопки "Купить"
-        if (pricingBuyBtn) {
-            pricingBuyBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Предотвращаем всплытие события
-                closeWelcomeScreen();
-            });
-            pricingBuyBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                closeWelcomeScreen();
-            });
-        }
+        // Обработчик кнопки "Купить" удалён - теперь обрабатывается в purchase.js
 
         // ===== FEATURES MODAL =====
         const featuresModal = document.getElementById('features-modal');

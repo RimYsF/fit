@@ -409,11 +409,19 @@ function initPurchaseHandler() {
         // Удаляем старые обработчики
         buyButton.onclick = null;
 
-        // Добавляем новый обработчик
+        // Добавляем обработчик для клика (desktop)
         buyButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('🖱️ Клик по кнопке покупки');
+            handlePurchase();
+        });
+
+        // Добавляем обработчик для тача (mobile)
+        buyButton.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('📱 Тач по кнопке покупки');
             handlePurchase();
         });
 
