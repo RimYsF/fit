@@ -1268,7 +1268,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(4px);
             z-index: 20000;
             display: flex;
@@ -1302,7 +1302,7 @@
             width: 92%;
             max-width: 600px;
             height: auto;
-            max-height: 92%;
+            max-height: 95%;
             background: #f5f5dc;
             border: 3px solid var(--neobrut-black);
             border-radius: 16px;
@@ -6385,7 +6385,20 @@
 
             const overallPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
             const bestDay = dayBreakdown.reduce((best, d) => d.percent > best.percent ? d : best, dayBreakdown[0]);
-            const streak = calculateStreak();
+
+            // Считаем серию в пределах 7-дневной тренировки
+            let workoutStreak = 0;
+            let currentStreak = 0;
+            for (let day = 1; day <= 7; day++) {
+                const tasks = todoData[day] || [];
+                const hasActivity = tasks.some(t => t.completed);
+                if (hasActivity) {
+                    currentStreak++;
+                    workoutStreak = Math.max(workoutStreak, currentStreak);
+                } else {
+                    currentStreak = 0;
+                }
+            }
 
             // Считаем пройденные дни по дате (независимо от активности)
             const currentWorkoutDay = getCurrentWorkoutDay();
@@ -6399,7 +6412,7 @@
                 completedExercises,
                 overallPercent,
                 bestDay,
-                streak,
+                streak: workoutStreak,
                 dayBreakdown,
                 completedDays,
                 daysProgressPercent
@@ -7776,8 +7789,6 @@
                         <div class="summary-carousel-track" id="summary-carousel-track">
                             ${summaryHtml}
                         </div>
-                        <button class="summary-carousel-nav prev" onclick="summaryCarousel.prev()">‹</button>
-                        <button class="summary-carousel-nav next" onclick="summaryCarousel.next()">›</button>
                     </div>
                     <div class="summary-carousel-dots" id="summary-carousel-dots">
                         <!-- Точки будут добавлены через JS -->
@@ -7845,14 +7856,14 @@
 
             destroy() {
                 // Удаляем обработчики событий при закрытии
-                if (this.track) {
-                    this.track.ontouchstart = null;
-                    this.track.ontouchmove = null;
-                    this.track.ontouchend = null;
-                    this.track.onmousedown = null;
-                    this.track.onmousemove = null;
-                    this.track.onmouseup = null;
-                    this.track.onmouseleave = null;
+                if (this.overlay) {
+                    this.overlay.ontouchstart = null;
+                    this.overlay.ontouchmove = null;
+                    this.overlay.ontouchend = null;
+                    this.overlay.onmousedown = null;
+                    this.overlay.onmousemove = null;
+                    this.overlay.onmouseup = null;
+                    this.overlay.onmouseleave = null;
                 }
             },
 
@@ -7897,16 +7908,16 @@
                 let startX = 0;
                 let startY = 0;
                 let startTime = 0;
-                const threshold = 50; // минимальное расстояние для свайпа
+                const threshold = 25; // минимальное расстояние для свайпа (более чувствительный)
 
-                // Touch события
-                this.track.ontouchstart = (e) => {
+                // Touch события - на весь overlay
+                this.overlay.ontouchstart = (e) => {
                     startX = e.touches[0].clientX;
                     startY = e.touches[0].clientY;
                     startTime = Date.now();
                 };
 
-                this.track.ontouchmove = (e) => {
+                this.overlay.ontouchmove = (e) => {
                     // Предотвращаем скролл при горизонтальном свайпе
                     const diffX = e.touches[0].clientX - startX;
                     const diffY = e.touches[0].clientY - startY;
@@ -7915,7 +7926,7 @@
                     }
                 };
 
-                this.track.ontouchend = (e) => {
+                this.overlay.ontouchend = (e) => {
                     const endX = e.changedTouches[0].clientX;
                     const endY = e.changedTouches[0].clientY;
                     const diffX = endX - startX;
@@ -7931,26 +7942,26 @@
                     }
                 };
 
-                // Mouse события (для desktop)
+                // Mouse события (для desktop) - на весь overlay
                 let isDragging = false;
 
-                this.track.onmousedown = (e) => {
+                this.overlay.onmousedown = (e) => {
                     isDragging = true;
                     startX = e.clientX;
                     startY = e.clientY;
                     startTime = Date.now();
-                    this.track.style.cursor = 'grabbing';
+                    this.overlay.style.cursor = 'grabbing';
                 };
 
-                this.track.onmousemove = (e) => {
+                this.overlay.onmousemove = (e) => {
                     if (!isDragging) return;
                     e.preventDefault();
                 };
 
-                this.track.onmouseup = (e) => {
+                this.overlay.onmouseup = (e) => {
                     if (!isDragging) return;
                     isDragging = false;
-                    this.track.style.cursor = '';
+                    this.overlay.style.cursor = '';
 
                     const diffX = e.clientX - startX;
                     const diffY = e.clientY - startY;
@@ -7964,9 +7975,9 @@
                     }
                 };
 
-                this.track.onmouseleave = () => {
+                this.overlay.onmouseleave = () => {
                     isDragging = false;
-                    this.track.style.cursor = '';
+                    this.overlay.style.cursor = '';
                 };
             }
         };
