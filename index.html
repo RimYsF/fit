@@ -8833,13 +8833,23 @@
 
         // Обработчик кнопки сброса кэша (для тестирования)
         if (clearCacheBtn) {
-            clearCacheBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+            function clearCache() {
                 localStorage.removeItem('fitTrackerSubscriptionCache');
                 window.hasSubscription = null;
                 window.isSubscribed = undefined;
                 console.log('🗑️ Кэш подписки очищен');
                 location.reload();
+            }
+
+            clearCacheBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearCache();
+            });
+
+            clearCacheBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                clearCache();
             });
         }
 
