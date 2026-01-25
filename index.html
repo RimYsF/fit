@@ -6403,11 +6403,25 @@
             const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
             const dayName = dayNames[today.getDay()];
 
-            // Подсчитываем выполненные и оставшиеся задачи
-            const todos = todoData[displayDay] || [];
-            const completedCount = todos.filter(t => t.completed).length;
-            const totalCount = todos.length;
-            const remainingCount = totalCount - completedCount;
+            let dayContext, percentContext, completedContext, remainingContext;
+
+            if (displayDay >= 8) {
+                // Для дня 8+ (Итоги) используем недельную статистику
+                const weeklySummary = calculateWeeklySummary();
+                dayContext = 'Итоги недели';
+                percentContext = weeklySummary.overallPercent;
+                completedContext = `${weeklySummary.completedTasks}/${weeklySummary.totalTasks}`;
+                remainingContext = weeklySummary.totalTasks - weeklySummary.completedTasks;
+            } else {
+                // Для дней 1-7 используем дневную статистику
+                const todos = todoData[displayDay] || [];
+                const completedCount = todos.filter(t => t.completed).length;
+                const totalCount = todos.length;
+                dayContext = `${displayDay} из 7`;
+                percentContext = percentage;
+                completedContext = `${completedCount}/${totalCount}`;
+                remainingContext = totalCount - completedCount;
+            }
 
             const systemPrompt = `Ты — мотивирующий фитнес-тренер AI. Ты даёшь короткие, энерджичные комментарии на русском языке (макс 120 символов).
 Правила:
@@ -6416,13 +6430,14 @@
 - Адаптируй тон под прогресс пользователя
 - Упоминай конкретные цифры (процент, серия, задачи)
 - Никогда не повторяйся
+- Если это "Итоги недели", поздравляй с завершением недели и подводи итоги
 
 Контекст:
-- День: ${displayDay} из 7
-- Процент выполнения: ${percentage}%
+- День: ${dayContext}
+- Процент выполнения: ${percentContext}%
 - Серия: ${streak} дней
-- Выполнено задач: ${completedCount}/${totalCount}
-- Осталось: ${remainingCount} задач`;
+- Выполнено задач: ${completedContext}
+- Осталось: ${remainingContext} задач`;
 
             try {
                 const response = await fetch(getAPIBaseURL(), {
@@ -6449,11 +6464,11 @@
                 }
 
                 const data = await response.json();
-                const comment = data.choices[0]?.message?.content?.trim() || getFallbackComment(percentage, streak);
+                const comment = data.choices[0]?.message?.content?.trim() || getFallbackComment(percentContext, streak);
                 return comment;
             } catch (error) {
                 console.error('AI Comment error:', error);
-                return getFallbackComment(percentage, streak);
+                return getFallbackComment(percentContext, streak);
             }
         }
 
@@ -7116,6 +7131,12 @@
         function closeWorkoutModal() {
             const todoOverlay = document.getElementById('todo-overlay');
 
+            // Восстанавливаем видимость кнопки закрытия
+            const closeBtn = todoOverlay.querySelector('.todo-modal-close');
+            if (closeBtn) {
+                closeBtn.style.display = '';
+            }
+
             // Скрываем overlay с анимацией
             todoOverlay.classList.remove('show');
             setTimeout(() => {
@@ -7133,9 +7154,27 @@
             const summary = calculateWeeklySummary();
             const summaryHtml = createSummaryHtml(summary);
 
-            const modal = document.getElementById('workout-modal');
-            modal.innerHTML = summaryHtml;
-            modal.classList.add('active');
+            const todoOverlay = document.getElementById('todo-overlay');
+            const todoModalTitle = document.getElementById('todo-modal-title');
+            const todoModalContent = document.getElementById('todo-modal-content');
+
+            // Устанавливаем заголовок
+            todoModalTitle.textContent = '📊 Итоги недели';
+
+            // Скрываем кнопку закрытия, так как у summary свой HTML
+            todoModalTitle.parentElement.querySelector('.todo-modal-close').style.display = 'none';
+
+            // Отображаем содержимое итогов
+            todoModalContent.innerHTML = summaryHtml;
+
+            // Показываем overlay с анимацией
+            todoOverlay.style.display = 'block';
+            setTimeout(() => {
+                todoOverlay.classList.add('show');
+            }, 10);
+
+            // Запоминаем текущий выбранный день как 8 (Итоги)
+            selectedWorkout = 8;
         }
 
         // Показать поздравительный экран после завершения Day 7
@@ -8047,7 +8086,10 @@
                                 - Программа — это твоя Библия. Отвечай через неё, а не общими фразами
 
                                 СЕГОДНЯ: ${dateString}
-                                Тренировочный день: ${currentWorkoutDay}/7 (${getWorkoutDayName(currentWorkoutDay)})
+                                ${currentWorkoutDay >= 8
+                                    ? `Тренировочный день: Итоги недели`
+                                    : `Тренировочный день: ${currentWorkoutDay}/7 (${getWorkoutDayName(currentWorkoutDay)})`
+                                }
 
                                 ВСЕ ЗАДАНИЯ ПО ДНЯМ:
                                 ${Object.keys(todoData).map(day => {
@@ -8075,7 +8117,10 @@
                                         }).join('\\n');
                                 }).join('\\n')}
 
-                                Выполнение сегодня: ${calculateCompletionPercentage(currentWorkoutDay)}%
+                                ${currentWorkoutDay >= 8
+                                    ? `Выполнение за неделю: ${calculateWeeklySummary().overallPercent}%`
+                                    : `Выполнение сегодня: ${calculateCompletionPercentage(currentWorkoutDay)}%`
+                                }
                                 Активных дней: ${Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length}
                                 ${activeRepost ? `
 ПЕРЕСЛАННОЕ УПРАЖНЕНИЕ:
