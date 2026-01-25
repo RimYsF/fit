@@ -657,6 +657,36 @@
             transform: translateY(0);
         }
 
+        /* Полноэкранный режим для итогов */
+        .todo-overlay.summary-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            display: none;
+        }
+
+        .todo-overlay.summary-mode.show {
+            display: block;
+        }
+
+        .todo-overlay.summary-mode .todo-modal {
+            width: 90%;
+            height: 90%;
+            max-width: 600px;
+            max-height: 800px;
+            margin: 5vh auto;
+            background: var(--neobrut-white);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
         .todo-modal {
             position: relative;
             width: 100%;
@@ -1496,281 +1526,492 @@
 
         /* ===== КОНЕЦ СТИЛЕЙ ИТОГОВ ===== */
 
-        .summary-title {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: var(--neobrut-black);
+        /* ===== СТИЛИ ДЛЯ КАРУСЕЛИ ИТОГОВ (Carousel Summary) ===== */
+
+        /* Контейнер карусели - занимает весь контент модального окна */
+        .summary-carousel {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
         }
 
-        .summary-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+        /* Слайд */
+        .summary-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(100%);
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        .summary-slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            z-index: 1;
+        }
+
+        /* Анимации переходов слайдов */
+        .summary-slide.slide-exit-next {
+            transform: translateX(-100%);
+        }
+
+        .summary-slide.slide-exit-prev {
+            transform: translateX(100%);
+        }
+
+        .summary-slide.slide-enter-next {
+            transform: translateX(100%);
+        }
+
+        .summary-slide.slide-enter-prev {
+            transform: translateX(-100%);
+        }
+
+        /* ===== ГЛАВНЫЙ СЛАЙД ===== */
+        .slide-hero {
+            text-align: center;
+            padding: 40px 20px;
             margin-bottom: 24px;
         }
 
-        .summary-stat-box {
-            background: var(--neobrut-bg);
-            border: 3px solid var(--neobrut-black);
-            border-radius: var(--neobrut-radius);
-            padding: 16px;
-            text-align: center;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
+        .hero-percent {
+            font-size: 72px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 12px;
+            animation: heroPercentFade 0.6s ease-out;
         }
 
-        .summary-stat-label {
-            font-size: 12px;
+        @keyframes heroPercentFade {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .hero-percent.excellent {
+            color: #16a34a;
+        }
+
+        .hero-percent.good {
+            color: #ca8a04;
+        }
+
+        .hero-percent.fair {
+            color: #dc2626;
+        }
+
+        .hero-label {
+            font-size: 14px;
             color: var(--neobrut-gray);
-            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        .summary-stat-value {
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: var(--neobrut-bg);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 16px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .hero-stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .hero-stat-value {
             font-size: 24px;
-            font-weight: bold;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            line-height: 1.2;
+        }
+
+        .hero-stat-label {
+            font-size: 11px;
+            color: var(--neobrut-gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .hero-stat-divider {
+            width: 1px;
+            height: 40px;
+            background: var(--neobrut-black);
+            opacity: 0.2;
+        }
+
+        .hero-best {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: #dcfce7;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .hero-best-label {
+            font-size: 14px;
+            color: var(--neobrut-gray);
+            font-weight: 500;
+        }
+
+        .hero-best-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        .hero-hint {
+            text-align: center;
+            font-size: 13px;
+            color: var(--neobrut-gray);
+            font-weight: 500;
+            animation: hintPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes hintPulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ===== СЛАЙД ДНЯ ===== */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--neobrut-black);
+        }
+
+        .slide-day-number {
+            font-size: 28px;
+            font-weight: 900;
             color: var(--neobrut-black);
         }
 
-        .summary-main-circle-wrapper {
+        .slide-day-percent {
+            font-size: 32px;
+            font-weight: 900;
+        }
+
+        .slide-day-percent.high {
+            color: #16a34a;
+        }
+
+        .slide-day-percent.mid {
+            color: #ca8a04;
+        }
+
+        .slide-day-percent.low {
+            color: #dc2626;
+        }
+
+        .day-progress-ring {
             position: relative;
-            width: 150px;
-            height: 150px;
+            width: 140px;
+            height: 140px;
             margin: 0 auto 24px;
         }
 
-        .summary-progress-circle {
+        .day-progress-ring svg {
             width: 100%;
             height: 100%;
             transform: rotate(-90deg);
         }
 
-        .summary-circle-bg {
+        .ring-bg {
             fill: none;
             stroke: var(--neobrut-light-gray);
-            stroke-width: 8;
+            stroke-width: 6;
         }
 
-        .summary-circle-fill {
+        .ring-fill {
             fill: none;
-            stroke: var(--neobrut-green);
-            stroke-width: 8;
-            transition: stroke-dashoffset 0.5s ease;
+            stroke: #16a34a;
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.6s ease;
         }
 
-        .summary-circle-text {
+        .ring-center {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 32px;
-            font-weight: bold;
+            text-align: center;
+        }
+
+        .ring-number {
+            font-size: 24px;
+            font-weight: 900;
             color: var(--neobrut-black);
+            line-height: 1.2;
         }
 
-        .summary-breakdown-section {
-            margin-top: 24px;
+        .ring-label {
+            font-size: 11px;
+            color: var(--neobrut-gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .summary-breakdown-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: var(--neobrut-black);
-        }
-
-        .summary-days-list {
+        .day-tasks-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .summary-day-item {
+        .day-task-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            background: var(--neobrut-bg);
+            padding: 12px 16px;
+            background: white;
             border: 2px solid var(--neobrut-black);
-            border-radius: var(--neobrut-radius);
+            border-radius: 10px;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
         }
 
-        .summary-day-num {
-            font-weight: bold;
-            color: var(--neobrut-black);
-        }
-
-        .summary-day-percent {
-            font-weight: bold;
-        }
-
-        .summary-day-percent.success-green {
-            color: var(--success-green);
-        }
-
-        .summary-day-percent.warning-yellow {
-            color: var(--warning-yellow);
-        }
-
-        .summary-day-percent.gray {
-            color: var(--neobrut-gray);
-        }
-
-        /* Прогресс по дням - секция внизу */
-        .summary-days-progress-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            margin-top: 24px;
-            padding-top: 24px;
-            border-top: 2px solid var(--neobrut-light-gray);
-        }
-
-        .summary-days-progress-label {
+        .task-name {
             font-size: 14px;
-            font-weight: bold;
             color: var(--neobrut-black);
-        }
-
-        .summary-days-progress-circle {
-            position: relative;
-            width: 120px;
-            height: 120px;
-        }
-
-        .summary-days-progress-circle svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .summary-days-progress-circle .summary-circle-text {
-            font-size: 24px;
-        }
-
-        /* Day 8 Widget Special Styling */
-        .summary-day-widget {
-            background: linear-gradient(135deg, #ffd9b3 0%, #ffe8cc 50%, #fff0e0 100%) !important;
-            border: 3px solid var(--neobrut-black) !important;
-        }
-
-        .summary-widget-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            font-weight: 500;
             flex: 1;
         }
 
-        .summary-icon {
-            font-size: 16px;
-            color: white;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        .task-time {
+            font-size: 13px;
+            color: var(--neobrut-gray);
+            font-weight: 600;
+            margin-left: 12px;
         }
 
-        .summary-day-widget .task-progress-container {
-            margin-top: auto;
+        .day-empty {
+            text-align: center;
+            padding: 32px;
+            color: var(--neobrut-gray);
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        /* Поздравительный экран */
-        .celebration-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        /* ===== ФИНАЛЬНЫЙ СЛАЙД ===== */
+        .final-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 10000;
-            animation: celebrationFadeIn 0.5s ease;
-        }
-
-        @keyframes celebrationFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .celebration-content {
+            height: 100%;
+            padding: 40px 24px;
             text-align: center;
-            color: white;
-            animation: celebrationScale 0.8s ease;
         }
 
-        @keyframes celebrationScale {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+        .final-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            animation: finalIconBounce 0.6s ease-out;
         }
 
-        .celebration-emoji {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: celebrationBounce 1s ease infinite;
+        .final-icon::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 35px solid white;
+            transform: translateY(-3px) rotate(90deg);
         }
 
-        @keyframes celebrationBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        @keyframes finalIconBounce {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
-        .celebration-title {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+        .final-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            margin-bottom: 32px;
         }
 
-        .celebration-subtitle {
-            font-size: 24px;
-            margin-bottom: 30px;
-            opacity: 0.9;
+        .final-stats {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 32px;
         }
 
-        .celebration-message {
-            font-size: 18px;
-            max-width: 400px;
-            margin: 0 auto 30px;
-            opacity: 0.8;
-        }
-
-        .celebration-button {
+        .final-stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
             background: white;
-            color: #764ba2;
-            border: none;
-            padding: 15px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 50px;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .final-stat-label {
+            font-size: 14px;
+            color: var(--neobrut-gray);
+            font-weight: 500;
+        }
+
+        .final-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--neobrut-black);
+        }
+
+        .final-action-btn {
+            width: 100%;
+            max-width: 280px;
+            padding: 18px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            background: #dc2626;
+            border: 3px solid var(--neobrut-black);
+            border-radius: 14px;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .celebration-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        .final-action-btn:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0 var(--neobrut-black);
         }
 
-        /* Конфетти эффект */
-        .confetti {
+        .final-action-btn:active {
+            transform: translateY(1px);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        /* ===== НАВИГАЦИЯ КАРУСЕЛИ ===== */
+        .carousel-nav {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #f0f;
-            position: fixed;
-            animation: confettiFall 3s linear forwards;
+            bottom: 24px;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 10;
+            padding: 0 24px;
         }
 
-        @keyframes confettiFall {
-            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        .nav-btn {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+            transition: all 0.15s ease;
+            flex-shrink: 0;
         }
 
+        .nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+            box-shadow: 1px 1px 0 var(--neobrut-black);
+        }
+
+        .nav-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--neobrut-black);
+        }
+
+        .carousel-dots {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 200px;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--neobrut-light-gray);
+            border: 1px solid var(--neobrut-black);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .carousel-dot:hover {
+            transform: scale(1.2);
+        }
+
+        .carousel-dot.active {
+            background: var(--neobrut-black);
+            transform: scale(1.3);
+        }
+
+        /* ===== КОНЕЦ СТИЛЕЙ КАРУСЕЛИ ИТОГОВ ===== */
 
         /* Горизонтальный разделитель с кнопкой */
         .divider {
@@ -6241,83 +6482,243 @@
 
         // Создать HTML для модального окна итогов
         function createSummaryHtml(summary) {
-            // Создаём HTML для дней
-            let daysHtml = '';
+            const resultClass = summary.overallPercent >= 75 ? 'excellent' : summary.overallPercent >= 50 ? 'good' : 'fair';
+
+            // Собираем детальную информацию по дням
+            let daySlidesHtml = '';
             summary.dayBreakdown.forEach(d => {
-                const colorClass = d.percent >= 75 ? 'success' : d.percent >= 50 ? 'warning' : 'low';
-                daysHtml += `
-                    <div class="summary-day-row ${colorClass}">
-                        <span class="summary-day-label">День ${d.day}</span>
-                        <div class="summary-day-bar-bg">
-                            <div class="summary-day-bar-fill" style="width: ${d.percent}%"></div>
+                const dayTasks = todoData[d.day] || [];
+                const completedTasks = dayTasks.filter(t => t.completed);
+
+                // Формируем список задач с временем
+                let tasksListHtml = '';
+                if (completedTasks.length > 0) {
+                    completedTasks.forEach(task => {
+                        const timeStr = task.completedAt
+                            ? new Date(task.completedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+                            : '';
+                        tasksListHtml += `
+                            <div class="day-task-item">
+                                <div class="task-name">${task.text}</div>
+                                ${timeStr ? `<div class="task-time">${timeStr}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                } else {
+                    tasksListHtml = '<div class="day-empty">Нет выполненных задач</div>';
+                }
+
+                const dashOffset = 264 - (264 * d.percent / 100);
+                const percentClass = d.percent >= 75 ? 'high' : d.percent >= 50 ? 'mid' : 'low';
+
+                daySlidesHtml += `
+                    <div class="summary-slide" data-slide="day-${d.day}">
+                        <div class="slide-header">
+                            <div class="slide-day-number">День ${d.day}</div>
+                            <div class="slide-day-percent ${percentClass}">${d.percent}%</div>
                         </div>
-                        <span class="summary-day-value">${d.percent}%</span>
+                        <div class="day-progress-ring">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="ring-bg" cx="50" cy="50" r="42"/>
+                                <circle class="ring-fill" cx="50" cy="50" r="42"
+                                    stroke-dasharray="264"
+                                    stroke-dashoffset="${dashOffset}"
+                                    transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <div class="ring-center">
+                                <div class="ring-number">${completedTasks.length}/${dayTasks.length}</div>
+                                <div class="ring-label">задач</div>
+                            </div>
+                        </div>
+                        <div class="day-tasks-list">${tasksListHtml}</div>
                     </div>
                 `;
             });
 
-            // Получаем даты
-            const startDate = getStartDate();
-            let dateInfo = '';
-            if (startDate) {
-                const endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + 6);
-                const options = { day: 'numeric', month: 'long' };
-                dateInfo = `
-                    <div class="summary-dates">
-                        <span class="date-start">${startDate.toLocaleDateString('ru-RU', options)}</span>
-                        <span class="date-sep—</span>
-                        <span class="date-end">${endDate.toLocaleDateString('ru-RU', options)}</span>
-                    </div>
-                `;
-            }
-
-            // Определяем класс результата
-            const resultClass = summary.overallPercent >= 75 ? 'excellent' : summary.overallPercent >= 50 ? 'good' : 'fair';
-
             return `
-                <div class="summary-new">
-                    <div class="summary-header">
-                        <div class="summary-percent ${resultClass}">${summary.overallPercent}%</div>
-                        <div class="summary-label">выполнено</div>
+                <div class="summary-carousel">
+                    <!-- Слайд 1: Главный экран -->
+                    <div class="summary-slide active" data-slide="main">
+                        <div class="slide-hero">
+                            <div class="hero-percent ${resultClass}">${summary.overallPercent}%</div>
+                            <div class="hero-label">общий результат</div>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="hero-stat">
+                                <div class="hero-stat-value">${summary.completedTasks}/${summary.totalTasks}</div>
+                                <div class="hero-stat-label">Задачи</div>
+                            </div>
+                            <div class="hero-stat-divider"></div>
+                            <div class="hero-stat">
+                                <div class="hero-stat-value">${summary.completedExercises}/${summary.totalExercises}</div>
+                                <div class="hero-stat-label">Упражнения</div>
+                            </div>
+                            <div class="hero-stat-divider"></div>
+                            <div class="hero-stat">
+                                <div class="hero-stat-value">${summary.streak}</div>
+                                <div class="hero-stat-label">Дней подряд</div>
+                            </div>
+                        </div>
+                        <div class="hero-best">
+                            <span class="hero-best-label">Лучший день:</span>
+                            <span class="hero-best-value">День ${summary.bestDay?.day || '-'}</span>
+                        </div>
+                        <div class="hero-hint">Свайпайте для деталей</div>
                     </div>
 
-                    ${dateInfo}
+                    ${daySlidesHtml}
 
-                    <div class="summary-grid">
-                        <div class="summary-metric">
-                            <div class="metric-value">${summary.completedTasks}<span class="metric-total">/${summary.totalTasks}</span></div>
-                            <div class="metric-label">Задач</div>
-                        </div>
-                        <div class="summary-metric">
-                            <div class="metric-value">${summary.completedExercises}<span class="metric-total">/${summary.totalExercises}</span></div>
-                            <div class="metric-label">Упражнений</div>
-                        </div>
-                        <div class="summary-metric">
-                            <div class="metric-value">${summary.streak}</div>
-                            <div class="metric-label">Дней подряд</div>
-                        </div>
-                        <div class="summary-metric">
-                            <div class="metric-value">${summary.completedDays}/7</div>
-                            <div class="metric-label">Пройдено</div>
+                    <!-- Финальный слайд -->
+                    <div class="summary-slide" data-slide="final">
+                        <div class="final-content">
+                            <div class="final-icon"></div>
+                            <div class="final-title">Неделя завершена!</div>
+                            <div class="final-stats">
+                                <div class="final-stat-row">
+                                    <span class="final-stat-label">Выполнено задач</span>
+                                    <span class="final-stat-value">${summary.completedTasks} из ${summary.totalTasks}</span>
+                                </div>
+                                <div class="final-stat-row">
+                                    <span class="final-stat-label">Выполнено упражнений</span>
+                                    <span class="final-stat-value">${summary.completedExercises} из ${summary.totalExercises}</span>
+                                </div>
+                            </div>
+                            <button class="final-action-btn" onclick="closeToBot()">
+                                Завершить тренировки
+                            </button>
                         </div>
                     </div>
 
-                    <div class="summary-days-section">
-                        <div class="section-title">Прогресс по дням</div>
-                        <div class="summary-days-list">${daysHtml}</div>
+                    <!-- Навигация -->
+                    <div class="carousel-nav">
+                        <button class="nav-btn nav-prev" onclick="carouselPrev()">
+                            <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                        </button>
+                        <div class="carousel-dots"></div>
+                        <button class="nav-btn nav-next" onclick="carouselNext()">
+                            <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                        </button>
                     </div>
-
-                    <div class="summary-best">
-                        <span class="best-label">Лучший результат:</span>
-                        <span class="best-value">День ${summary.bestDay?.day || '-'} (${summary.bestDay?.percent || 0}%)</span>
-                    </div>
-
-                    <button class="summary-close-btn" onclick="closeToBot()">
-                        Завершить тренировки
-                    </button>
                 </div>
             `;
+        }
+
+        // Класс карусели для слайдов
+        class SummaryCarousel {
+            constructor() {
+                this.container = document.querySelector('.summary-carousel');
+                this.slides = Array.from(this.container.querySelectorAll('.summary-slide'));
+                this.dotsContainer = this.container.querySelector('.carousel-dots');
+                this.currentSlide = 0;
+                this.isAnimating = false;
+
+                this.init();
+            }
+
+            init() {
+                // Создаем точки
+                this.slides.forEach((_, index) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'carousel-dot' + (index === 0 ? ' active' : '');
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                    this.dotsContainer.appendChild(dot);
+                });
+
+                this.dots = Array.from(this.dotsContainer.querySelectorAll('.carousel-dot'));
+
+                // Настраиваем свайп
+                this.setupSwipe();
+            }
+
+            goToSlide(index) {
+                if (this.isAnimating || index === this.currentSlide) return;
+
+                this.isAnimating = true;
+                const direction = index > this.currentSlide ? 'next' : 'prev';
+                const currentSlideEl = this.slides[this.currentSlide];
+                const nextSlideEl = this.slides[index];
+
+                // Анимация перехода
+                currentSlideEl.classList.add('slide-exit-' + direction);
+                nextSlideEl.classList.add('slide-enter-' + direction);
+                nextSlideEl.classList.add('active');
+
+                setTimeout(() => {
+                    currentSlideEl.classList.remove('active', 'slide-exit-' + direction);
+                    nextSlideEl.classList.remove('slide-enter-' + direction);
+                    this.isAnimating = false;
+                }, 400);
+
+                // Обновляем точки
+                this.dots[this.currentSlide].classList.remove('active');
+                this.dots[index].classList.add('active');
+
+                this.currentSlide = index;
+
+                // Вибрация
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.selectionChanged();
+                }
+            }
+
+            next() {
+                if (this.currentSlide < this.slides.length - 1) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            prev() {
+                if (this.currentSlide > 0) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            setupSwipe() {
+                let startX, startY, startTime;
+
+                const onTouchStart = (e) => {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    startTime = Date.now();
+                };
+
+                const onTouchEnd = (e) => {
+                    if (!startX || !startY) return;
+
+                    const endX = e.changedTouches[0].clientX;
+                    const endY = e.changedTouches[0].clientY;
+                    const diffX = endX - startX;
+                    const diffY = endY - startY;
+                    const timeDiff = Date.now() - startTime;
+
+                    // Проверяем что это горизонтальный свайп
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50 && timeDiff < 500) {
+                        if (diffX > 0) {
+                            this.prev();
+                        } else {
+                            this.next();
+                        }
+                    }
+
+                    startX = null;
+                    startY = null;
+                };
+
+                this.container.addEventListener('touchstart', onTouchStart, { passive: true });
+                this.container.addEventListener('touchend', onTouchEnd, { passive: true });
+            }
+        }
+
+        function carouselNext() {
+            if (window.summaryCarousel) {
+                window.summaryCarousel.next();
+            }
+        }
+
+        function carouselPrev() {
+            if (window.summaryCarousel) {
+                window.summaryCarousel.prev();
+            }
         }
 
         // Функция закрытия и возврата в бота
@@ -7397,17 +7798,27 @@
             const summaryHtml = createSummaryHtml(summary);
 
             const todoOverlay = document.getElementById('todo-overlay');
-            const todoModalTitle = document.getElementById('todo-modal-title');
+            const todoModal = document.getElementById('todo-modal');
+            const todoModalHeader = document.querySelector('.todo-modal-header');
             const todoModalContent = document.getElementById('todo-modal-content');
 
-            // Устанавливаем заголовок
-            todoModalTitle.textContent = '📊 Итоги недели';
+            // Добавляем режим итогов
+            todoOverlay.classList.add('summary-mode');
 
-            // Показываем кнопку закрытия (не скрываем её)
-            todoModalTitle.parentElement.querySelector('.todo-modal-close').style.display = 'flex';
+            // Скрываем заголовок для полноэкранного режима
+            if (todoModalHeader) {
+                todoModalHeader.style.display = 'none';
+            }
 
             // Отображаем содержимое итогов
             todoModalContent.innerHTML = summaryHtml;
+
+            // Инициализируем карусель
+            setTimeout(() => {
+                if (typeof SummaryCarousel !== 'undefined') {
+                    window.summaryCarousel = new SummaryCarousel();
+                }
+            }, 150);
 
             // Показываем overlay с анимацией
             todoOverlay.style.display = 'block';
@@ -7417,6 +7828,29 @@
 
             // Запоминаем текущий выбранный день как 8 (Итоги)
             selectedWorkout = 8;
+        }
+
+        // Переопределяем функцию закрытия для очистки режима итогов
+        const originalCloseWorkoutModal = closeWorkoutModal;
+        closeWorkoutModal = function() {
+            const todoOverlay = document.getElementById('todo-overlay');
+            const todoModalHeader = document.querySelector('.todo-modal-header');
+
+            // Очищаем карусель если есть
+            if (window.summaryCarousel) {
+                window.summaryCarousel = null;
+            }
+
+            // Удаляем режим итогов
+            todoOverlay.classList.remove('summary-mode');
+
+            // Восстанавливаем заголовок
+            if (todoModalHeader) {
+                todoModalHeader.style.display = '';
+            }
+
+            // Вызываем оригинальную функцию
+            originalCloseWorkoutModal();
         }
 
         // Показать поздравительный экран после завершения Day 7
