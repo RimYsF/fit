@@ -1299,10 +1299,10 @@
 
         /* Основной контейнер модального окна */
         .summary-fullscreen-modal {
-            width: 90%;
-            max-width: 500px;
+            width: 92%;
+            max-width: 600px;
             height: auto;
-            max-height: 85%;
+            max-height: 92%;
             background: #f5f5dc;
             border: 3px solid var(--neobrut-black);
             border-radius: 16px;
@@ -1693,6 +1693,142 @@
             color: #666;
             margin-top: 2px;
             font-weight: 500;
+        }
+
+        /* Слайд 5: Период тренировки */
+        .summary-period-slide {
+            padding-top: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .summary-period-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .summary-period-title {
+            font-size: 14px;
+            color: #666;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .summary-period-dates {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--neobrut-black);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* Слайд 7: Мотивация */
+        .summary-motivation-slide {
+            padding-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .summary-motivation-emoji {
+            font-size: 72px;
+            margin-bottom: 16px;
+        }
+
+        .summary-motivation-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .summary-motivation-message {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            max-width: 280px;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .summary-motivation-stats {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .summary-motivation-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .summary-motivation-stat .stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            line-height: 1;
+        }
+
+        .summary-motivation-stat .stat-label {
+            font-size: 10px;
+            color: #666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* Карточка статистики с прогресс-баром */
+        .summary-stat-card {
+            background: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .summary-stat-label {
+            font-size: 11px;
+            color: #666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .summary-stat-bar-bg {
+            height: 12px;
+            background: #e8e8e8;
+            border-radius: 6px;
+            border: 1px solid var(--neobrut-black);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .summary-stat-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neobrut-yellow), #ffd700);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .summary-stat-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            text-align: center;
+            margin-top: 8px;
         }
 
         /* Кнопка завершения */
@@ -6365,40 +6501,56 @@
                 `;
             }).join('');
 
-            // Получаем даты (слайд 3)
-            let datesHtml = '';
-            const startDate = getStartDate();
-            if (startDate) {
-                const endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + 6);
-                const options = { day: 'numeric', month: 'long' };
-                datesHtml = `
-                    <div class="summary-dates-card">
-                        <div class="summary-dates-label">Период тренировки</div>
-                        <div class="summary-dates-row">
-                            <span class="summary-date">${startDate.toLocaleDateString('ru-RU', options)}</span>
-                            <span class="summary-date-sep">—</span>
-                            <span class="summary-date">${endDate.toLocaleDateString('ru-RU', options)}</span>
-                        </div>
-                    </div>
-                `;
-            } else {
-                datesHtml = `
-                    <div class="summary-dates-card">
-                        <div class="summary-dates-label">Период тренировки</div>
-                        <div class="summary-dates-row">
-                            <span class="summary-date">7 дней активности</span>
-                        </div>
-                    </div>
-                `;
-            }
-
             // Определяем emoji на основе результата
             const resultEmoji = summary.overallPercent >= 90 ? '🏆' :
                               summary.overallPercent >= 75 ? '🎯' :
                               summary.overallPercent >= 50 ? '💪' : '👊';
 
-            // Возвращаем HTML карусели (4 слайда в брутальном стиле)
+            // Вычисляем дополнительную статистику
+            const avgTasksPerDay = summary.completedDays > 0 ? Math.round(summary.completedTasks / summary.completedDays * 10) / 10 : 0;
+            const avgExercisesPerDay = summary.completedDays > 0 ? Math.round(summary.completedExercises / summary.completedDays * 10) / 10 : 0;
+            const remainingTasks = summary.totalTasks - summary.completedTasks;
+            const remainingExercises = summary.totalExercises - summary.completedExercises;
+            const completionRate = summary.totalTasks > 0 ? Math.round(summary.completedTasks / summary.totalTasks * 100) : 0;
+
+            // Получаем даты периода
+            let periodText = '';
+            let periodDates = '';
+            const startDate = getStartDate();
+            if (startDate) {
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 6);
+                const options = { day: 'numeric', month: 'long' };
+                periodDates = `${startDate.toLocaleDateString('ru-RU', options)} — ${endDate.toLocaleDateString('ru-RU', options)}`;
+                periodText = 'Твоя неделя';
+            } else {
+                periodDates = '7 дней активности';
+                periodText = 'Период';
+            }
+
+            // Определяем мотивационное сообщение
+            let motivationalEmoji = '';
+            let motivationalTitle = '';
+            let motivationalMessage = '';
+            if (summary.overallPercent >= 90) {
+                motivationalEmoji = '🏆';
+                motivationalTitle = 'Превосходно!';
+                motivationalMessage = 'Ты показал невероятный результат! Так держать!';
+            } else if (summary.overallPercent >= 75) {
+                motivationalEmoji = '🎯';
+                motivationalTitle = 'Отлично!';
+                motivationalMessage = 'Очень хороший результат! Продолжай в том же духе!';
+            } else if (summary.overallPercent >= 50) {
+                motivationalEmoji = '💪';
+                motivationalTitle = 'Хороший старт!';
+                motivationalMessage = 'Неплохой результат! Есть куда расти!';
+            } else {
+                motivationalEmoji = '👊';
+                motivationalTitle = 'Начало пути!';
+                motivationalMessage = 'Главное — не сдаваться! Продолжай тренироваться!';
+            }
+
+            // Возвращаем HTML карусели (7 слайдов в брутальном стиле)
             return `
                 <!-- Слайд 1: Главный процент (Hero) -->
                 <div class="summary-carousel-slide summary-hero-slide">
@@ -6432,7 +6584,37 @@
                     </div>
                 </div>
 
-                <!-- Слайд 3: Дни (Day-by-day progress) -->
+                <!-- Слайд 3: Детальная статистика -->
+                <div class="summary-carousel-slide summary-metrics-slide">
+                    <div class="summary-metrics-title">Детальная статистика</div>
+                    <div class="summary-metrics-grid">
+                        <div class="summary-metric-card">
+                            <div class="summary-metric-value">${avgTasksPerDay}</div>
+                            <div class="summary-metric-label">Задач/день</div>
+                        </div>
+                        <div class="summary-metric-card">
+                            <div class="summary-metric-value">${avgExercisesPerDay}</div>
+                            <div class="summary-metric-label">Упр./день</div>
+                        </div>
+                        <div class="summary-metric-card">
+                            <div class="summary-metric-value">${remainingTasks}</div>
+                            <div class="summary-metric-label">Осталось задач</div>
+                        </div>
+                        <div class="summary-metric-card">
+                            <div class="summary-metric-value">${remainingExercises}</div>
+                            <div class="summary-metric-label">Осталось упр.</div>
+                        </div>
+                    </div>
+                    <div class="summary-stat-card">
+                        <div class="summary-stat-label">Твоё выполнение</div>
+                        <div class="summary-stat-bar-bg">
+                            <div class="summary-stat-bar-fill" style="width: ${completionRate}%"></div>
+                        </div>
+                        <div class="summary-stat-value">${completionRate}%</div>
+                    </div>
+                </div>
+
+                <!-- Слайд 4: Прогресс по дням -->
                 <div class="summary-carousel-slide summary-days-slide">
                     <div class="summary-days-title">Прогресс по дням</div>
                     <div class="summary-days-card">
@@ -6451,7 +6633,24 @@
                     </div>
                 </div>
 
-                <!-- Слайд 4: Достижения (Achievements) -->
+                <!-- Слайд 5: Период тренировки -->
+                <div class="summary-carousel-slide summary-period-slide">
+                    <div class="summary-period-icon">📅</div>
+                    <div class="summary-period-title">${periodText}</div>
+                    <div class="summary-period-dates">${periodDates}</div>
+                    <div class="summary-metrics-grid">
+                        <div class="summary-metric-card">
+                            <div class="summary-metric-value">${summary.completedDays}</div>
+                            <div class="summary-metric-label">Активных дней</div>
+                        </div>
+                        <div class="summary-metric-card">
+                            <div class="summary-metric-value">${7 - summary.completedDays}</div>
+                            <div class="summary-metric-label">Выходных</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Слайд 6: Достижения (Achievements) -->
                 <div class="summary-carousel-slide summary-achievements-slide">
                     <div class="summary-achievement-card">
                         <div class="summary-achievement-icon">🏆</div>
@@ -6464,6 +6663,27 @@
                         <div class="summary-achievement-title">Твоя серия</div>
                         <div class="summary-achievement-value">${summary.streak} ${summary.streak === 1 ? 'день' : (summary.streak >= 2 && summary.streak <= 4 ? 'дня' : 'дней')} подряд</div>
                         <div class="summary-achievement-desc">${summary.streak >= 7 ? 'Отличная мотивация!' : 'Продолжай в том же духе!'}</div>
+                    </div>
+                </div>
+
+                <!-- Слайд 7: Мотивация -->
+                <div class="summary-carousel-slide summary-motivation-slide">
+                    <div class="summary-motivation-emoji">${motivationalEmoji}</div>
+                    <div class="summary-motivation-title">${motivationalTitle}</div>
+                    <div class="summary-motivation-message">${motivationalMessage}</div>
+                    <div class="summary-motivation-stats">
+                        <div class="summary-motivation-stat">
+                            <span class="stat-value">${summary.overallPercent}%</span>
+                            <span class="stat-label">выполнено</span>
+                        </div>
+                        <div class="summary-motivation-stat">
+                            <span class="stat-value">${summary.completedDays}/7</span>
+                            <span class="stat-label">дней</span>
+                        </div>
+                        <div class="summary-motivation-stat">
+                            <span class="stat-value">${summary.streak}</span>
+                            <span class="stat-label">серия</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -7552,10 +7772,6 @@
 
             overlay.innerHTML = `
                 <div class="summary-fullscreen-modal">
-                    <div class="summary-modal-header">
-                        <h2 class="summary-modal-title">📊 Итоги недели</h2>
-                        <button class="summary-modal-close" onclick="closeSummaryModal()">✕</button>
-                    </div>
                     <div class="summary-carousel-container">
                         <div class="summary-carousel-track" id="summary-carousel-track">
                             ${summaryHtml}
@@ -7598,7 +7814,7 @@
         // Объект для управления каруселью
         const summaryCarousel = {
             currentIndex: 0,
-            totalSlides: 4,
+            totalSlides: 7,
             track: null,
             dots: null,
             overlay: null,
