@@ -4005,6 +4005,36 @@
             }
         }
 
+        /* ===== КРУГЛАЯ АНИМАЦИЯ ЗАГРУЗКИ (Loading Spinner) ===== */
+        .welcome-loading {
+            display: none;
+            width: 60px;
+            height: 60px;
+            margin: auto auto 1rem;
+            position: relative;
+        }
+
+        .welcome-loading.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner {
+            width: 100%;
+            height: 100%;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--neobrut-black);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .welcome-hint {
             font-size: clamp(0.75rem, 2.5vw, 0.9rem);
             font-weight: 700;
@@ -4315,6 +4345,7 @@
 
         /* Hide initial content when pricing is shown */
         .welcome-content.has-pricing .welcome-pulse,
+        .welcome-content.has-pricing .welcome-loading,
         .welcome-content.has-pricing .welcome-hint {
             display: none;
         }
@@ -4609,10 +4640,13 @@
         <div class="welcome-content" id="welcome-content">
             <h1 class="welcome-title">FitTracker AI</h1>
             <p class="welcome-tagline">Твой умный помощник в фитнесе</p>
-            <div class="welcome-pulse">
+            <div class="welcome-pulse" id="welcome-pulse">
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
+            </div>
+            <div class="welcome-loading" id="welcome-loading">
+                <div class="loading-spinner"></div>
             </div>
             <p class="welcome-hint">Коснись экрана, чтобы начать</p>
 
@@ -9555,6 +9589,8 @@
         // ===== ПРИВЕТСТВЕННЫЙ ЭКРАН (Welcome Screen) =====
         const welcomeScreen = document.getElementById('welcome-screen');
         const welcomeContent = document.getElementById('welcome-content');
+        const welcomePulse = document.getElementById('welcome-pulse');
+        const welcomeLoading = document.getElementById('welcome-loading');
         const pricingBlock = document.getElementById('pricing-block');
         const pricingBuyBtn = document.getElementById('pricing-buy-btn');
         const clearCacheBtn = document.getElementById('clear-cache-btn');
@@ -9632,6 +9668,12 @@
                 if (subscriptionCheckInProgress) {
                     console.log('⏳ Проверка подписки уже выполняется...');
                     return;
+                }
+
+                // Показываем анимацию загрузки при первом клике
+                if (welcomePulse && welcomeLoading) {
+                    welcomePulse.style.display = 'none';
+                    welcomeLoading.classList.add('active');
                 }
 
                 // Если статус подписки ещё не известен (undefined), проверяем его сейчас
