@@ -1259,7 +1259,7 @@
 
         /* ===== КОНЕЦ КАРТОЧКИ УПРАЖНЕНИЯ ===== */
 
-        /* ===== СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ИТОГОВ (Summary) - ПОЛНОЭКРАННАЯ КАРУСЕЛЬ ===== */
+        /* ===== СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ИТОГОВ (Summary) - БРУТАЛЬНЫЙ СТИЛЬ КАРУСЕЛЬ ===== */
 
         /* Затемнённый фон */
         .summary-fullscreen-overlay {
@@ -1297,30 +1297,33 @@
             }
         }
 
-        @keyframes summarySlideDown {
-            from {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: scale(0.9) translateY(20px);
-            }
-        }
-
-        /* Основной контейнер модального окна (80% высоты) */
+        /* Основной контейнер модального окна */
         .summary-fullscreen-modal {
             width: 90%;
             max-width: 500px;
-            height: 80%;
-            background: var(--neobrut-white);
+            height: auto;
+            max-height: 85%;
+            background: #f5f5dc;
             border: 3px solid var(--neobrut-black);
-            border-radius: 20px;
+            border-radius: 16px;
             box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             animation: summarySlideUp 0.4s ease forwards;
+            position: relative;
+        }
+
+        .summary-fullscreen-modal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: var(--neobrut-yellow);
+            border-bottom: 3px solid var(--neobrut-black);
+            z-index: 0;
         }
 
         /* Заголовок модального окна */
@@ -1328,14 +1331,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
+            padding: 12px 16px;
             background: var(--neobrut-yellow);
             border-bottom: 3px solid var(--neobrut-black);
             flex-shrink: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .summary-modal-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
             color: var(--neobrut-black);
             margin: 0;
@@ -1344,12 +1349,12 @@
         }
 
         .summary-modal-close {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             background: var(--neobrut-red);
             border: 2px solid var(--neobrut-black);
-            border-radius: 8px;
-            font-size: 18px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 900;
             color: var(--neobrut-white);
             cursor: pointer;
@@ -1357,18 +1362,19 @@
             align-items: center;
             justify-content: center;
             box-shadow: 2px 2px 0 var(--neobrut-black);
-            transition: all 0.15s ease;
+            transition: all 0.1s ease;
             flex-shrink: 0;
         }
 
         .summary-modal-close:hover {
-            transform: scale(1.1);
             background: var(--neobrut-orange);
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0 var(--neobrut-black);
         }
 
         .summary-modal-close:active {
-            transform: scale(0.95) translate(1px, 1px);
-            box-shadow: 1px 1px 0 var(--neobrut-black);
+            transform: translate(2px, 2px);
+            box-shadow: none;
         }
 
         /* Контейнер карусели */
@@ -1376,7 +1382,8 @@
             flex: 1;
             position: relative;
             overflow: hidden;
-            background: var(--neobrut-bg);
+            background: transparent;
+            z-index: 1;
         }
 
         /* Трек карусели */
@@ -1390,7 +1397,7 @@
         .summary-carousel-slide {
             min-width: 100%;
             height: 100%;
-            padding: 24px 20px;
+            padding: 16px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             display: flex;
@@ -1416,16 +1423,16 @@
             display: flex;
             justify-content: center;
             gap: 8px;
-            padding: 12px 16px;
+            padding: 14px 16px;
             background: var(--neobrut-white);
-            border-top: 2px solid var(--neobrut-black);
+            border-top: 3px solid var(--neobrut-black);
             flex-shrink: 0;
         }
 
         .summary-carousel-dot {
             width: 10px;
             height: 10px;
-            background: var(--neobrut-gray);
+            background: #e0e0e0;
             border: 2px solid var(--neobrut-black);
             border-radius: 50%;
             cursor: pointer;
@@ -1433,8 +1440,9 @@
         }
 
         .summary-carousel-dot.active {
+            width: 32px;
+            border-radius: 5px;
             background: var(--neobrut-yellow);
-            transform: scale(1.2);
         }
 
         /* Кнопки навигации */
@@ -1451,11 +1459,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 900;
             color: var(--neobrut-black);
             box-shadow: 2px 2px 0 var(--neobrut-black);
-            transition: all 0.2s ease;
+            transition: all 0.1s ease;
             z-index: 10;
         }
 
@@ -1479,75 +1487,89 @@
 
         /* ===== Стили слайдов ===== */
 
-        /* Заголовок слайда */
-        .summary-slide-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--neobrut-gray);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-            text-align: center;
+        /* Слайд 1: Главный процент */
+        .summary-hero-slide {
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px 20px;
         }
 
-        /* Главный процент (слайд 1) */
-        .summary-main-percent {
-            text-align: center;
-            padding: 32px 24px;
+        .summary-glass-card {
             background: var(--neobrut-white);
             border: 3px solid var(--neobrut-black);
             border-radius: 16px;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            margin-bottom: 20px;
+            padding: 40px 32px;
+            text-align: center;
+            box-shadow: 6px 6px 0 var(--neobrut-black);
         }
 
-        .summary-main-percent-value {
-            font-size: 64px;
+        .summary-percent {
+            font-size: 72px;
             font-weight: 900;
+            color: var(--neobrut-black);
             line-height: 1;
-            margin-bottom: 8px;
+            letter-spacing: -4px;
         }
 
-        .summary-main-percent-value.excellent {
+        .summary-percent.excellent {
             color: #16a34a;
         }
 
-        .summary-main-percent-value.good {
+        .summary-percent.good {
             color: #ca8a04;
         }
 
-        .summary-main-percent-value.fair {
+        .summary-percent.fair {
             color: #dc2626;
         }
 
-        .summary-main-percent-label {
-            font-size: 14px;
-            color: var(--neobrut-gray);
-            font-weight: 500;
+        .summary-subtitle {
+            font-size: 12px;
+            color: #666;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-top: 10px;
+            font-weight: 700;
         }
 
-        /* Сетка метрик */
+        .summary-emoji {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        /* Слайд 2: Метрики */
+        .summary-metrics-slide {
+            padding-top: 80px;
+        }
+
+        .summary-metrics-title {
+            font-size: 11px;
+            color: var(--neobrut-black);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 700;
+        }
+
         .summary-metrics-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 10px;
         }
 
         .summary-metric-card {
             background: var(--neobrut-white);
             border: 2px solid var(--neobrut-black);
             border-radius: 12px;
-            padding: 16px 12px;
+            padding: 20px 16px;
             text-align: center;
             box-shadow: 3px 3px 0 var(--neobrut-black);
         }
 
         .summary-metric-value {
             font-size: 28px;
-            font-weight: 800;
+            font-weight: 900;
             color: var(--neobrut-black);
             line-height: 1;
             margin-bottom: 6px;
@@ -1555,274 +1577,150 @@
 
         .summary-metric-value span {
             font-size: 14px;
-            color: var(--neobrut-gray);
-            font-weight: 500;
+            color: #888;
         }
 
         .summary-metric-label {
-            font-size: 11px;
-            color: var(--neobrut-gray);
-            font-weight: 600;
+            font-size: 10px;
+            color: #666;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-top: 4px;
+            font-weight: 600;
         }
 
-        /* Список дней (слайд 2) */
-        .summary-days-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        /* Слайд 3: Дни */
+        .summary-days-slide {
+            padding-top: 50px;
         }
 
-        .summary-day-item {
+        .summary-days-title {
+            font-size: 11px;
+            color: var(--neobrut-black);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            padding-left: 4px;
+            font-weight: 700;
+        }
+
+        .summary-days-card {
             background: var(--neobrut-white);
             border: 2px solid var(--neobrut-black);
-            border-radius: 10px;
-            padding: 14px 16px;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 4px 4px 0 var(--neobrut-black);
         }
 
-        .summary-day-item-header {
+        .summary-day {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            padding: 12px 0;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .summary-day:last-child {
+            border-bottom: none;
         }
 
         .summary-day-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--neobrut-black);
-        }
-
-        .summary-day-percent {
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .summary-day-percent.high {
-            color: #16a34a;
-        }
-
-        .summary-day-percent.medium {
-            color: #ca8a04;
-        }
-
-        .summary-day-percent.low {
-            color: #dc2626;
+            width: 60px;
         }
 
         .summary-day-bar-bg {
-            height: 10px;
-            background: #e5e7eb;
-            border-radius: 5px;
-            overflow: hidden;
+            flex: 1;
+            height: 8px;
+            background: #e8e8e8;
+            border-radius: 4px;
+            margin: 0 12px;
+            border: 1px solid var(--neobrut-black);
         }
 
         .summary-day-bar-fill {
             height: 100%;
-            background: #16a34a;
-            border-radius: 4px;
-            transition: width 0.5s ease;
+            background: var(--neobrut-yellow);
+            border-radius: 3px;
         }
 
-        .summary-day-item[data-percent="75"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="80"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="85"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="90"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="95"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="100"] .summary-day-bar-fill {
-            background: #16a34a;
+        .summary-day-percent {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--neobrut-black);
+            width: 38px;
+            text-align: right;
         }
 
-        .summary-day-item[data-percent="50"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="60"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="70"] .summary-day-bar-fill {
-            background: #ca8a04;
+        /* Слайд 4: Достижения */
+        .summary-achievements-slide {
+            padding-top: 70px;
         }
 
-        .summary-day-item[data-percent="0"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="10"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="20"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="30"] .summary-day-bar-fill,
-        .summary-day-item[data-percent="40"] .summary-day-bar-fill {
-            background: #dc2626;
-        }
-
-        /* Даты (слайд 3) */
-        .summary-dates-card {
+        .summary-achievement-card {
             background: var(--neobrut-white);
             border: 2px solid var(--neobrut-black);
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-            margin-bottom: 16px;
-        }
-
-        .summary-dates-label {
-            font-size: 12px;
-            color: var(--neobrut-gray);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-
-        .summary-dates-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .summary-date {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--neobrut-black);
-        }
-
-        .summary-date-sep {
-            color: var(--neobrut-gray);
-            font-weight: 700;
-        }
-
-        /* Лучший день (слайд 4) */
-        .summary-best-card {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            border: 3px solid var(--neobrut-black);
-            border-radius: 16px;
-            padding: 32px 24px;
+            padding: 24px 20px;
             text-align: center;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
         }
 
-        .summary-best-emoji {
-            font-size: 48px;
-            margin-bottom: 12px;
+        .summary-achievement-icon {
+            font-size: 44px;
+            margin-bottom: 10px;
         }
 
-        .summary-best-title {
-            font-size: 14px;
-            color: var(--neobrut-gray);
-            font-weight: 600;
+        .summary-achievement-title {
+            font-size: 10px;
+            color: #666;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            font-weight: 600;
         }
 
-        .summary-best-value {
+        .summary-achievement-value {
             font-size: 24px;
-            font-weight: 800;
-            color: #16a34a;
-        }
-
-        /* Серия (слайд 5) */
-        .summary-streak-card {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border: 3px solid var(--neobrut-black);
-            border-radius: 16px;
-            padding: 32px 24px;
-            text-align: center;
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-            margin-bottom: 20px;
-        }
-
-        .summary-streak-emoji {
-            font-size: 64px;
-            margin-bottom: 12px;
-            animation: streakPulse 1s ease infinite;
-        }
-
-        @keyframes streakPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        .summary-streak-value {
-            font-size: 48px;
             font-weight: 900;
-            color: #b45309;
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-
-        .summary-streak-label {
-            font-size: 14px;
-            color: #b45309;
-            font-weight: 600;
-        }
-
-        /* Упражнения (слайд 6) */
-        .summary-exercises-card {
-            background: var(--neobrut-white);
-            border: 2px solid var(--neobrut-black);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-        }
-
-        .summary-exercises-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .summary-exercises-title {
-            font-size: 14px;
-            color: var(--neobrut-gray);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .summary-exercises-value {
-            font-size: 20px;
-            font-weight: 800;
             color: var(--neobrut-black);
         }
 
-        .summary-exercises-progress {
-            height: 16px;
-            background: #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .summary-exercises-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
-            border-radius: 7px;
-            transition: width 0.5s ease;
+        .summary-achievement-desc {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+            font-weight: 500;
         }
 
         /* Кнопка завершения */
         .summary-finish-btn {
-            width: 100%;
-            padding: 18px 24px;
-            font-size: 16px;
-            font-weight: 700;
-            color: white;
+            width: calc(100% - 32px);
+            margin: 10px 16px 16px;
+            padding: 16px;
             background: var(--neobrut-red);
-            border: 3px solid var(--neobrut-black);
-            border-radius: 12px;
+            color: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
             box-shadow: 4px 4px 0 var(--neobrut-black);
-            transition: all 0.15s ease;
+            transition: all 0.1s ease;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: auto;
+            letter-spacing: 1px;
         }
 
         .summary-finish-btn:hover {
             background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 6px 6px 0 var(--neobrut-black);
+            transform: translate(-1px, -1px);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
         }
 
         .summary-finish-btn:active {
-            transform: translateY(2px);
+            transform: translate(2px, 2px);
             box-shadow: 2px 2px 0 var(--neobrut-black);
         }
 
@@ -6495,15 +6393,25 @@
                 `;
             }
 
-            // Возвращаем HTML карусели
+            // Определяем emoji на основе результата
+            const resultEmoji = summary.overallPercent >= 90 ? '🏆' :
+                              summary.overallPercent >= 75 ? '🎯' :
+                              summary.overallPercent >= 50 ? '💪' : '👊';
+
+            // Возвращаем HTML карусели (4 слайда в брутальном стиле)
             return `
-                <!-- Слайд 1: Главный процент -->
-                <div class="summary-carousel-slide">
-                    <div class="summary-slide-title">Общий прогресс</div>
-                    <div class="summary-main-percent">
-                        <div class="summary-main-percent-value ${resultClass}">${summary.overallPercent}%</div>
-                        <div class="summary-main-percent-label">выполнено</div>
+                <!-- Слайд 1: Главный процент (Hero) -->
+                <div class="summary-carousel-slide summary-hero-slide">
+                    <div class="summary-glass-card">
+                        <div class="summary-emoji">${resultEmoji}</div>
+                        <div class="summary-percent ${resultClass}">${summary.overallPercent}%</div>
+                        <div class="summary-subtitle">выполнено</div>
                     </div>
+                </div>
+
+                <!-- Слайд 2: Метрики (Metrics Grid) -->
+                <div class="summary-carousel-slide summary-metrics-slide">
+                    <div class="summary-metrics-title">Твои результаты</div>
                     <div class="summary-metrics-grid">
                         <div class="summary-metric-card">
                             <div class="summary-metric-value">${summary.completedTasks}<span>/${summary.totalTasks}</span></div>
@@ -6514,105 +6422,49 @@
                             <div class="summary-metric-label">Упражнения</div>
                         </div>
                         <div class="summary-metric-card">
+                            <div class="summary-metric-value">${summary.streak}</div>
+                            <div class="summary-metric-label">Дней подряд</div>
+                        </div>
+                        <div class="summary-metric-card">
                             <div class="summary-metric-value">${summary.completedDays}<span>/7</span></div>
-                            <div class="summary-metric-label">Дней</div>
-                        </div>
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.daysProgressPercent}%</div>
-                            <div class="summary-metric-label">Прогресс</div>
+                            <div class="summary-metric-label">Пройдено</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Слайд 2: Прогресс по дням -->
-                <div class="summary-carousel-slide">
-                    <div class="summary-slide-title">Прогресс по дням</div>
-                    <div class="summary-days-list">
-                        ${daysHtml}
+                <!-- Слайд 3: Дни (Day-by-day progress) -->
+                <div class="summary-carousel-slide summary-days-slide">
+                    <div class="summary-days-title">Прогресс по дням</div>
+                    <div class="summary-days-card">
+                        ${summary.dayBreakdown.map(d => {
+                            const percentClass = d.percent >= 75 ? 'high' : d.percent >= 50 ? 'medium' : 'low';
+                            return `
+                                <div class="summary-day">
+                                    <span class="summary-day-name">День ${d.day}</span>
+                                    <div class="summary-day-bar-bg">
+                                        <div class="summary-day-bar-fill ${percentClass}" style="width: ${d.percent}%"></div>
+                                    </div>
+                                    <span class="summary-day-percent ${percentClass}">${d.percent}%</span>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
 
-                <!-- Слайд 3: Даты -->
-                <div class="summary-carousel-slide">
-                    <div class="summary-slide-title">Временной период</div>
-                    ${datesHtml}
-                    <div class="summary-metrics-grid">
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.completedDays}</div>
-                            <div class="summary-metric-label">Пройдено дней</div>
-                        </div>
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${7 - summary.completedDays}</div>
-                            <div class="summary-metric-label">Осталось</div>
-                        </div>
+                <!-- Слайд 4: Достижения (Achievements) -->
+                <div class="summary-carousel-slide summary-achievements-slide">
+                    <div class="summary-achievement-card">
+                        <div class="summary-achievement-icon">🏆</div>
+                        <div class="summary-achievement-title">Лучший день</div>
+                        <div class="summary-achievement-value">День ${summary.bestDay?.day || '-'}</div>
+                        <div class="summary-achievement-desc">${summary.bestDay?.percent || 0}% выполнение</div>
                     </div>
-                </div>
-
-                <!-- Слайд 4: Лучший день -->
-                <div class="summary-carousel-slide">
-                    <div class="summary-slide-title">Лучший результат</div>
-                    <div class="summary-best-card">
-                        <div class="summary-best-emoji">🏆</div>
-                        <div class="summary-best-title">День ${summary.bestDay?.day || '-'}</div>
-                        <div class="summary-best-value">${summary.bestDay?.percent || 0}% выполнения</div>
+                    <div class="summary-achievement-card">
+                        <div class="summary-achievement-icon">🔥</div>
+                        <div class="summary-achievement-title">Твоя серия</div>
+                        <div class="summary-achievement-value">${summary.streak} ${summary.streak === 1 ? 'день' : (summary.streak >= 2 && summary.streak <= 4 ? 'дня' : 'дней')} подряд</div>
+                        <div class="summary-achievement-desc">${summary.streak >= 7 ? 'Отличная мотивация!' : 'Продолжай в том же духе!'}</div>
                     </div>
-                    <div class="summary-metrics-grid">
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.totalTasks}</div>
-                            <div class="summary-metric-label">Всего задач</div>
-                        </div>
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.completedTasks}</div>
-                            <div class="summary-metric-label">Выполнено</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Слайд 5: Серия -->
-                <div class="summary-carousel-slide">
-                    <div class="summary-slide-title">Твоя серия</div>
-                    <div class="summary-streak-card">
-                        <div class="summary-streak-emoji">🔥</div>
-                        <div class="summary-streak-value">${summary.streak}</div>
-                        <div class="summary-streak-label">дней подряд</div>
-                    </div>
-                    <div class="summary-metrics-grid">
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.streak >= 7 ? '⭐' : '💪'}</div>
-                            <div class="summary-metric-label">${summary.streak >= 7 ? 'Отлично!' : 'Продолжай!'}</div>
-                        </div>
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.streak >= 7 ? '🎯' : '🎯'}</div>
-                            <div class="summary-metric-label">Цель: 7 дней</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Слайд 6: Упражнения -->
-                <div class="summary-carousel-slide">
-                    <div class="summary-slide-title">Упражнения</div>
-                    <div class="summary-exercises-card">
-                        <div class="summary-exercises-header">
-                            <span class="summary-exercises-title">Выполнено упражнений</span>
-                            <span class="summary-exercises-value">${summary.completedExercises}/${summary.totalExercises}</span>
-                        </div>
-                        <div class="summary-exercises-progress">
-                            <div class="summary-exercises-bar" style="width: ${summary.totalExercises > 0 ? (summary.completedExercises / summary.totalExercises * 100) : 0}%"></div>
-                        </div>
-                    </div>
-                    <div class="summary-metrics-grid">
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.totalExercises - summary.completedExercises}</div>
-                            <div class="summary-metric-label">Осталось</div>
-                        </div>
-                        <div class="summary-metric-card">
-                            <div class="summary-metric-value">${Math.round(summary.totalExercises / 7)}</div>
-                            <div class="summary-metric-label">В среднем/день</div>
-                        </div>
-                    </div>
-                    <button class="summary-finish-btn" onclick="closeSummaryModal()">
-                        Закрыть
-                    </button>
                 </div>
             `;
         }
@@ -7746,7 +7598,7 @@
         // Объект для управления каруселью
         const summaryCarousel = {
             currentIndex: 0,
-            totalSlides: 6,
+            totalSlides: 4,
             track: null,
             dots: null,
             overlay: null,
