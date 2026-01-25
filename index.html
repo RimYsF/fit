@@ -1860,6 +1860,91 @@
             box-shadow: 2px 2px 0 var(--neobrut-black);
         }
 
+        /* ===== СЛАЙДЫ ДНЕЙ (МИНИМАЛИЗМ) ===== */
+
+        .summary-day-slide {
+            padding-top: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100%;
+        }
+
+        .summary-day-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .summary-day-number {
+            font-size: 11px;
+            color: #666;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .summary-day-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            margin-top: 6px;
+            letter-spacing: -1px;
+        }
+
+        .summary-day-percent {
+            font-size: 88px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            line-height: 1;
+            letter-spacing: -4px;
+            margin-bottom: 32px;
+        }
+
+        .summary-day-stats {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .summary-day-stat {
+            background: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 14px;
+            padding: 18px 28px;
+            text-align: center;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            min-width: 100px;
+        }
+
+        .summary-day-stat-value {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            line-height: 1;
+        }
+
+        .summary-day-stat-value span {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .summary-day-stat-label {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .summary-day-time {
+            text-align: center;
+            margin-top: 8px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
         /* Day 8 Widget Special Styling */
         .summary-day-widget {
             background: linear-gradient(135deg, #ffd9b3 0%, #ffe8cc 50%, #fff0e0 100%) !important;
@@ -6563,7 +6648,21 @@
                 motivationalMessage = 'Главное — не сдаваться! Продолжай тренироваться!';
             }
 
-            // Возвращаем HTML карусели (7 слайдов в брутальном стиле)
+            // Вспомогательная функция для подсчёта упражнений дня
+            const getDayExercises = (dayNum) => {
+                const tasks = todoData[dayNum] || [];
+                let total = 0, completed = 0;
+                tasks.forEach(task => {
+                    if (task.exercises) {
+                        const active = task.exercises.filter(ex => !ex.isRest);
+                        total += active.length;
+                        completed += active.filter(ex => ex.completed).length;
+                    }
+                });
+                return { total, completed };
+            };
+
+            // Возвращаем HTML карусели (11 слайдов)
             return `
                 <!-- Слайд 1: Главный процент (Hero) -->
                 <div class="summary-carousel-slide summary-hero-slide">
@@ -6579,19 +6678,19 @@
                     <div class="summary-metrics-title">Твои результаты</div>
                     <div class="summary-metrics-grid">
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.completedTasks}<span>/${summary.totalTasks}</span></div>
+                            <div class="summary-metric-value" data-counter="${summary.completedTasks}" data-suffix="/${summary.totalTasks}">0</div>
                             <div class="summary-metric-label">Задачи</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.completedExercises}<span>/${summary.totalExercises}</span></div>
+                            <div class="summary-metric-value" data-counter="${summary.completedExercises}" data-suffix="/${summary.totalExercises}">0</div>
                             <div class="summary-metric-label">Упражнения</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.streak}</div>
+                            <div class="summary-metric-value" data-counter="${summary.streak}" data-suffix="">0</div>
                             <div class="summary-metric-label">Дней подряд</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.completedDays}<span>/7</span></div>
+                            <div class="summary-metric-value" data-counter="${summary.completedDays}" data-suffix="/7">0</div>
                             <div class="summary-metric-label">Пройдено</div>
                         </div>
                     </div>
@@ -6610,11 +6709,11 @@
                             <div class="summary-metric-label">Упр./день</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${remainingTasks}</div>
+                            <div class="summary-metric-value" data-counter="${remainingTasks}" data-suffix="">0</div>
                             <div class="summary-metric-label">Осталось задач</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${remainingExercises}</div>
+                            <div class="summary-metric-value" data-counter="${remainingExercises}" data-suffix="">0</div>
                             <div class="summary-metric-label">Осталось упр.</div>
                         </div>
                     </div>
@@ -6623,30 +6722,11 @@
                         <div class="summary-stat-bar-bg">
                             <div class="summary-stat-bar-fill" style="width: ${completionRate}%"></div>
                         </div>
-                        <div class="summary-stat-value">${completionRate}%</div>
+                        <div class="summary-stat-value" data-counter="${completionRate}" data-suffix="%">0</div>
                     </div>
                 </div>
 
-                <!-- Слайд 4: Прогресс по дням -->
-                <div class="summary-carousel-slide summary-days-slide">
-                    <div class="summary-days-title">Прогресс по дням</div>
-                    <div class="summary-days-card">
-                        ${summary.dayBreakdown.map(d => {
-                            const percentClass = d.percent >= 75 ? 'high' : d.percent >= 50 ? 'medium' : 'low';
-                            return `
-                                <div class="summary-day">
-                                    <span class="summary-day-name">День ${d.day}</span>
-                                    <div class="summary-day-bar-bg">
-                                        <div class="summary-day-bar-fill ${percentClass}" style="width: ${d.percent}%"></div>
-                                    </div>
-                                    <span class="summary-day-percent ${percentClass}">${d.percent}%</span>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-
-                <!-- Слайд 5: Период тренировки -->
+                <!-- Слайд 4: Период тренировки -->
                 <div class="summary-carousel-slide summary-period-slide">
                     <div class="summary-period-icon">📅</div>
                     <div class="summary-period-title">${periodText}</div>
@@ -6663,43 +6743,94 @@
                     </div>
                 </div>
 
-                <!-- Слайд 6: Достижения (Achievements) -->
-                <div class="summary-carousel-slide summary-achievements-slide">
-                    <div class="summary-achievement-card">
-                        <div class="summary-achievement-icon">🏆</div>
-                        <div class="summary-achievement-title">Лучший день</div>
-                        <div class="summary-achievement-value">День ${summary.bestDay?.day || '-'}</div>
-                        <div class="summary-achievement-desc">${summary.bestDay?.percent || 0}% выполнение</div>
-                    </div>
-                    <div class="summary-achievement-card">
-                        <div class="summary-achievement-icon">🔥</div>
-                        <div class="summary-achievement-title">Твоя серия</div>
-                        <div class="summary-achievement-value">${summary.streak} ${summary.streak === 1 ? 'день' : (summary.streak >= 2 && summary.streak <= 4 ? 'дня' : 'дней')} подряд</div>
-                        <div class="summary-achievement-desc">${summary.streak >= 7 ? 'Отличная мотивация!' : 'Продолжай в том же духе!'}</div>
-                    </div>
-                </div>
+                <!-- Слайды 5-11: Дни 1-7 (минималистично) -->
+                ${summary.dayBreakdown.map(d => {
+                    const tasks = todoData[d.day] || [];
+                    const completedTasks = tasks.filter(t => t.completed);
+                    const exercises = getDayExercises(d.day);
 
-                <!-- Слайд 7: Мотивация -->
-                <div class="summary-carousel-slide summary-motivation-slide">
-                    <div class="summary-motivation-emoji">${motivationalEmoji}</div>
-                    <div class="summary-motivation-title">${motivationalTitle}</div>
-                    <div class="summary-motivation-message">${motivationalMessage}</div>
-                    <div class="summary-motivation-stats">
-                        <div class="summary-motivation-stat">
-                            <span class="stat-value">${summary.overallPercent}%</span>
-                            <span class="stat-label">выполнено</span>
+                    // Время выполнения последней задачи
+                    let timeText = 'Не выполнено';
+                    if (completedTasks.length > 0) {
+                        const lastTask = completedTasks[completedTasks.length - 1];
+                        if (lastTask.completedAt) {
+                            const time = new Date(lastTask.completedAt);
+                            timeText = time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                        }
+                    }
+
+                    return `
+                        <div class="summary-carousel-slide summary-day-slide">
+                            <div class="summary-day-header">
+                                <div class="summary-day-number">ДЕНЬ ${d.day}</div>
+                                <div class="summary-day-name">${getWorkoutDayName(d.day)}</div>
+                            </div>
+
+                            <div class="summary-day-percent" data-counter="${d.percent}" data-suffix="%">0</div>
+
+                            <div class="summary-day-stats">
+                                <div class="summary-day-stat">
+                                    <div class="summary-day-stat-value" data-counter="${completedTasks.length}" data-suffix="/${tasks.length}">0</div>
+                                    <div class="summary-day-stat-label">Задачи</div>
+                                </div>
+                                <div class="summary-day-stat">
+                                    <div class="summary-day-stat-value" data-counter="${exercises.completed}" data-suffix="/${exercises.total}">0</div>
+                                    <div class="summary-day-stat-label">Упражнения</div>
+                                </div>
+                            </div>
+
+                            <div class="summary-day-time">
+                                ⏱ ${timeText}
+                            </div>
                         </div>
-                        <div class="summary-motivation-stat">
-                            <span class="stat-value">${summary.completedDays}/7</span>
-                            <span class="stat-label">дней</span>
-                        </div>
-                        <div class="summary-motivation-stat">
-                            <span class="stat-value">${summary.streak}</span>
-                            <span class="stat-label">серия</span>
-                        </div>
-                    </div>
-                </div>
+                    `;
+                }).join('')}
             `;
+        }
+
+        // ===== ФУНКЦИИ АНИМАЦИИ ДЛЯ КАРУСЕЛИ =====
+
+        // Анимация счётчика чисел
+        function animateCounter(element, targetValue, suffix = '', duration = 600) {
+            const startTime = performance.now();
+            const startValue = 0;
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+
+                const currentValue = Math.round(startValue + (targetValue - startValue) * eased);
+                element.textContent = currentValue + suffix;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        // Анимация появления слайда
+        function animateSlideIn(slide) {
+            // Анимируем счётчики
+            const counters = slide.querySelectorAll('[data-counter]');
+            counters.forEach(counter => {
+                const target = parseInt(counter.dataset.counter) || 0;
+                const suffix = counter.dataset.suffix || '';
+                animateCounter(counter, target, suffix, 600);
+            });
+
+            // Анимируем прогресс-бары
+            const bars = slide.querySelectorAll('.summary-day-bar-fill, .summary-stat-bar-fill');
+            bars.forEach(bar => {
+                const targetWidth = bar.style.width;
+                bar.style.width = '0%';
+                requestAnimationFrame(() => {
+                    bar.style.transition = 'width 0.5s ease-out';
+                    bar.style.width = targetWidth;
+                });
+            });
         }
 
         // Функция закрытия и возврата в бота
@@ -7825,7 +7956,7 @@
         // Объект для управления каруселью
         const summaryCarousel = {
             currentIndex: 0,
-            totalSlides: 7,
+            totalSlides: 11,
             track: null,
             dots: null,
             overlay: null,
@@ -7881,6 +8012,14 @@
             update() {
                 // Обновляем позицию трека
                 this.track.style.transform = `translateX(-${this.currentIndex * 100}%)`;
+
+                // Запускаем анимации на текущем слайде
+                const currentSlide = this.track.children[this.currentIndex];
+                if (currentSlide) {
+                    requestAnimationFrame(() => {
+                        animateSlideIn(currentSlide);
+                    });
+                }
 
                 // Обновляем точки
                 const dots = this.dots.querySelectorAll('.summary-carousel-dot');
