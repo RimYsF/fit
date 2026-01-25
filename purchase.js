@@ -326,6 +326,12 @@ async function executePurchase(email) {
         // Обновляем глобальный статус подписки
         window.isSubscribed = true;
         window.hasSubscription = true;
+
+        // Сохраняем в кэш
+        if (typeof saveSubscriptionToCache === 'function') {
+            saveSubscriptionToCache(currentUser.id, true);
+        }
+
         console.log('📊 Статус подписки обновлён: АКТИВНА');
 
         // Показываем успех
