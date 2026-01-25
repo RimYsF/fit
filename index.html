@@ -5722,8 +5722,8 @@
             // День тренировки = смещение + 1
             const workoutDay = diffDays + 1;
 
-            // Ограничиваем максимум 7 днями
-            return Math.min(Math.max(workoutDay, 1), 7);
+            // Минимум 1 день, без верхнего ограничения (для day 8+ и итогов)
+            return Math.max(workoutDay, 1);
         }
 
         // Проверить доступен ли блок итогов
@@ -6216,18 +6216,36 @@
             const streak = calculateStreak();
             // Используем выбранный день тренировки вместо текущего
             const displayDay = selectedWorkout;
-            const percentage = calculateCompletionPercentage(displayDay);
+            let percentage = calculateCompletionPercentage(displayDay);
+
+            // Для дня 8 и выше показываем недельный процент вместо 0%
+            if (displayDay >= 8) {
+                const weeklySummary = calculateWeeklySummary();
+                percentage = weeklySummary.overallPercent;
+            }
 
             // Обновляем дату - показываем только день тренировки, а не календарную дату
             document.getElementById('strip-day').textContent = '';
-            document.getElementById('strip-date').textContent = `День ${displayDay}`;
+
+            // Для дня 8 и выше показываем "Итоги", иначе "День X"
+            if (displayDay >= 8) {
+                document.getElementById('strip-date').textContent = 'Итоги';
+            } else {
+                document.getElementById('strip-date').textContent = `День ${displayDay}`;
+            }
 
             // Обновляем серию
             document.getElementById('streak-count').textContent = `${streak} ${streak === 1 ? 'день' : (streak >= 2 && streak <= 4 ? 'дня' : 'дней')}`;
 
             // Обновляем прогресс
             document.getElementById('strip-progress-value').textContent = `${percentage}%`;
-            document.getElementById('strip-progress-sub').textContent = `День ${displayDay} из 7`;
+
+            // Для дня 8 и выше показываем "Итоги недели", иначе "День X из 7"
+            if (displayDay >= 8) {
+                document.getElementById('strip-progress-sub').textContent = 'Итоги недели';
+            } else {
+                document.getElementById('strip-progress-sub').textContent = `День ${displayDay} из 7`;
+            }
 
             // Обновляем круговой прогресс
             const progressCircle = document.getElementById('strip-progress-circle');
