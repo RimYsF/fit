@@ -8595,15 +8595,47 @@
 
         // Обработчик клика/тапа на приветственном экране (показать pricing или закрыть)
         if (welcomeScreen && !pricingShown) {
-            // Поддержка как клика мышкой, так и тача
-            welcomeScreen.addEventListener('click', (e) => {
+            // Флаг что подписка проверяется (для предотвращения повторных кликов)
+            let subscriptionCheckInProgress = false;
+
+            // Функция для обработки клика с проверкой подписки
+            async function handleWelcomeScreenClick(e) {
                 // Если клик на pricing buy button, не показывать pricing снова
                 if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
-                    // Не останавливаем всплытие - даём событию дойти до обработчика кнопки
                     return;
                 }
 
-                // Если подписка уже есть - сразу закрываем welcome screen
+                // Если уже проверяем подписку - игнорируем повторные клики
+                if (subscriptionCheckInProgress) {
+                    console.log('⏳ Проверка подписки уже выполняется...');
+                    return;
+                }
+
+                // Если статус подписки ещё не известен (undefined), проверяем его сейчас
+                if (window.isSubscribed === undefined) {
+                    subscriptionCheckInProgress = true;
+                    console.log('🔍 Статус подписки неизвестен, выполняем проверку...');
+
+                    const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+                    const telegramId = user?.id;
+
+                    if (telegramId && typeof checkSubscriptionStatus === 'function') {
+                        try {
+                            const isSubscribed = await checkSubscriptionStatus(telegramId);
+                            window.isSubscribed = isSubscribed;
+                            console.log('📊 Статус подписки при клике:', isSubscribed ? 'АКТИВНА' : 'НЕАКТИВНА');
+                        } catch (error) {
+                            console.error('❌ Ошибка проверки подписки:', error);
+                            window.isSubscribed = false;
+                        }
+                    } else {
+                        window.isSubscribed = false;
+                    }
+
+                    subscriptionCheckInProgress = false;
+                }
+
+                // Если подписка уже есть - закрываем welcome screen
                 if (window.isSubscribed) {
                     console.log('✅ Подписка активна, открываем главный экран');
                     closeWelcomeScreen();
@@ -8614,29 +8646,14 @@
                 if (!pricingShown) {
                     showPricingBlock();
                 }
-            });
+            }
+
+            // Поддержка как клика мышкой, так и тача
+            welcomeScreen.addEventListener('click', handleWelcomeScreenClick);
             welcomeScreen.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                // Если тач на pricing buy button, не показывать pricing снова
-                if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
-                    // Не останавливаем всплытие - даём событию дойти до обработчика кнопки
-                    return;
-                }
-
-                // Если подписка уже есть - сразу закрываем welcome screen
-                if (window.isSubscribed) {
-                    console.log('✅ Подписка активна, открываем главный экран');
-                    closeWelcomeScreen();
-                    return;
-                }
-
-                // Останавливаем всплытие только если клик не на кнопке
+                handleWelcomeScreenClick(e);
                 e.stopPropagation();
-
-                // Если подписки нет - показываем pricing block
-                if (!pricingShown) {
-                    showPricingBlock();
-                }
             });
         }
 
