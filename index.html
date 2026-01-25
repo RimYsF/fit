@@ -1933,7 +1933,7 @@
             font-weight: 900;
             color: var(--neobrut-black);
             line-height: 1;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 2px;
@@ -6801,6 +6801,27 @@
                         </div>
                     `;
                 }).join('')}
+
+                <!-- Слайд 12: Завершающий (Финал) -->
+                <div class="summary-carousel-slide summary-motivation-slide">
+                    <div class="summary-motivation-emoji">${motivationalEmoji}</div>
+                    <div class="summary-motivation-title">${motivationalTitle}</div>
+                    <div class="summary-motivation-message">${motivationalMessage}</div>
+                    <div class="summary-motivation-stats">
+                        <div class="summary-motivation-stat">
+                            <span class="stat-value" data-counter="${summary.overallPercent}" data-suffix="%">0</span>
+                            <span class="stat-label">выполнено</span>
+                        </div>
+                        <div class="summary-motivation-stat">
+                            <span class="stat-value" data-counter="${summary.completedDays}" data-suffix="/7">0</span>
+                            <span class="stat-label">дней</span>
+                        </div>
+                        <div class="summary-motivation-stat">
+                            <span class="stat-value" data-counter="${summary.streak}" data-suffix="">0</span>
+                            <span class="stat-label">серия</span>
+                        </div>
+                    </div>
+                </div>
             `;
         }
 
@@ -7980,7 +8001,7 @@
         // Объект для управления каруселью
         const summaryCarousel = {
             currentIndex: 0,
-            totalSlides: 11,
+            totalSlides: 12,
             track: null,
             dots: null,
             overlay: null,
