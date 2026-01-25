@@ -3550,6 +3550,34 @@
             pointer-events: none;
         }
 
+        .clear-cache-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--neobrut-black);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .clear-cache-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.1);
+        }
+
+        .clear-cache-btn:active {
+            transform: scale(0.95);
+        }
+
         .welcome-content {
             position: relative;
             z-index: 1;
@@ -4296,6 +4324,8 @@
                 </div>
             </div>
         </div>
+        <!-- Кнопка сброса кэша (для тестирования) -->
+        <button class="clear-cache-btn" id="clear-cache-btn" title="Сбросить кэш подписки">🔄</button>
     </div>
 
     <!-- Features Modal -->
@@ -8799,6 +8829,19 @@
         const welcomeContent = document.getElementById('welcome-content');
         const pricingBlock = document.getElementById('pricing-block');
         const pricingBuyBtn = document.getElementById('pricing-buy-btn');
+        const clearCacheBtn = document.getElementById('clear-cache-btn');
+
+        // Обработчик кнопки сброса кэша (для тестирования)
+        if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                localStorage.removeItem('fitTrackerSubscriptionCache');
+                window.hasSubscription = null;
+                window.isSubscribed = undefined;
+                console.log('🗑️ Кэш подписки очищен');
+                location.reload();
+            });
+        }
 
         // Состояние: показан ли pricing block
         let pricingShown = false;
