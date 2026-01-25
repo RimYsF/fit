@@ -1402,6 +1402,18 @@
             -webkit-overflow-scrolling: touch;
             display: flex;
             flex-direction: column;
+            animation: slideFadeIn 0.5s ease-out;
+        }
+
+        @keyframes slideFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92) translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
         /* Кастомный скроллбар для слайдов */
@@ -1921,6 +1933,10 @@
             font-weight: 900;
             color: var(--neobrut-black);
             line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
         }
 
         .summary-day-stat-value span {
@@ -6668,7 +6684,7 @@
                 <div class="summary-carousel-slide summary-hero-slide">
                     <div class="summary-glass-card">
                         <div class="summary-emoji">${resultEmoji}</div>
-                        <div class="summary-percent ${resultClass}">${summary.overallPercent}%</div>
+                        <div class="summary-percent ${resultClass}" data-counter="${summary.overallPercent}" data-suffix="%">0</div>
                         <div class="summary-subtitle">выполнено</div>
                     </div>
                 </div>
@@ -6701,11 +6717,11 @@
                     <div class="summary-metrics-title">Детальная статистика</div>
                     <div class="summary-metrics-grid">
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${avgTasksPerDay}</div>
+                            <div class="summary-metric-value" data-counter="${Math.round(avgTasksPerDay * 10) / 10}" data-suffix="">0</div>
                             <div class="summary-metric-label">Задач/день</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${avgExercisesPerDay}</div>
+                            <div class="summary-metric-value" data-counter="${Math.round(avgExercisesPerDay * 10) / 10}" data-suffix="">0</div>
                             <div class="summary-metric-label">Упр./день</div>
                         </div>
                         <div class="summary-metric-card">
@@ -6733,11 +6749,11 @@
                     <div class="summary-period-dates">${periodDates}</div>
                     <div class="summary-metrics-grid">
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${summary.completedDays}</div>
+                            <div class="summary-metric-value" data-counter="${summary.completedDays}" data-suffix="">0</div>
                             <div class="summary-metric-label">Активных дней</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value">${7 - summary.completedDays}</div>
+                            <div class="summary-metric-value" data-counter="${7 - summary.completedDays}" data-suffix="">0</div>
                             <div class="summary-metric-label">Выходных</div>
                         </div>
                     </div>
@@ -6791,7 +6807,7 @@
         // ===== ФУНКЦИИ АНИМАЦИИ ДЛЯ КАРУСЕЛИ =====
 
         // Анимация счётчика чисел
-        function animateCounter(element, targetValue, suffix = '', duration = 600) {
+        function animateCounter(element, targetValue, suffix = '', duration = 1200) {
             const startTime = performance.now();
             const startValue = 0;
 
@@ -6813,12 +6829,20 @@
 
         // Анимация появления слайда
         function animateSlideIn(slide) {
+            // Перезапускаем CSS анимацию появления
+            slide.style.animation = 'none';
+            slide.offsetHeight; // trigger reflow
+            slide.style.animation = 'slideFadeIn 0.5s ease-out';
+
             // Анимируем счётчики
             const counters = slide.querySelectorAll('[data-counter]');
-            counters.forEach(counter => {
+            counters.forEach((counter, index) => {
                 const target = parseInt(counter.dataset.counter) || 0;
                 const suffix = counter.dataset.suffix || '';
-                animateCounter(counter, target, suffix, 600);
+                // Задержка для каждого счётчика
+                setTimeout(() => {
+                    animateCounter(counter, target, suffix, 1000);
+                }, index * 100);
             });
 
             // Анимируем прогресс-бары
@@ -6827,7 +6851,7 @@
                 const targetWidth = bar.style.width;
                 bar.style.width = '0%';
                 requestAnimationFrame(() => {
-                    bar.style.transition = 'width 0.5s ease-out';
+                    bar.style.transition = 'width 0.8s ease-out';
                     bar.style.width = targetWidth;
                 });
             });
