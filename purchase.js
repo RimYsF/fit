@@ -303,27 +303,10 @@ async function executePurchase(email) {
 
         console.log('📦 Данные для создания платежа:', paymentData);
 
-        // Проверяем наличие функции getConnectionString
-        let apiKey = '';
-        if (typeof window.getConnectionString === 'function') {
-            apiKey = window.getConnectionString();
-            console.log('🔑 API Key получен из getConnectionString');
-        } else if (typeof getConnectionString === 'function') {
-            apiKey = getConnectionString();
-            console.log('🔑 API Key получен из getConnectionString (глобальная)');
-        } else {
-            console.warn('⚠️ getConnectionString не найден, пытаемся без авторизации');
-        }
-
         // Вызываем Edge Function для создания платежа
         const headers = {
             'Content-Type': 'application/json'
         };
-
-        // Добавляем авторизацию только если есть ключ
-        if (apiKey) {
-            headers['Authorization'] = `Bearer ${apiKey}`;
-        }
 
         console.log('🌐 Отправка запроса к Edge Function...');
 
