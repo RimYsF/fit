@@ -303,9 +303,18 @@ async function executePurchase(email) {
 
         console.log('📦 Данные для создания платежа:', paymentData);
 
+        // Получаем API ключ для авторизации
+        let apiKey = '';
+        if (typeof window.getConnectionString === 'function') {
+            apiKey = window.getConnectionString();
+        } else if (typeof getConnectionString === 'function') {
+            apiKey = getConnectionString();
+        }
+
         // Вызываем Edge Function для создания платежа
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
         };
 
         console.log('🌐 Отправка запроса к Edge Function...');
