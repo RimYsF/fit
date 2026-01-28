@@ -311,10 +311,11 @@ async function executePurchase(email) {
 
         console.log('📦 Данные для создания платежа:', paymentData);
 
-        // Вызываем Edge Function с авторизацией через apikey заголовок
+        // Вызываем Edge Function с авторизацией
         const headers = {
             'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
         };
 
         console.log('🌐 Отправка запроса к Edge Function...');
