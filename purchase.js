@@ -3,17 +3,8 @@
 // Проверка загрузки
 console.log('🔧 purchase.js начинает загрузку...');
 
-// API Key parts (переименованы чтобы не конфликтовать с index.html)
-const PURCHASE_API_KEY_PART_1 = "c2stb3ItdjEtNWI2YmY1OTJi";
-const PURCHASE_API_KEY_PART_2 = "OTk1NzM3NzBjOTg0MzBiYTFh";
-const PURCHASE_API_KEY_PART_3 = "NGZjODJkMmQ2NTM4MGM0MWZl";
-const PURCHASE_API_KEY_PART_4 = "OTFjMDZkNzlhOGVmOWI5Mjc1ZQ==";
-
-// Функция для получения API ключа
-function getPurchaseConnectionString() {
-    const encoded = PURCHASE_API_KEY_PART_1 + PURCHASE_API_KEY_PART_2 + PURCHASE_API_KEY_PART_3 + PURCHASE_API_KEY_PART_4;
-    return atob(encoded);
-}
+// Supabase API Key (anon key для Edge Functions)
+const SUPABASE_ANON_KEY = 'sb_publishable_eQl1wB8m35f9p13TQbETmA_Jx6WRCeH';
 
 // Глобальные переменные для модального окна
 let emailModal = null;
@@ -318,10 +309,10 @@ async function executePurchase(email) {
 
         console.log('📦 Данные для создания платежа:', paymentData);
 
-        // Получаем API ключ для авторизации
-        const apiKey = getPurchaseConnectionString();
+        // Используем Supabase Anon Key для авторизации Edge Function
+        const apiKey = SUPABASE_ANON_KEY;
 
-        console.log('🔑 API ключ длиной:', apiKey.length, 'первые 10 символов:', apiKey.substring(0, 10));
+        console.log('🔑 Supabase API ключ:', apiKey.substring(0, 20) + '...');
 
         // Вызываем Edge Function для создания платежа
         const headers = {
