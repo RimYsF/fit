@@ -360,7 +360,16 @@ async function executePurchase(email) {
         // Инициализируем виджет ЮКассы
         const checkout = new window.YooMoneyCheckoutWidget({
             confirmation_token: result.payment.confirmation.confirmation_token,
-            return_url: window.location.href,
+            return_url: '',  // Пустой return_url для избежания редиректа в Telegram
+            success_callback: function() {
+                console.log('✅ Оплата успешна!');
+                // Закрываем модал и показываем успех
+                closeEmailModal();
+                // Очищаем кэш подписки, чтобы приложение проверило новый статус
+                clearSubscriptionCache();
+                // Перезагружаем приложение
+                setTimeout(() => location.reload(), 500);
+            },
             error_callback: function(error) {
                 console.error('❌ Ошибка виджета ЮКассы:', error);
                 showEmailErrorState('Ошибка оплаты. Попробуйте позже.');
