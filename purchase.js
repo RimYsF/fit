@@ -309,12 +309,13 @@ async function executePurchase(email) {
 
         console.log('📦 Данные для создания платежа:', paymentData);
 
-        // Вызываем Edge Function БЕЗ авторизации (публичная)
+        // Вызываем Edge Function с авторизацией через apikey заголовок
         const headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY
         };
 
-        console.log('🌐 Отправка запроса к Edge Function (без авторизации)...');
+        console.log('🌐 Отправка запроса к Edge Function...');
         console.log('📤 Заголовки:', headers);
 
         const response = await fetch('https://venkgteszgtpjethpftj.supabase.co/functions/v1/create-payment', {
