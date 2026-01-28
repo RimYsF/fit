@@ -2,7 +2,8 @@
 
 // Конфигурация Supabase
 const SUPABASE_URL = 'https://venkgteszgtpjethpftj.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_eQl1wB8m35f9p13TQbETmA_Jx6WRCeH';
+// ЗАМЕНИТЕ НА ВАШ SUPABASE ANON KEY из Dashboard → Settings → API
+const SUPABASE_KEY = 'sb_secret_j2Ax1zmbWjGajyzQJcZCKg_iEX8lL8N'; // Вставьте ваш полный ключ
 
 // Инициализация клиента Supabase (только если ещё не инициализирован)
 if (!window.supabaseClient) {
