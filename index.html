@@ -5050,6 +5050,9 @@
             return atob(encoded);
         }
 
+        // Make function globally available for external scripts
+        window.getConnectionString = getConnectionString;
+
         const AI_MODEL = 'google/gemini-2.0-flash-001';
 
         // Динамическое формирование URL API

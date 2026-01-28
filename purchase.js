@@ -303,20 +303,47 @@ async function executePurchase(email) {
 
         console.log('📦 Данные для создания платежа:', paymentData);
 
+        // Проверяем наличие функции getConnectionString
+        let apiKey = '';
+        if (typeof window.getConnectionString === 'function') {
+            apiKey = window.getConnectionString();
+            console.log('🔑 API Key получен из getConnectionString');
+        } else if (typeof getConnectionString === 'function') {
+            apiKey = getConnectionString();
+            console.log('🔑 API Key получен из getConnectionString (глобальная)');
+        } else {
+            console.warn('⚠️ getConnectionString не найден, пытаемся без авторизации');
+        }
+
         // Вызываем Edge Function для создания платежа
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // Добавляем авторизацию только если есть ключ
+        if (apiKey) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        }
+
+        console.log('🌐 Отправка запроса к Edge Function...');
+
         const response = await fetch('https://venkgteszgtpjethpftj.supabase.co/functions/v1/create-payment', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getConnectionString()}`
-            },
+            headers: headers,
             body: JSON.stringify(paymentData)
         });
 
+        console.log('📡 Статус ответа:', response.status, response.statusText);
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+            }
             console.error('❌ Ошибка создания платежа:', errorData);
-            showEmailErrorState(errorData.error || 'Ошибка создания платежа. Попробуйте позже.');
+            showEmailErrorState(errorData.error || `Ошибка сервера (${response.status}). Попробуйте позже.`);
 
             if (window.Telegram?.WebApp?.HapticFeedback) {
                 window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
@@ -357,7 +384,7 @@ async function executePurchase(email) {
 
     } catch (err) {
         console.error('❌ Непредвиденная ошибка:', err);
-        showEmailErrorState(`Произошла ошибка: ${err.message}`);
+        showEmailErrorState(`Ошибка сети: ${err.message}. Проверьте подключение к интернету.`);
 
         if (window.Telegram?.WebApp?.HapticFeedback) {
             window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
