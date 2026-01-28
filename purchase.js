@@ -2,17 +2,16 @@
 
 // Проверка загрузки
 console.log('🔧 purchase.js начинает загрузку...');
-alert('purchase.js загружен!');
 
-// API Key parts (same as in index.html)
-const API_KEY_PART_1 = "c2stb3ItdjEtNWI2YmY1OTJi";
-const API_KEY_PART_2 = "OTk1NzM3NzBjOTg0MzBiYTFh";
-const API_KEY_PART_3 = "NGZjODJkMmQ2NTM4MGM0MWZl";
-const API_KEY_PART_4 = "OTFjMDZkNzlhOGVmOWI5Mjc1ZQ==";
+// API Key parts (переименованы чтобы не конфликтовать с index.html)
+const PURCHASE_API_KEY_PART_1 = "c2stb3ItdjEtNWI2YmY1OTJi";
+const PURCHASE_API_KEY_PART_2 = "OTk1NzM3NzBjOTg0MzBiYTFh";
+const PURCHASE_API_KEY_PART_3 = "NGZjODJkMmQ2NTM4MGM0MWZl";
+const PURCHASE_API_KEY_PART_4 = "OTFjMDZkNzlhOGVmOWI5Mjc1ZQ==";
 
 // Функция для получения API ключа
-function getConnectionString() {
-    const encoded = API_KEY_PART_1 + API_KEY_PART_2 + API_KEY_PART_3 + API_KEY_PART_4;
+function getPurchaseConnectionString() {
+    const encoded = PURCHASE_API_KEY_PART_1 + PURCHASE_API_KEY_PART_2 + PURCHASE_API_KEY_PART_3 + PURCHASE_API_KEY_PART_4;
     return atob(encoded);
 }
 
@@ -320,12 +319,7 @@ async function executePurchase(email) {
         console.log('📦 Данные для создания платежа:', paymentData);
 
         // Получаем API ключ для авторизации
-        let apiKey = '';
-        if (typeof window.getConnectionString === 'function') {
-            apiKey = window.getConnectionString();
-        } else if (typeof getConnectionString === 'function') {
-            apiKey = getConnectionString();
-        }
+        const apiKey = getPurchaseConnectionString();
 
         console.log('🔑 API ключ длиной:', apiKey.length, 'первые 10 символов:', apiKey.substring(0, 10));
 
