@@ -354,36 +354,85 @@ async function executePurchase(email) {
             return;
         }
 
-        // Показываем состояние оплаты
+        // Показываем сообщение с инструкцией
         showEmailPaymentState();
 
-        // Инициализируем виджет ЮКассы
-        const checkout = new window.YooMoneyCheckoutWidget({
-            confirmation_token: result.payment.confirmation.confirmation_token,
-            return_url: '',  // Пустой return_url для избежания редиректа в Telegram
-            success_callback: function() {
-                console.log('✅ Оплата успешна!');
-                // Закрываем модал и показываем успех
+        // Получаем confirmation_url из ответа ЮКассы
+        const confirmationUrl = result.payment.confirmation.confirmation_url;
+
+        if (!confirmationUrl) {
+            console.error('❌ Нет confirmation_url в ответе:', result);
+            showEmailErrorState('Некорректный ответ от сервера. Попробуйте позже.');
+            return;
+        }
+
+        console.log('💳 Открываем страницу оплаты...');
+
+        // Показываем инструкцию пользователю
+        const paymentForm = document.getElementById('payment-form');
+        if (paymentForm) {
+            paymentForm.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">🔐 Перейдите к оплате</h3>
+                    <p style="margin-bottom: 1.5rem;">Ниже откроется страница оплаты ЮКассы в новой вкладке</p>
+                    <button id="open-payment-btn" style="
+                        background: var(--neobrut-green);
+                        color: var(--neobrut-black);
+                        border: 2px solid var(--neobrut-black);
+                        padding: 1rem 2rem;
+                        font-size: 1rem;
+                        font-weight: 900;
+                        cursor: pointer;
+                        border-radius: 6px;
+                        text-transform: uppercase;
+                    ">
+                        Открыть оплату
+                    </button>
+                    <p style="font-size: 0.85rem; color: var(--neobrut-darkgray); margin-top: 1rem;">
+                        После оплаты вернитесь и приложение обновится автоматически
+                    </p>
+                </div>
+            `;
+
+            // Обработчик кнопки
+            document.getElementById('open-payment-btn').addEventListener('click', function() {
+                // Открываем оплату в новой вкладке
+                window.open(confirmationUrl, '_blank');
+
+                // Закрываем модал
                 closeEmailModal();
-                // Очищаем кэш подписки, чтобы приложение проверило новый статус
-                clearSubscriptionCache();
-                // Перезагружаем приложение
-                setTimeout(() => location.reload(), 500);
-            },
-            error_callback: function(error) {
-                console.error('❌ Ошибка виджета ЮКассы:', error);
-                showEmailErrorState('Ошибка оплаты. Попробуйте позже.');
 
-                if (window.Telegram?.WebApp?.HapticFeedback) {
-                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-                }
-            }
-        });
+                // Запускаем периодическую проверку статуса подписки
+                let checkCount = 0;
+                const maxChecks = 30; // Проверяем 30 раз с интервалом 5 секунд = 2.5 минуты
 
-        // Рендерим виджет в контейнер
-        checkout.render('payment-form');
+                const checkInterval = setInterval(async () => {
+                    checkCount++;
 
-        console.log('💳 Виджет ЮКассы инициализирован');
+                    // Проверяем статус подписки
+                    const hasSub = await checkSubscriptionStatus(currentUser.id);
+
+                    if (hasSub) {
+                        clearInterval(checkInterval);
+                        console.log('✅ Подписка активирована!');
+
+                        // Очищаем кэш
+                        clearSubscriptionCache();
+
+                        // Показываем успех и перезагружаем
+                        alert('🎉 Оплата прошла успешно! Приложение будет перезагружено.');
+                        location.reload();
+                    } else if (checkCount >= maxChecks) {
+                        clearInterval(checkInterval);
+                        console.log('⏰ Время проверки истекло');
+                    }
+                }, 5000); // Каждые 5 секунд
+
+                console.log('🔍 Начали проверку статуса подписки...');
+            });
+        }
+
+        console.log('💳 Форма оплаты подготовлена');
 
     } catch (err) {
         console.error('❌ Непредвиденная ошибка:', err);
