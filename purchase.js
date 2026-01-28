@@ -268,17 +268,22 @@ function showInputError(message) {
 }
 
 /**
- * Выполнить покупку
+ * Показать состояние оплаты (виджет ЮКассы)
+ */
+function showEmailPaymentState() {
+    if (!emailModal) return;
+    hideAllModalBodies();
+    const paymentBody = document.getElementById('email-modal-body-payment');
+    if (paymentBody) {
+        paymentBody.classList.remove('email-modal-body-hidden');
+    }
+}
+
+/**
+ * Выполнить покупку через ЮКассу
  */
 async function executePurchase(email) {
-    console.log('🛒 Выполнение покупки для email:', email);
-
-    // Проверяем Supabase
-    if (!window.supabaseClient) {
-        console.error('❌ Supabase не доступен');
-        showEmailErrorState('База данных не доступна. Попробуйте позже.');
-        return;
-    }
+    console.log('🛒 Создание платежа для email:', email);
 
     // Проверяем пользователя
     if (!currentUser || !currentUser.id) {
@@ -288,59 +293,67 @@ async function executePurchase(email) {
     }
 
     try {
-        // Подготававливаем данные
-        const subscriptionData = {
+        // Подготававливаем данные для Edge Function
+        const paymentData = {
             telegram_id: currentUser.id,
             telegram_name: currentUser.first_name || currentUser.username || 'Пользователь',
             email: email,
-            status: 'active'
+            amount: '100.00'
         };
 
-        console.log('📦 Данные для отправки:', subscriptionData);
+        console.log('📦 Данные для создания платежа:', paymentData);
 
-        // Отправляем в Supabase
-        const { data, error } = await window.supabaseClient
-            .from('subscriptions')
-            .insert([subscriptionData])
-            .select();
+        // Вызываем Edge Function для создания платежа
+        const response = await fetch('https://venkgteszgtpjethpftj.supabase.co/functions/v1/create-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getConnectionString()}`
+            },
+            body: JSON.stringify(paymentData)
+        });
 
-        if (error) {
-            console.error('❌ Ошибка Supabase:', error);
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+            console.error('❌ Ошибка создания платежа:', errorData);
+            showEmailErrorState(errorData.error || 'Ошибка создания платежа. Попробуйте позже.');
 
-            if (error.code === '23505') {
-                // Пользователь уже покупал
-                showEmailErrorState('Вы уже приобретали эту подписку! Проверьте свой email.');
-            } else {
-                showEmailErrorState(`Ошибка: ${error.message} (код: ${error.code})`);
-            }
-
-            // Haptic feedback
             if (window.Telegram?.WebApp?.HapticFeedback) {
                 window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
             }
             return;
         }
 
-        console.log('✅ Подписка успешно создана!', data);
+        const result = await response.json();
+        console.log('✅ Платёж создан:', result);
 
-        // Обновляем глобальный статус подписки
-        window.isSubscribed = true;
-        window.hasSubscription = true;
-
-        // Сохраняем в кэш
-        if (typeof saveSubscriptionToCache === 'function') {
-            saveSubscriptionToCache(currentUser.id, true);
+        if (!result.payment || !result.payment.confirmation || !result.payment.confirmation.confirmation_token) {
+            console.error('❌ Некорректный ответ от сервера:', result);
+            showEmailErrorState('Некорректный ответ от сервера. Попробуйте позже.');
+            return;
         }
 
-        console.log('📊 Статус подписки обновлён: АКТИВНА');
+        // Показываем состояние оплаты
+        showEmailPaymentState();
 
-        // Показываем успех
-        showEmailSuccessState(email);
+        // Инициализируем виджет ЮКассы
+        const checkout = new window.YooMoneyCheckoutWidget({
+            confirmation_token: result.payment.confirmation.confirmation_token,
+            return_url: window.location.href,
+            error_callback: function(error) {
+                console.error('❌ Ошибка виджета ЮКассы:', error);
+                showEmailErrorState('Ошибка оплаты. Попробуйте позже.');
 
-        // Haptic feedback
-        if (window.Telegram?.WebApp?.HapticFeedback) {
-            window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-        }
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+                }
+            }
+        });
+
+        // Рендерим виджет в контейнер
+        checkout.render('payment-form');
+
+        console.log('💳 Виджет ЮКассы инициализирован');
 
     } catch (err) {
         console.error('❌ Непредвиденная ошибка:', err);

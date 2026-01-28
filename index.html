@@ -11,6 +11,7 @@
     <meta name="HandheldFriendly" content="True" />
     <meta name="robots" content="noindex,nofollow" />
     <script src="https://telegram.org/js/telegram-web-app.js?2"></script>
+    <script src="https://yookassa.ru/checkout-widget/v1/checkout-widget.js"></script>
     <title>FitTracker AI</title>
     <style>
         :root {
@@ -4631,6 +4632,15 @@
             font-size: 0.85rem;
             color: var(--neobrut-darkgray);
         }
+
+        .email-modal-body-payment {
+            padding: 1.5rem;
+        }
+
+        #payment-form {
+            width: 100%;
+            min-height: 400px;
+        }
     </style>
 </head>
 
@@ -4743,6 +4753,10 @@
                     <div class="email-modal-spinner"></div>
                     <p>Обработка покупки...</p>
                 </div>
+            </div>
+
+            <div class="email-modal-body email-modal-body-hidden email-modal-body-payment" id="email-modal-body-payment">
+                <div id="payment-form"></div>
             </div>
 
             <div class="email-modal-body email-modal-body-hidden" id="email-modal-body-success">
