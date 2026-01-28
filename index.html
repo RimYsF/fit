@@ -9676,9 +9676,9 @@
 
             // Функция для обработки клика с проверкой подписки
             async function handleWelcomeScreenClick(e) {
-                // Если клик на pricing buy button, не показывать pricing снова
+                // Если клик на pricing buy button - пропускаем (обработчик в purchase.js)
                 if (e.target === pricingBuyBtn || pricingBuyBtn?.contains(e.target)) {
-                    return;
+                    return true;  // Позволяем всплытие события
                 }
 
                 // Если уже проверяем подписку - игнорируем повторные клики
