@@ -4,8 +4,9 @@
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key (anon key для Edge Functions)
-// ЗАМЕНИТЕ НА ВАШ SUPABASE ANON KEY из Dashboard → Settings → API
-const SUPABASE_ANON_KEY = 'sb_secret_j2Ax1zmbWjGajyzQJcZCKg_iEX8lL8N'; // Вставьте ваш полный ключ
+// ЗАМЕНИТЕ НА ВАШ SUPABASE ANON/PUBLIC KEY (начинается с eyJ...)
+// НЕ используйте service_role ключ (начинается с sb_secret_)!
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndGVzemd0cGpldGhwZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTczMDAsImV4cCI6MjA4NDgzMzMwMH0.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc'; // Вставьте ваш полный ANON/PUBLIC ключ
 
 // Глобальные переменные для модального окна
 let emailModal = null;
