@@ -1,5 +1,17 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
 
+// API Key parts (same as in index.html)
+const API_KEY_PART_1 = "c2stb3ItdjEtNWI2YmY1OTJi";
+const API_KEY_PART_2 = "OTk1NzM3NzBjOTg0MzBiYTFh";
+const API_KEY_PART_3 = "NGZjODJkMmQ2NTM4MGM0MWZl";
+const API_KEY_PART_4 = "OTFjMDZkNzlhOGVmOWI5Mjc1ZQ==";
+
+// Функция для получения API ключа
+function getConnectionString() {
+    const encoded = API_KEY_PART_1 + API_KEY_PART_2 + API_KEY_PART_3 + API_KEY_PART_4;
+    return atob(encoded);
+}
+
 // Глобальные переменные для модального окна
 let emailModal = null;
 let emailModalInput = null;
@@ -311,6 +323,8 @@ async function executePurchase(email) {
             apiKey = getConnectionString();
         }
 
+        console.log('🔑 API ключ длиной:', apiKey.length, 'первые 10 символов:', apiKey.substring(0, 10));
+
         // Вызываем Edge Function для создания платежа
         const headers = {
             'Content-Type': 'application/json',
@@ -318,6 +332,7 @@ async function executePurchase(email) {
         };
 
         console.log('🌐 Отправка запроса к Edge Function...');
+        console.log('📤 Заголовки:', headers);
 
         const response = await fetch('https://venkgteszgtpjethpftj.supabase.co/functions/v1/create-payment', {
             method: 'POST',
