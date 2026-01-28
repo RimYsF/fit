@@ -1,5 +1,9 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
 
+// Проверка загрузки
+console.log('🔧 purchase.js начинает загрузку...');
+alert('purchase.js загружен!');
+
 // API Key parts (same as in index.html)
 const API_KEY_PART_1 = "c2stb3ItdjEtNWI2YmY1OTJi";
 const API_KEY_PART_2 = "OTk1NzM3NzBjOTg0MzBiYTFh";
