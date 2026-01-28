@@ -317,7 +317,7 @@ async function executePurchase(email) {
         // Вызываем Edge Function для создания платежа
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'apikey': apiKey
         };
 
         console.log('🌐 Отправка запроса к Edge Function...');
