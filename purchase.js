@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 15 - ИСПРАВЛЕНО: модальное окно вместо alert после оплаты
+// ВЕРСИЯ 16 - ИСПРАВЛЕНО: системный alert с новым текстом
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=15 loaded - custom modal instead of alert');
+console.log('🔄 purchase.js v=16 loaded - system alert with new text');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key (anon key для Edge Functions)
@@ -82,15 +82,6 @@ function initEmailModal() {
             closeEmailModal();
             // Закрываем приветственный экран после успешной покупки
             closeWelcomeScreen();
-        });
-    }
-
-    // Кнопка "ОК" (успех после polling)
-    const closePollingSuccessBtn = document.getElementById('email-modal-close-polling-success');
-    if (closePollingSuccessBtn) {
-        closePollingSuccessBtn.addEventListener('click', () => {
-            closeEmailModal();
-            location.reload();
         });
     }
 
@@ -188,19 +179,6 @@ function showEmailSuccessState(email) {
     if (emailDisplay) {
         emailDisplay.textContent = `Чек отправлен на: ${email}`;
     }
-}
-
-/**
- * Показать модальное окно после успешной оплаты (polling)
- */
-function showPollingSuccessModal() {
-    if (!emailModal) return;
-    hideAllModalBodies();
-    const successBody = document.getElementById('email-modal-body-polling-success');
-    if (successBody) {
-        successBody.classList.remove('email-modal-body-hidden');
-    }
-    emailModal.classList.add('show');
 }
 
 /**
@@ -452,8 +430,8 @@ async function executePurchase(email) {
                         // Очищаем кэш
                         clearSubscriptionCache();
 
-                        // Показываем модальное окно с инструкцией
-                        showPollingSuccessModal();
+                        // Показываем системное сообщение
+                        alert('✅ Оплата прошла успешно!\n\nЗакройте окно оплаты и вернитесь в приложение');
                     } else if (checkCount >= maxChecks) {
                         clearInterval(checkInterval);
                         console.log('⏰ Время проверки истекло');
