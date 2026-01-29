@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 12 - НОВЫЙ ПОТОК ОПЛАТЫ (открытие в новой вкладке)
+// ВЕРСИЯ 13 - НОВЫЙ ПОТОК ОПЛАТЫ (открытие в новой вкладке)
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=12 loaded - NEW PAYMENT FLOW (new tab)');
+console.log('🔄 purchase.js v=13 loaded - NEW PAYMENT FLOW (new tab)');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key (anon key для Edge Functions)
@@ -349,8 +349,9 @@ async function executePurchase(email) {
 
         const result = await response.json();
         console.log('✅ Платёж создан:', result);
+        console.log('📦 Confirmation объект:', result.payment.confirmation);
 
-        if (!result.payment || !result.payment.confirmation || !result.payment.confirmation.confirmation_token) {
+        if (!result.payment || !result.payment.confirmation) {
             console.error('❌ Некорректный ответ от сервера:', result);
             showEmailErrorState('Некорректный ответ от сервера. Попробуйте позже.');
             return;
