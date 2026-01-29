@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 13 - НОВЫЙ ПОТОК ОПЛАТЫ (открытие в новой вкладке)
+// ВЕРСИЯ 14 - ИСПРАВЛЕНО: polling без кэша
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=13 loaded - NEW PAYMENT FLOW (new tab)');
+console.log('🔄 purchase.js v=14 loaded - polling checks DB directly (no cache)');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key (anon key для Edge Functions)
@@ -412,8 +412,16 @@ async function executePurchase(email) {
                 const checkInterval = setInterval(async () => {
                     checkCount++;
 
-                    // Проверяем статус подписки
-                    const hasSub = await checkSubscriptionStatus(currentUser.id);
+                    // Проверяем статус подписки БЕЗ кэша (напрямую из БД)
+                    const { data } = await window.supabaseClient
+                        .from('subscriptions')
+                        .select('status')
+                        .eq('telegram_id', currentUser.id)
+                        .eq('status', 'active')
+                        .maybeSingle();
+
+                    const hasSub = !!data;
+                    console.log(`🔍 Polling проверка #${checkCount}: hasSub=${hasSub}`);
 
                     if (hasSub) {
                         clearInterval(checkInterval);
