@@ -9779,9 +9779,11 @@
         if (clearCacheBtn) {
             function clearCache() {
                 localStorage.removeItem('fitTrackerSubscriptionCache');
+                localStorage.removeItem('fitTrackerCelebrationShown');
+                localStorage.removeItem('fitTrackerJustPurchased');
                 window.hasSubscription = null;
                 window.isSubscribed = undefined;
-                console.log('🗑️ Кэш подписки очищен');
+                console.log('🗑️ Кэш подписки и поздравления очищен');
                 location.reload();
             }
 
@@ -9886,7 +9888,10 @@
 
                     // Проверяем, не показывали ли уже поздравление
                     const celebrationAlreadyShown = localStorage.getItem('fitTrackerCelebrationShown');
+                    console.log('🔍 celebrationAlreadyShown:', celebrationAlreadyShown);
+
                     if (celebrationAlreadyShown) {
+                        console.log('⏭️ Поздравление уже было показано ранее, пропускаем');
                         // Удаляем старый флаг "только что куплено" если остался
                         localStorage.removeItem('fitTrackerJustPurchased');
                         closeWelcomeScreen();
@@ -9895,11 +9900,17 @@
 
                     // Проверяем флаг "только что куплено"
                     const justPurchasedFlag = localStorage.getItem('fitTrackerJustPurchased');
+                    console.log('🔍 justPurchasedFlag:', justPurchasedFlag);
+
                     if (justPurchasedFlag) {
                         try {
                             const flagData = JSON.parse(justPurchasedFlag);
+                            console.log('📦 flagData:', flagData);
                             // Проверяем, что флаг принадлежит текущему пользователю
                             const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+                            console.log('👤 Current user telegramId:', user?.id);
+                            console.log('🆔 Flag telegramId:', flagData.telegramId);
+
                             if (flagData.telegramId === user?.id) {
                                 // Удаляем флаг "только что куплено"
                                 localStorage.removeItem('fitTrackerJustPurchased');
@@ -9912,14 +9923,19 @@
                                     showSubscriptionCelebration();
                                 }, 600);
                                 return;
+                            } else {
+                                console.log('❌ TelegramId не совпадает, пропускаем поздравление');
                             }
                         } catch (e) {
                             console.error('❌ Ошибка чтения fitTrackerJustPurchased:', e);
                             localStorage.removeItem('fitTrackerJustPurchased');
                         }
+                    } else {
+                        console.log('❌ Флаг fitTrackerJustPurchased не найден');
                     }
 
                     // Обычное закрытие без поздравления
+                    console.log('🚪 Обычное закрытие welcome screen без поздравления');
                     closeWelcomeScreen();
                     return;
                 }
