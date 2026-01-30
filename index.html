@@ -9254,7 +9254,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'x-client-info': 'supabase-js/2.39.7'
                     },
                     body: JSON.stringify({
                         userMessage: userMessage,
