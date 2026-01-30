@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 18 - ИСПРАВЛЕНО: модал не закрывается, polling 1 минуту, попытка закрыть окно оплаты
+// ВЕРСИЯ 19 - ИСПРАВЛЕНО: поздравительное окно после покупки
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=18 loaded - polling 1min, auto-close payment window');
+console.log('🔄 purchase.js v=19 loaded - celebration modal after purchase');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key (anon key для Edge Functions)
@@ -429,6 +429,13 @@ async function executePurchase(email) {
 
                         // Очищаем кэш
                         clearSubscriptionCache();
+
+                        // Устанавливаем флаг для поздравительного окна
+                        localStorage.setItem('fitTrackerJustPurchased', JSON.stringify({
+                            timestamp: new Date().toISOString(),
+                            telegramId: currentUser.id
+                        }));
+                        console.log('🎉 Установлен флаг fitTrackerJustPurchased для поздравления');
 
                         // Пытаемся закрыть окно оплаты (если браузер разрешит)
                         try {

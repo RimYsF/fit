@@ -2095,6 +2095,46 @@
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
 
+        /* Стили для списка функций в поздравительном окне подписки */
+        .celebration-features {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 30px auto;
+            max-width: 380px;
+            text-align: left;
+        }
+
+        .celebration-feature {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.95);
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: celebrationFeatureSlide 0.5s ease forwards;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .celebration-feature:nth-child(1) { animation-delay: 0.1s; }
+        .celebration-feature:nth-child(2) { animation-delay: 0.2s; }
+        .celebration-feature:nth-child(3) { animation-delay: 0.3s; }
+        .celebration-feature:nth-child(4) { animation-delay: 0.4s; }
+        .celebration-feature:nth-child(5) { animation-delay: 0.5s; }
+        .celebration-feature:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes celebrationFeatureSlide {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
 
         /* Горизонтальный разделитель с кнопкой */
         .divider {
@@ -7391,6 +7431,29 @@
 
             console.log('📊 Статус подписки при загрузке:', isSubscribed ? 'АКТИВНА' : 'НЕАКТИВНА');
 
+            // Проверка флага "только что куплено"
+            if (isSubscribed) {
+                const justPurchasedFlag = localStorage.getItem('fitTrackerJustPurchased');
+                if (justPurchasedFlag) {
+                    try {
+                        const flagData = JSON.parse(justPurchasedFlag);
+                        // Проверяем, что флаг принадлежит текущему пользователю
+                        if (flagData.telegramId === telegramId) {
+                            // Удаляем флаг сразу, чтобы не показывать снова
+                            localStorage.removeItem('fitTrackerJustPurchased');
+                            console.log('🎉 Показываем поздравительное окно подписки');
+                            // Показываем поздравление с небольшой задержкой
+                            setTimeout(() => {
+                                showSubscriptionCelebration();
+                            }, 500);
+                        }
+                    } catch (e) {
+                        console.error('❌ Ошибка чтения fitTrackerJustPurchased:', e);
+                        localStorage.removeItem('fitTrackerJustPurchased');
+                    }
+                }
+            }
+
             loadActivityData();
             loadActiveRepost();
             initializeTodoLists();
@@ -8281,6 +8344,79 @@
                     // Открываем итоги
                     openSummaryModal();
                 }, 300);
+            }
+        }
+
+        // Показать поздравительный экран после покупки подписки
+        function showSubscriptionCelebration() {
+            const overlay = document.createElement('div');
+            overlay.className = 'celebration-overlay subscription-celebration';
+            overlay.id = 'subscription-celebration-overlay';
+
+            overlay.innerHTML = `
+                <div class="celebration-content">
+                    <div class="celebration-emoji">🎊</div>
+                    <div class="celebration-title">ПОЗДРАВЛЯЕМ!</div>
+                    <div class="celebration-subtitle">Подписка активирована</div>
+                    <div class="celebration-message">
+                        Добро пожаловать! Теперь вам доступны все возможности программы.
+                    </div>
+                    <div class="celebration-features">
+                        <div class="celebration-feature">💪 159 упражнений в программе</div>
+                        <div class="celebration-feature">📅 7 полноценных тренировочных дней</div>
+                        <div class="celebration-feature">🤖 Умный помощник 24/7</div>
+                        <div class="celebration-feature">📊 Календарь активности</div>
+                        <div class="celebration-feature">🔥 Мотивационная система серий</div>
+                        <div class="celebration-feature">📈 Итоговая статистика</div>
+                    </div>
+                    <button class="celebration-button" onclick="closeSubscriptionCelebration()">
+                        Начать тренировку
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Создаём конфетти
+            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    overlay.appendChild(confetti);
+                }, i * 50);
+            }
+
+            // Haptic feedback
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        // Закрыть поздравительный экран подписки
+        function closeSubscriptionCelebration() {
+            const overlay = document.getElementById('subscription-celebration-overlay');
+            if (overlay) {
+                overlay.style.animation = 'celebrationFadeIn 0.3s ease reverse';
+                setTimeout(() => {
+                    overlay.remove();
+                    // Закрываем приветственный экран если ещё открыт
+                    const welcomeScreen = document.getElementById('welcome-screen');
+                    if (welcomeScreen) {
+                        welcomeScreen.classList.add('hidden');
+                        setTimeout(() => {
+                            welcomeScreen.style.display = 'none';
+                        }, 600);
+                    }
+                }, 300);
+            }
+
+            // Haptic feedback
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
         }
 
@@ -9797,7 +9933,7 @@
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=2"></script>
-    <script src="purchase.js?v=18"></script>
+    <script src="purchase.js?v=19"></script>
 </body>
 
 </html>
