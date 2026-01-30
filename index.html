@@ -9201,7 +9201,10 @@
             const dayName = dayNames[today.getDay()];
             const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
             const monthName = monthNames[today.getMonth()];
-            const dateString = `${dayName}, ${today.getDate()} ${monthName} ${today.getFullYear()}`;
+            const workoutDayInfo = currentWorkoutDay >= 8
+                ? 'тренировочный день: подведение итогов'
+                : `тренировочный день: ${currentWorkoutDay}/7`;
+            const dateString = `${dayName}, ${today.getDate()} ${monthName} ${today.getFullYear()}, ${workoutDayInfo}`;
 
             try {
                 // Добавляем индикатор набора текста
