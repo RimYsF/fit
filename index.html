@@ -5112,39 +5112,11 @@
       </div>
 
     <script>
-        // === API KEY PARTS (base64 encoded, split for security) ===
-        // Part 1: API key prefix (sk-or-v1-5b6bf592b)
-        const API_KEY_PART_1 = "c2stb3ItdjEtNWI2YmY1OTJi";
-        // Part 2: Mid section (99573770c98430ba1a)
-        const API_KEY_PART_2 = "OTk1NzM3NzBjOTg0MzBiYTFh";
-        // Part 3: Hash section (4fc82d2d65380c41fe)
-        const API_KEY_PART_3 = "NGZjODJkMmQ2NTM4MGM0MWZl";
-        // Part 4: Final section (91c06d79a8ef9b9275e==)
-        const API_KEY_PART_4 = "OTFjMDZkNzlhOGVmOWI5Mjc1ZQ==";
+        // === Supabase Edge Function for AI Chat ===
+        const AI_CHAT_EDGE_FUNCTION_URL = 'https://venkgteszgtpjethpftj.supabase.co/functions/v1/ai-chat';
 
-        // Other app constants (obfuscated)
-        const APP_VERSION = "ZGVlcHNlZWsvZGVlcHNlZWstdjMuMg==";
-
-        // API Key assembly and decode function
-        function getConnectionString() {
-            const encoded = API_KEY_PART_1 + API_KEY_PART_2 + API_KEY_PART_3 + API_KEY_PART_4;
-            return atob(encoded);
-        }
-
-        // Make function globally available for external scripts
-        window.getConnectionString = getConnectionString;
-
-        const AI_MODEL = 'google/gemini-2.0-flash-001';
-
-        // Динамическое формирование URL API
-        function getAPIBaseURL() {
-            return 'https://openrouter.ai/api/v1/chat/completions';
-        }
-
-        // Простая функция проверки
-        function validateConfig() {
-            return true; // Для простоты
-        }
+        // Supabase Anon Key (same as used in purchase.js and supabase.js)
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndXRlc3pndHJwaWV0aHBmdGoiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc2OTI1NzMwMCwiZXhwIjoyMDg0ODMzMzAwfQ.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc';
 
         // Chat history constants
         const CHAT_HISTORY_KEY = 'fitTrackerChatHistory';
@@ -9235,142 +9207,76 @@
                 // Добавляем индикатор набора текста
                 showTypingIndicator();
 
-                const response = await fetch(getAPIBaseURL(), {
+                // Подготовка контекста для Edge Function
+                const userContext = {
+                    dateString: dateString,
+                    currentWorkoutDay: currentWorkoutDay,
+                    workoutDayName: getWorkoutDayName(currentWorkoutDay),
+                    todoData: {
+                        summaries: Object.keys(todoData).map(day => {
+                            const dayNum = parseInt(day);
+                            const tasks = todoData[day] || [];
+                            const completed = tasks.filter(t => t.completed).length;
+                            return `День ${dayNum} (${getWorkoutDayName(dayNum)}): ${completed}/${tasks.length} выполнено`;
+                        }).join('\n'),
+                        details: Object.keys(todoData).map(day => {
+                            const dayNum = parseInt(day);
+                            const tasks = todoData[day] || [];
+                            if (tasks.length === 0) return `\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---\nНет задач`;
+                            return `\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---` +
+                                tasks.map((t, taskIndex) => {
+                                    let taskStr = `\n${t.completed ? '✅' : '⏳'} Задание ${taskIndex + 1}: ${t.text}`;
+                                    if (t.exercises && t.exercises.length > 0) {
+                                        taskStr += '\n   Упражнения:';
+                                        t.exercises.forEach((ex, exIndex) => {
+                                            taskStr += `\n      ${exIndex + 1}. ${ex.completed ? '✅' : '⏳'} ${ex.videoUrl ? '🎥 ' : ''}${ex.text}${ex.isRest ? ' (отдых)' : ''}`;
+                                        });
+                                    }
+                                    return taskStr;
+                                }).join('\n');
+                        }).join('\n')
+                    },
+                    activeRepost: activeRepost ? {
+                        day: activeRepost.day,
+                        workoutDayName: getWorkoutDayName(activeRepost.day),
+                        taskName: activeRepost.taskName,
+                        exerciseText: activeRepost.exerciseText
+                    } : null,
+                    completionPercentage: currentWorkoutDay >= 8
+                        ? calculateWeeklySummary().overallPercent
+                        : calculateCompletionPercentage(currentWorkoutDay),
+                    activeDaysCount: Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length
+                };
+
+                // Вызов Supabase Edge Function
+                const response = await fetch(AI_CHAT_EDGE_FUNCTION_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getConnectionString()}`,
-                        'HTTP-Referer': window.location.origin,
-                        'X-Title': 'FitTracker AI'
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
                     },
                     body: JSON.stringify({
-                        model: AI_MODEL,
-                        messages: [
-                            {
-                                role: "system",
-                                content: `Ты — личный AI-тренер FitTracker AI. Твоя задача — привести пользователя к результату. Ты не просто_assistент, ты тренер с клиентом. Ты на одной стороне с пользователем — его успех твой успех.
-
-                                БАЗОВЫЕ ПРАВИЛА:
-                                - Отвечай тепло, коротко и по делу
-                                - ЭМОДЗИ: СТРОГОЕ ОГРАНИЧЕНИЕ — используй максимум 1 эмодзи на 10 сообщений. 90% ответов должны быть БЕЗ эмодзи. Можно использовать любые эмодзи по ситуации, но не чаще одного раза на 10 сообщений
-
-                                ТРЕНЕРСКИЙ ПОДХОД (требовательный, но не строгий):
-                                - Спрашивай о выполненных упражнениях. Не "как дела?", а "Сделал ли ты тренировку из списка сегодня?"
-                                - Если пропуск — требуй объяснение и предлагай решение: "Что пошло не так? Как компенсируем?" вместо "ничего страшного"
-                                - Всегда отвечай через призму программы. Пользователь спрашивает "как похудеть?" — ты говоришь "Посмотрим на твою программу: сегодня день 3, там кардио. Его делал?"
-                                - Если жалуется — ищи причину в невыполненных упражнениях. Если хвастается — отмечай конкретные выполненные задачи
-                                - Никогда не игнорируй данные — каждый ответ должен ссылаться на реальные задания и прогресс
-                                - Не "ты молодец" каждое сообщение. Отмечай достижения искренне, но не заево
-
-                                ЭКСПЕРТНЫЙ ПОДХОД (коротко, без занудства):
-                                - Каждое упражнение объясняй в одну строку: зачем оно нужно. "Приседания — база для всего, без них никуда" вместо лекции о биомеханике
-                                - Ссылайся на мышцы/функции коротко. "Это прокачает заднюю поверхность — важно для здоровья спины"
-                                - Давай ОДНУ конкретную вещь. Не список из 5 пунктов — это скучно и не выполняется
-                                - Если объясняешь технику — фокус на одной ключевой ошибке. "Главное — не сгибай спину, остальное не так важно"
-                                - Польза > объём. Лучше одна строка которую запомнят, чем три абзаца которые не осилят
-
-                                ПРИМЕРЫ ДИАЛОГОВ (учись на них):
-
-                                Пользователь: Как дела?
-                                Тренер: Сегодня у тебя день 3 из 7, выполнено 2 из 4 заданий. "Отжимания" и "Пресс" делал? Что с "Приседаниями"?
-
-                                Пользователь: Не успел позаниматься вчера
-                                Тренер: Что пошло не так? Как компенсируем? Сегодня у тебя день 4 — можешь сделать двойную норму или добавить отдельное тренировочное время в выходные
-
-                                Пользователь: Как похудеть?
-                                Тренер: Посмотрим на твою программу: сегодня день 3, там кардио. Его делал? Это ключевой элемент для жиросжигания
-
-                                Пользователь: Приседания — это зачем?
-                                Тренер: База для всего, без них никуда. Прокачивают ноги и ягодицы — важно для общей силовой базы
-
-                                Пользователь: Я молодец, всё сделал!
-                                Тренер: Отлично — день 3 выполнен полностью. Так держать, завтра день 4
-
-                                ЧЕГО ИЗБЕГАТЬ:
-                                - Заставлять чувствлять вину
-                                - Продавленная мотивация ("всё в твоих руках", "ты сможешь")
-                                - Медицинские советы
-                                - Водные ответы без пользы
-                                - Лекции и длинные списки — не читают, не выполняют
-
-                                ГЛАВНОЕ ПРАВИЛО:
-                                - ЛЮБОЙ ответ на 100% основывается на ПЕРЕДАННЫХ НИЖЕ ДАННЫХ о тренировке
-                                - НЕ отвечай абстрактно — всегда ссылайся на конкретные упражнения и прогресс
-                                - Если спрашивает "как дела?" — отвечай с опорой на выполненные задания и процент
-                                - Программа — это твоя Библия. Отвечай через неё, а не общими фразами
-
-                                СЕГОДНЯ: ${dateString}
-                                ${currentWorkoutDay >= 8
-                                    ? `Тренировочный день: Итоги недели`
-                                    : `Тренировочный день: ${currentWorkoutDay}/7 (${getWorkoutDayName(currentWorkoutDay)})`
-                                }
-
-                                ВСЕ ЗАДАНИЯ ПО ДНЯМ:
-                                ${Object.keys(todoData).map(day => {
-                                    const dayNum = parseInt(day);
-                                    const tasks = todoData[day] || [];
-                                    const completed = tasks.filter(t => t.completed).length;
-                                    return `День ${dayNum} (${getWorkoutDayName(dayNum)}): ${completed}/${tasks.length} выполнено`;
-                                }).join('\\n')}
-
-                                ЗАДАЧИ НА КАЖДЫЙ ДЕНЬ:
-                                ${Object.keys(todoData).map(day => {
-                                    const dayNum = parseInt(day);
-                                    const tasks = todoData[day] || [];
-                                    if (tasks.length === 0) return `\\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---\\nНет задач`;
-                                    return `\\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---` +
-                                        tasks.map((t, taskIndex) => {
-                                            let taskStr = `\\n${t.completed ? '✅' : '⏳'} Задание ${taskIndex + 1}: ${t.text}`;
-                                            if (t.exercises && t.exercises.length > 0) {
-                                                taskStr += '\\n   Упражнения:';
-                                                t.exercises.forEach((ex, exIndex) => {
-                                                    taskStr += `\\n      ${exIndex + 1}. ${ex.completed ? '✅' : '⏳'} ${ex.videoUrl ? '🎥 ' : ''}${ex.text}${ex.isRest ? ' (отдых)' : ''}`;
-                                                });
-                                            }
-                                            return taskStr;
-                                        }).join('\\n');
-                                }).join('\\n')}
-
-                                ${currentWorkoutDay >= 8
-                                    ? `Выполнение за неделю: ${calculateWeeklySummary().overallPercent}%`
-                                    : `Выполнение сегодня: ${calculateCompletionPercentage(currentWorkoutDay)}%`
-                                }
-                                Активных дней: ${Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length}
-                                ${activeRepost ? `
-ПЕРЕСЛАННОЕ УПРАЖНЕНИЕ:
-Пользователь переслал упражнение для обсуждения: День ${activeRepost.day} (${getWorkoutDayName(activeRepost.day)}) • Задание: ${activeRepost.taskName} • Упражнение: ${activeRepost.exerciseText}
-Отвечая на вопрос пользователя, учитывай контекст этого конкретного упражнения. Если пользователь задаёт общий вопрос без упоминания упражнения, сосредоточься на пересланном упражнении.` : ''}
-                                Время: ${new Date().toLocaleString('ru-RU')}`
-                            },
-                            ...chatHistory.slice(-10), // Последние 10 сообщений для контекста
-                            {
-                                role: "user",
-                                content: userMessage
-                            }
-                        ],
-                        max_tokens: 1000,
-                        temperature: 0.6,
-                        top_p: 0.95,
-                        frequency_penalty: 0.3,
-                        presence_penalty: 0.6
+                        userMessage: userMessage,
+                        userContext: userContext,
+                        chatHistory: chatHistory
                     })
                 });
 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Response Error:', errorText);
-                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error('Edge Function Error:', errorData);
+                    throw new Error(`Edge Function Error: ${response.status} - ${errorData.error || response.statusText}`);
                 }
 
-                const data = await response.json();
-                console.log('API Response:', data);
+                const result = await response.json();
 
-                if (data.error) {
-                    console.error('API Error:', data.error);
-                    throw new Error(`API Error: ${data.error.message || data.error.type}`);
+                if (result.error) {
+                    console.error('AI Chat Error:', result.error);
+                    throw new Error(result.error);
                 }
 
-                const aiMessage = data.choices[0]?.message?.content || "Извините, произошла ошибка. Попробуйте еще раз.";
+                const aiMessage = result.response || "Извините, произошла ошибка. Попробуйте еще раз.";
 
                 hideTypingIndicator();
                 return formatAIResponse(aiMessage.trim());
