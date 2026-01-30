@@ -2073,6 +2073,7 @@
             cursor: pointer;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
         }
 
         .celebration-button:hover {
@@ -7471,29 +7472,6 @@
 
             console.log('📊 Статус подписки при загрузке:', isSubscribed ? 'АКТИВНА' : 'НЕАКТИВНА');
 
-            // Проверка флага "только что куплено"
-            if (isSubscribed) {
-                const justPurchasedFlag = localStorage.getItem('fitTrackerJustPurchased');
-                if (justPurchasedFlag) {
-                    try {
-                        const flagData = JSON.parse(justPurchasedFlag);
-                        // Проверяем, что флаг принадлежит текущему пользователю
-                        if (flagData.telegramId === telegramId) {
-                            // Удаляем флаг сразу, чтобы не показывать снова
-                            localStorage.removeItem('fitTrackerJustPurchased');
-                            console.log('🎉 Показываем поздравительное окно подписки');
-                            // Показываем поздравление с небольшой задержкой
-                            setTimeout(() => {
-                                showSubscriptionCelebration();
-                            }, 500);
-                        }
-                    } catch (e) {
-                        console.error('❌ Ошибка чтения fitTrackerJustPurchased:', e);
-                        localStorage.removeItem('fitTrackerJustPurchased');
-                    }
-                }
-            }
-
             loadActivityData();
             loadActiveRepost();
             initializeTodoLists();
@@ -8460,14 +8438,6 @@
                 overlay.style.animation = 'celebrationFadeIn 0.3s ease reverse';
                 setTimeout(() => {
                     overlay.remove();
-                    // Закрываем приветственный экран если ещё открыт
-                    const welcomeScreen = document.getElementById('welcome-screen');
-                    if (welcomeScreen) {
-                        welcomeScreen.classList.add('hidden');
-                        setTimeout(() => {
-                            welcomeScreen.style.display = 'none';
-                        }, 600);
-                    }
                 }, 300);
             }
 
@@ -9910,9 +9880,46 @@
                     subscriptionCheckInProgress = false;
                 }
 
-                // Если подписка уже есть - закрываем welcome screen
+                // Если подписка уже есть - проверяем флаг поздравления
                 if (window.isSubscribed) {
                     console.log('✅ Подписка активна, открываем главный экран');
+
+                    // Проверяем, не показывали ли уже поздравление
+                    const celebrationAlreadyShown = localStorage.getItem('fitTrackerCelebrationShown');
+                    if (celebrationAlreadyShown) {
+                        // Удаляем старый флаг "только что куплено" если остался
+                        localStorage.removeItem('fitTrackerJustPurchased');
+                        closeWelcomeScreen();
+                        return;
+                    }
+
+                    // Проверяем флаг "только что куплено"
+                    const justPurchasedFlag = localStorage.getItem('fitTrackerJustPurchased');
+                    if (justPurchasedFlag) {
+                        try {
+                            const flagData = JSON.parse(justPurchasedFlag);
+                            // Проверяем, что флаг принадлежит текущему пользователю
+                            const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+                            if (flagData.telegramId === user?.id) {
+                                // Удаляем флаг "только что куплено"
+                                localStorage.removeItem('fitTrackerJustPurchased');
+                                // Устанавливаем флаг что поздравление показано
+                                localStorage.setItem('fitTrackerCelebrationShown', 'true');
+                                console.log('🎉 Показываем поздравительное окно подписки (первый и последний раз)');
+                                // Закрываем welcome screen и показываем поздравление
+                                closeWelcomeScreen();
+                                setTimeout(() => {
+                                    showSubscriptionCelebration();
+                                }, 600);
+                                return;
+                            }
+                        } catch (e) {
+                            console.error('❌ Ошибка чтения fitTrackerJustPurchased:', e);
+                            localStorage.removeItem('fitTrackerJustPurchased');
+                        }
+                    }
+
+                    // Обычное закрытие без поздравления
                     closeWelcomeScreen();
                     return;
                 }
