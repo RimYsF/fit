@@ -5141,6 +5141,16 @@
         let exerciseCardVisible = false; // Видна ли карточка упражнения
         let activeRepost = null; // Активный репост: { taskId, exerciseId, day, taskName, exerciseText }
 
+        // Получить общее количество тренировочных дней (исключая пустые/итоговые)
+        function getTotalWorkoutDays() {
+            const days = Object.keys(todoData).map(Number).sort((a, b) => a - b);
+            // Исключаем пустые дни (день итогов)
+            const daysWithTasks = days.filter(day => {
+                const tasks = todoData[day];
+                return tasks && tasks.length > 0;
+            });
+            return daysWithTasks.length > 0 ? Math.max(...daysWithTasks) : 7;
+        }
 
         // Инициализация todo-списков с упражнениями
         function initializeTodoLists() {
@@ -6415,7 +6425,7 @@
         // Проверить доступен ли блок итогов
         function isSummaryAccessible() {
             const currentDay = getCurrentWorkoutDay();
-            if (currentDay >= 8) return true;
+            if (currentDay > getTotalWorkoutDays()) return true;
 
             const day7Tasks = todoData[7] || [];
             return day7Tasks.length > 0 && day7Tasks.every(t => t.completed);
@@ -6618,8 +6628,9 @@
 
             // Считаем пройденные дни по дате (независимо от активности)
             const currentWorkoutDay = getCurrentWorkoutDay();
-            const completedDays = Math.max(0, Math.min(currentWorkoutDay - 1, 7));
-            const daysProgressPercent = Math.round((completedDays / 7) * 100);
+            const totalDays = getTotalWorkoutDays();
+            const completedDays = Math.max(0, Math.min(currentWorkoutDay - 1, totalDays));
+            const daysProgressPercent = Math.round((completedDays / totalDays) * 100);
 
             return {
                 totalTasks,
@@ -6821,7 +6832,7 @@
                             <div class="summary-metric-label">Дней подряд</div>
                         </div>
                         <div class="summary-metric-card">
-                            <div class="summary-metric-value" data-counter="${summary.completedDays}" data-suffix="/7">0</div>
+                            <div class="summary-metric-value" data-counter="${summary.completedDays}" data-suffix="/${getTotalWorkoutDays()}">0</div>
                             <div class="summary-metric-label">Пройдено</div>
                         </div>
                     </div>
@@ -6928,7 +6939,7 @@
                             <span class="stat-label">выполнено</span>
                         </div>
                         <div class="summary-motivation-stat">
-                            <span class="stat-value" data-counter="${summary.completedDays}" data-suffix="/7">0</span>
+                            <span class="stat-value" data-counter="${summary.completedDays}" data-suffix="/${getTotalWorkoutDays()}">0</span>
                             <span class="stat-label">дней</span>
                         </div>
                         <div class="summary-motivation-stat">
@@ -7134,7 +7145,7 @@
             let percentage = calculateCompletionPercentage(displayDay);
 
             // Для дня 8 и выше показываем недельный процент вместо 0%
-            if (displayDay >= 8) {
+            if (displayDay > getTotalWorkoutDays()) {
                 const weeklySummary = calculateWeeklySummary();
                 percentage = weeklySummary.overallPercent;
             }
@@ -7143,7 +7154,7 @@
             document.getElementById('strip-day').textContent = '';
 
             // Для дня 8 и выше показываем "Итоги", иначе "День X"
-            if (displayDay >= 8) {
+            if (displayDay > getTotalWorkoutDays()) {
                 document.getElementById('strip-date').textContent = 'Итоги';
             } else {
                 document.getElementById('strip-date').textContent = `День ${displayDay}`;
@@ -7155,11 +7166,11 @@
             // Обновляем прогресс
             document.getElementById('strip-progress-value').textContent = `${percentage}%`;
 
-            // Для дня 8 и выше показываем "Итоги недели", иначе "День X из 7"
-            if (displayDay >= 8) {
+            // Для дня больше общего количества показываем "Итоги недели", иначе "День X из Y"
+            if (displayDay > getTotalWorkoutDays()) {
                 document.getElementById('strip-progress-sub').textContent = 'Итоги недели';
             } else {
-                document.getElementById('strip-progress-sub').textContent = `День ${displayDay} из 7`;
+                document.getElementById('strip-progress-sub').textContent = `День ${displayDay} из ${getTotalWorkoutDays()}`;
             }
 
             // Обновляем круговой прогресс
@@ -7320,7 +7331,7 @@
 
             let dayContext, percentContext, completedContext, remainingContext;
 
-            if (displayDay >= 8) {
+            if (displayDay > getTotalWorkoutDays()) {
                 // Для дня 8+ (Итоги) используем недельную статистику
                 const weeklySummary = calculateWeeklySummary();
                 dayContext = 'Итоги недели';
@@ -7328,11 +7339,11 @@
                 completedContext = `${weeklySummary.completedTasks}/${weeklySummary.totalTasks}`;
                 remainingContext = weeklySummary.totalTasks - weeklySummary.completedTasks;
             } else {
-                // Для дней 1-7 используем дневную статистику
+                // Для тренировочных дней используем дневную статистику
                 const todos = todoData[displayDay] || [];
                 const completedCount = todos.filter(t => t.completed).length;
                 const totalCount = todos.length;
-                dayContext = `${displayDay} из 7`;
+                dayContext = `${displayDay} из ${getTotalWorkoutDays()}`;
                 percentContext = percentage;
                 completedContext = `${completedCount}/${totalCount}`;
                 remainingContext = totalCount - completedCount;
@@ -9201,9 +9212,10 @@
             const dayName = dayNames[today.getDay()];
             const monthNames = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
             const monthName = monthNames[today.getMonth()];
-            const workoutDayInfo = currentWorkoutDay >= 8
+            const totalDays = getTotalWorkoutDays();
+            const workoutDayInfo = currentWorkoutDay > totalDays
                 ? 'тренировочный день: подведение итогов'
-                : `тренировочный день: ${currentWorkoutDay}/7`;
+                : `тренировочный день: ${currentWorkoutDay}/${totalDays}`;
             const dateString = `${dayName}, ${today.getDate()} ${monthName} ${today.getFullYear()}, ${workoutDayInfo}`;
 
             try {
@@ -9245,7 +9257,7 @@
                         taskName: activeRepost.taskName,
                         exerciseText: activeRepost.exerciseText
                     } : null,
-                    completionPercentage: currentWorkoutDay >= 8
+                    completionPercentage: currentWorkoutDay > totalDays
                         ? calculateWeeklySummary().overallPercent
                         : calculateCompletionPercentage(currentWorkoutDay),
                     activeDaysCount: Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length
