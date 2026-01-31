@@ -4899,7 +4899,8 @@
             <!-- AI Комментарий -->
             <div class="ai-comment" id="ai-comment">
                 <div class="ai-comment-text" id="ai-comment-text">
-                    Загрузка AI комментария...
+                    <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+                    <span id="ai-comment-span">Загрузка AI комментария...</span>
                 </div>
             </div>
 
@@ -5114,6 +5115,7 @@
     <script>
         // === Supabase Edge Function for AI Chat ===
         const AI_CHAT_EDGE_FUNCTION_URL = 'https://venkgteszgtpjethpftj.supabase.co/functions/v1/Ai-chat';
+        const AI_COMMENT_EDGE_FUNCTION_URL = 'https://venkgteszgtpjethpftj.supabase.co/functions/v1/ai-comment';
 
         // Supabase Anon Key (same as used in purchase.js and supabase.js)
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndXRlc3pndHJwaWV0aHBmdGoiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc2OTI1NzMwMCwiZXhwIjoyMDg0ODMzMzAwfQ.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc';
@@ -7208,29 +7210,27 @@
         // Функция анимации печати текста
         let typingTimeout = null;
         function typeTextWithAnimation(element, text, speed = 30) {
+            // Ищем span внутри элемента для текста
+            const textSpan = element.querySelector('#ai-comment-span') || element;
+
             // Очищаем предыдущую анимацию
             if (typingTimeout) {
                 clearTimeout(typingTimeout);
             }
 
-            element.textContent = '';
-            element.classList.add('typing');
+            textSpan.textContent = '';
+            textSpan.classList.add('typing');
 
             let index = 0;
-            const dots = '<span class="ai-comment-typing-dots"><span class="ai-comment-typing-dot"></span><span class="ai-comment-typing-dot"></span><span class="ai-comment-typing-dot"></span></span>';
 
             function type() {
                 if (index < text.length) {
-                    element.textContent = text.substring(0, index + 1);
-                    // Добавляем точки пока печатается
-                    if (index < text.length - 1) {
-                        element.innerHTML += dots;
-                    }
+                    textSpan.textContent = text.substring(0, index + 1);
                     index++;
                     typingTimeout = setTimeout(type, speed);
                 } else {
-                    element.classList.remove('typing');
-                    element.textContent = text;
+                    textSpan.classList.remove('typing');
+                    textSpan.textContent = text;
                 }
             }
 
@@ -7293,15 +7293,16 @@
                 return; // Используем закешированный комментарий
             }
 
-            // Показываем индикатор загрузки
+            // Показываем индикатор загрузки (с иконкой)
             const commentElement = document.getElementById('ai-comment-text');
             commentElement.innerHTML = `
-                <div class="ai-comment-loading">
-                    <span>Анализирую прогресс</span>
-                    <div class="ai-comment-loading-dot"></div>
-                    <div class="ai-comment-loading-dot"></div>
-                    <div class="ai-comment-loading-dot"></div>
-                </div>
+                <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+                <span id="ai-comment-span" class="ai-comment-loading">
+                    <span style="margin-right: 4px;">Анализирую прогресс</span>
+                    <span class="ai-comment-loading-dot"></span>
+                    <span class="ai-comment-loading-dot"></span>
+                    <span class="ai-comment-loading-dot"></span>
+                </span>
             `;
 
             // Генерируем комментарий
@@ -7322,17 +7323,14 @@
             }));
         }
 
-        // Генерация AI комментария через API
+        // Генерация AI комментария через Edge Function
         async function generateAICommentForDashboard(percentage, streak) {
             const displayDay = selectedWorkout;
-            const today = new Date();
-            const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-            const dayName = dayNames[today.getDay()];
 
             let dayContext, percentContext, completedContext, remainingContext;
 
             if (displayDay > getTotalWorkoutDays()) {
-                // Для дня 8+ (Итоги) используем недельную статистику
+                // Для дня больше общего количества (Итоги) используем недельную статистику
                 const weeklySummary = calculateWeeklySummary();
                 dayContext = 'Итоги недели';
                 percentContext = weeklySummary.overallPercent;
@@ -7349,49 +7347,39 @@
                 remainingContext = totalCount - completedCount;
             }
 
-            const systemPrompt = `Ты — мотивирующий фитнес-тренер AI. Ты даёшь короткие, энерджичные комментарии на русском языке (макс 120 символов).
-Правила:
-- Будь дружелюбным и мотивирующим
-- Используй эмодзи (не более 2)
-- Адаптируй тон под прогресс пользователя
-- Упоминай конкретные цифры (процент, серия, задачи)
-- Никогда не повторяйся
-- Если это "Итоги недели", поздравляй с завершением недели и подводи итоги
-
-Контекст:
-- День: ${dayContext}
-- Процент выполнения: ${percentContext}%
-- Серия: ${streak} дней
-- Выполнено задач: ${completedContext}
-- Осталось: ${remainingContext} задач`;
-
             try {
-                const response = await fetch(getAPIBaseURL(), {
+                // Вызов Supabase Edge Function для AI комментария
+                const response = await fetch(AI_COMMENT_EDGE_FUNCTION_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getConnectionString()}`,
-                        'HTTP-Referer': window.location.href,
-                        'X-Title': 'FitTracker AI'
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'x-client-info': 'supabase-js/2.39.7'
                     },
                     body: JSON.stringify({
-                        model: AI_MODEL,
-                        messages: [
-                            { role: 'system', content: systemPrompt },
-                            { role: 'user', content: 'Дай мотивирующий комментарий на основе текущего прогресса.' }
-                        ],
-                        max_tokens: 150,
-                        temperature: 0.8
+                        percentage: percentContext,
+                        streak: streak,
+                        dayContext: dayContext,
+                        completedContext: completedContext,
+                        remainingContext: remainingContext
                     })
                 });
 
                 if (!response.ok) {
-                    throw new Error('API request failed');
+                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                    console.error('Edge Function Error:', errorData);
+                    throw new Error(`Edge Function Error: ${response.status}`);
                 }
 
-                const data = await response.json();
-                const comment = data.choices[0]?.message?.content?.trim() || getFallbackComment(percentContext, streak);
-                return comment;
+                const result = await response.json();
+
+                if (result.error) {
+                    console.error('AI Comment Error:', result.error);
+                    throw new Error(result.error);
+                }
+
+                return result.comment || getFallbackComment(percentContext, streak);
             } catch (error) {
                 console.error('AI Comment error:', error);
                 return getFallbackComment(percentContext, streak);
@@ -7420,7 +7408,10 @@
                     const { comment, timestamp, percentage } = JSON.parse(cached);
                     const commentElement = document.getElementById('ai-comment-text');
                     if (commentElement) {
-                        commentElement.textContent = comment;
+                        commentElement.innerHTML = `
+                            <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+                            <span id="ai-comment-span">${comment}</span>
+                        `;
                     }
                     lastAICommentUpdate = timestamp;
                     lastAICommentPercentage = percentage;
