@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 24 - ИСПРАВЛЕНО: SUPABASE_ANON_KEY объявлен здесь для платежей
+// ВЕРСИЯ 25 - Убрано промежуточное окно, ЮКасса открывается сразу
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=24 loaded - celebration modal after purchase');
+console.log('🔄 purchase.js v=25 loaded - direct YooKassa open');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key для Edge Functions (специально для платежей)
@@ -355,9 +355,6 @@ async function executePurchase(email) {
             return;
         }
 
-        // Показываем сообщение с инструкцией
-        showEmailPaymentState();
-
         // Получаем confirmation_url из ответа ЮКассы
         const confirmationUrl = result.payment.confirmation.confirmation_url;
 
@@ -367,97 +364,77 @@ async function executePurchase(email) {
             return;
         }
 
-        console.log('💳 Открываем страницу оплаты...');
+        console.log('💳 Открываем страницу оплаты ЮКассы...');
 
-        // Показываем инструкцию пользователю
+        // Сразу открываем ЮКассу в новой вкладке
+        const paymentWindow = window.open(confirmationUrl, '_blank');
+
+        // Показываем сообщение о том, что модал останется открытым для отслеживания
+        showEmailPaymentState();
         const paymentForm = document.getElementById('payment-form');
         if (paymentForm) {
             paymentForm.innerHTML = `
                 <div style="text-align: center; padding: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">🔐 Перейдите к оплате</h3>
-                    <p style="margin-bottom: 1.5rem;">Ниже откроется страница оплаты ЮКассы в новой вкладке</p>
-                    <button id="open-payment-btn" style="
-                        background: var(--neobrut-green);
-                        color: var(--neobrut-black);
-                        border: 2px solid var(--neobrut-black);
-                        padding: 1rem 2rem;
-                        font-size: 1rem;
-                        font-weight: 900;
-                        cursor: pointer;
-                        border-radius: 6px;
-                        text-transform: uppercase;
-                    ">
-                        Открыть оплату
-                    </button>
-                    <p style="font-size: 0.85rem; color: var(--neobrut-darkgray); margin-top: 1rem;">
-                        После оплаты вернитесь и приложение обновится автоматически
+                    <h3 style="margin-bottom: 1rem;">✅ Открыта страница оплаты</h3>
+                    <p style="margin-bottom: 1.5rem;">Завершите оплату в открытой вкладке</p>
+                    <p style="font-size: 0.9rem; color: var(--neobrut-darkgray);">
+                        Это окно останется открытым для отслеживания статуса оплаты. После успешной оплаты приложение обновится автоматически.
                     </p>
                 </div>
             `;
-
-            // Обработчик кнопки
-            document.getElementById('open-payment-btn').addEventListener('click', function() {
-                // Открываем оплату в новой вкладке и сохраняем ссылку
-                const paymentWindow = window.open(confirmationUrl, '_blank');
-
-                // НЕ закрываем модал - оставляем открытым во время polling
-                // closeEmailModal(); // УБРАНО!
-
-                // Запускаем периодическую проверку статуса подписки
-                let checkCount = 0;
-                const maxChecks = 120; // Проверяем 120 раз с интервалом 0.5 секунд = 1 минута
-
-                const checkInterval = setInterval(async () => {
-                    checkCount++;
-
-                    // Проверяем статус подписки БЕЗ кэша (напрямую из БД)
-                    const { data } = await window.supabaseClient
-                        .from('subscriptions')
-                        .select('status')
-                        .eq('telegram_id', currentUser.id)
-                        .eq('status', 'active')
-                        .maybeSingle();
-
-                    const hasSub = !!data;
-                    console.log(`🔍 Polling проверка #${checkCount}: hasSub=${hasSub}`);
-
-                    if (hasSub) {
-                        clearInterval(checkInterval);
-                        console.log('✅ Подписка активирована! Перезагружаем мини-апп...');
-
-                        // Очищаем кэш
-                        clearSubscriptionCache();
-
-                        // Устанавливаем флаг для поздравительного окна
-                        localStorage.setItem('fitTrackerJustPurchased', JSON.stringify({
-                            timestamp: new Date().toISOString(),
-                            telegramId: currentUser.id
-                        }));
-                        console.log('🎉 Установлен флаг fitTrackerJustPurchased для поздравления');
-
-                        // Пытаемся закрыть окно оплаты (если браузер разрешит)
-                        try {
-                            if (paymentWindow && !paymentWindow.closed) {
-                                paymentWindow.close();
-                                console.log('🔒 Окно оплаты закрыто');
-                            }
-                        } catch (e) {
-                            console.log('⚠️ Не удалось закрыть окно оплаты (ограничение браузера)');
-                        }
-
-                        // Перезагружаем мини-апп
-                        location.reload();
-                    } else if (checkCount >= maxChecks) {
-                        clearInterval(checkInterval);
-                        console.log('⏰ Время проверки истекло (1 минута)');
-                    }
-                }, 500); // Каждые 0.5 секунд
-
-                console.log('🔍 Начали проверку статуса подписки (каждые 0.5 сек, максимум 1 минута)...');
-            });
         }
 
-        console.log('💳 Форма оплаты подготовлена');
+        // Запускаем периодическую проверку статуса подписки
+        let checkCount = 0;
+        const maxChecks = 120; // Проверяем 120 раз с интервалом 0.5 секунд = 1 минута
+
+        const checkInterval = setInterval(async () => {
+            checkCount++;
+
+            // Проверяем статус подписки БЕЗ кэша (напрямую из БД)
+            const { data } = await window.supabaseClient
+                .from('subscriptions')
+                .select('status')
+                .eq('telegram_id', currentUser.id)
+                .eq('status', 'active')
+                .maybeSingle();
+
+            const hasSub = !!data;
+            console.log(`🔍 Polling проверка #${checkCount}: hasSub=${hasSub}`);
+
+            if (hasSub) {
+                clearInterval(checkInterval);
+                console.log('✅ Подписка активирована! Перезагружаем мини-апп...');
+
+                // Очищаем кэш
+                clearSubscriptionCache();
+
+                // Устанавливаем флаг для поздравительного окна
+                localStorage.setItem('fitTrackerJustPurchased', JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    telegramId: currentUser.id
+                }));
+                console.log('🎉 Установлен флаг fitTrackerJustPurchased для поздравления');
+
+                // Пытаемся закрыть окно оплаты (если браузер разрешит)
+                try {
+                    if (paymentWindow && !paymentWindow.closed) {
+                        paymentWindow.close();
+                        console.log('🔒 Окно оплаты закрыто');
+                    }
+                } catch (e) {
+                    console.log('⚠️ Не удалось закрыть окно оплаты (ограничение браузера)');
+                }
+
+                // Перезагружаем мини-апп
+                location.reload();
+            } else if (checkCount >= maxChecks) {
+                clearInterval(checkInterval);
+                console.log('⏰ Время проверки истекло (1 минута)');
+            }
+        }, 500); // Каждые 0.5 секунд
+
+        console.log('🔍 Начали проверку статуса подписки (каждые 0.5 сек, максимум 1 минута)...');
 
     } catch (err) {
         console.error('❌ Непредвиденная ошибка:', err);
