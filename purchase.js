@@ -1,11 +1,12 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 23 - ИСПРАВЛЕНО: используем глобальный SUPABASE_ANON_KEY из index.html
+// ВЕРСИЯ 24 - ИСПРАВЛЕНО: SUPABASE_ANON_KEY объявлен здесь для платежей
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=23 loaded - celebration modal after purchase');
+console.log('🔄 purchase.js v=24 loaded - celebration modal after purchase');
 console.log('🔧 purchase.js начинает загрузку...');
 
-// SUPABASE_ANON_KEY используется из index.html (глобальная переменная)
+// Supabase API Key для Edge Functions (специально для платежей)
+const PURCHASE_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndGVzemd0cGpldGhwZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTczMDAsImV4cCI6MjA4NDgzMzMwMH0.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc';
 
 // Глобальные переменные для модального окна
 let emailModal = null;
@@ -313,8 +314,8 @@ async function executePurchase(email) {
         // Вызываем Edge Function с авторизацией
         const headers = {
             'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            'apikey': PURCHASE_SUPABASE_KEY,
+            'Authorization': `Bearer ${PURCHASE_SUPABASE_KEY}`
         };
 
         console.log('🌐 Отправка запроса к Edge Function...');
