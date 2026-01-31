@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 20 - ИСПРАВЛЕНО: удален дубликат SUPABASE_ANON_KEY
+// ВЕРСИЯ 21 - ИСПРАВЛЕНО: удален дубликат SUPABASE_ANON_KEY
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=20 loaded - celebration modal after purchase');
+console.log('🔄 purchase.js v=21 loaded - celebration modal after purchase');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // SUPABASE_ANON_KEY уже объявлен в index.html, используем его оттуда
