@@ -7327,7 +7327,7 @@
         async function generateAICommentForDashboard(percentage, streak) {
             const displayDay = selectedWorkout;
 
-            let dayContext, percentContext, completedContext, remainingContext;
+            let dayContext, percentContext, completedContext, remainingContext, isProgramCompleted;
 
             if (displayDay > getTotalWorkoutDays()) {
                 // Для дня больше общего количества (Итоги) используем недельную статистику
@@ -7336,6 +7336,7 @@
                 percentContext = weeklySummary.overallPercent;
                 completedContext = `${weeklySummary.completedTasks}/${weeklySummary.totalTasks}`;
                 remainingContext = weeklySummary.totalTasks - weeklySummary.completedTasks;
+                isProgramCompleted = true;
             } else {
                 // Для тренировочных дней используем дневную статистику
                 const todos = todoData[displayDay] || [];
@@ -7345,6 +7346,7 @@
                 percentContext = percentage;
                 completedContext = `${completedCount}/${totalCount}`;
                 remainingContext = totalCount - completedCount;
+                isProgramCompleted = false;
             }
 
             try {
@@ -7362,7 +7364,9 @@
                         streak: streak,
                         dayContext: dayContext,
                         completedContext: completedContext,
-                        remainingContext: remainingContext
+                        remainingContext: remainingContext,
+                        isProgramCompleted: isProgramCompleted,
+                        totalDays: getTotalWorkoutDays()
                     })
                 });
 
@@ -7379,15 +7383,25 @@
                     throw new Error(result.error);
                 }
 
-                return result.comment || getFallbackComment(percentContext, streak);
+                return result.comment || getFallbackComment(percentContext, streak, isProgramCompleted);
             } catch (error) {
                 console.error('AI Comment error:', error);
-                return getFallbackComment(percentContext, streak);
+                return getFallbackComment(percentContext, streak, isProgramCompleted);
             }
         }
 
         // Fallback комментарии если API недоступен
-        function getFallbackComment(percentage, streak) {
+        function getFallbackComment(percentage, streak, isProgramCompleted = false) {
+            if (isProgramCompleted) {
+                const completedComments = [
+                    `Программа завершена! ${percentage}% — отличная работа! 🏆`,
+                    `Поздравляю с окончанием! ${streak} дней серии — ты чемпион! 🎉`,
+                    `Все позади! ${percentage}% выполнено — гордится! 💪`,
+                    `Финиш! Ты прошёл весь курс — невероятно! ⭐`
+                ];
+                return completedComments[Math.floor(Math.random() * completedComments.length)];
+            }
+
             const comments = [
                 { min: 0, max: 24, text: `Начинаем с вдоха! ${streak > 0 ? streak + ' дней серии — отличный старт!' : 'Первый шаг самый важный!'}` },
                 { min: 25, max: 49, text: `Хороший старт! ${percentage}% выполнено, продолжайте! 💪` },
