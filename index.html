@@ -4723,6 +4723,161 @@
             width: 100%;
             min-height: 400px;
         }
+
+        /* ЮКасса логотип */
+        .email-modal-yookassa-logo {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .yookassa-banner {
+            max-width: 120px;
+            height: auto;
+        }
+
+        /* Чекбокс политики конфиденциальности */
+        .email-modal-privacy {
+            margin: 1rem 0;
+        }
+
+        .email-modal-checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--neobrut-darkgray);
+        }
+
+        .email-modal-checkbox {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: var(--neobrut-black);
+            cursor: pointer;
+        }
+
+        .email-modal-checkbox-text {
+            line-height: 1.4;
+        }
+
+        .email-modal-privacy-link {
+            color: var(--neobrut-blue);
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+        }
+
+        .email-modal-privacy-link:hover {
+            text-decoration-style: solid;
+        }
+
+        /* Модальное окно политики конфиденциальности */
+        .privacy-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .privacy-modal.active {
+            display: flex;
+        }
+
+        .privacy-modal-content {
+            background: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 8px 8px 0 var(--neobrut-black);
+        }
+
+        .privacy-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid var(--neobrut-black);
+            position: sticky;
+            top: 0;
+            background: var(--neobrut-white);
+        }
+
+        .privacy-modal-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin: 0;
+            color: var(--neobrut-black);
+        }
+
+        .privacy-modal-close {
+            background: var(--neobrut-red);
+            color: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .privacy-modal-close:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        .privacy-modal-close:active {
+            transform: translate(0, 0);
+            box-shadow: none;
+        }
+
+        .privacy-modal-body {
+            padding: 1.5rem;
+        }
+
+        .privacy-modal-body h4 {
+            font-size: 0.95rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin: 1.25rem 0 0.5rem 0;
+            color: var(--neobrut-black);
+        }
+
+        .privacy-modal-body h4:first-child {
+            margin-top: 0;
+        }
+
+        .privacy-modal-body p,
+        .privacy-modal-body ul {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--neobrut-darkgray);
+            margin: 0.5rem 0;
+        }
+
+        .privacy-modal-body ul {
+            padding-left: 1.5rem;
+        }
+
+        .privacy-modal-body li {
+            margin: 0.25rem 0;
+        }
     </style>
 </head>
 
@@ -4769,7 +4924,7 @@
                         <span class="pricing-price-period">/единоразово</span>
                     </div>
 
-                    <button class="pricing-buy-btn" id="pricing-buy-btn">Перейти к оплате</button>
+                    <button class="pricing-buy-btn" id="pricing-buy-btn">Продолжить</button>
                 </div>
             </div>
         </div>
@@ -4823,6 +4978,20 @@
             <div class="email-modal-body" id="email-modal-body-input">
                 <p class="email-modal-description">Введите email для получения чека:</p>
                 <input type="email" class="email-modal-input" id="email-modal-input" placeholder="example@mail.com" autocomplete="email">
+
+                <!-- Логотип ЮКассы -->
+                <div class="email-modal-yookassa-logo">
+                    <img src="YUkassa-banner.jpg" alt="ЮКасса" class="yookassa-banner">
+                </div>
+
+                <!-- Чекбокс политики конфиденциальности -->
+                <div class="email-modal-privacy">
+                    <label class="email-modal-checkbox-label">
+                        <input type="checkbox" id="email-modal-privacy-checkbox" class="email-modal-checkbox">
+                        <span class="email-modal-checkbox-text">Я согласен с <a href="#" id="email-modal-privacy-link" class="email-modal-privacy-link">политикой конфиденциальности</a></span>
+                    </label>
+                </div>
+
                 <p class="email-modal-error" id="email-modal-error"></p>
                 <div class="email-modal-buttons">
                     <button class="email-modal-btn email-modal-btn-cancel" id="email-modal-cancel">Отмена</button>
@@ -4863,6 +5032,52 @@
                     <button class="email-modal-btn email-modal-btn-retry" id="email-modal-retry">Попробовать снова</button>
                     <button class="email-modal-btn email-modal-btn-cancel" id="email-modal-cancel-error">Отмена</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div class="privacy-modal" id="privacy-modal">
+        <div class="privacy-modal-content">
+            <div class="privacy-modal-header">
+                <h3 class="privacy-modal-title">ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</h3>
+                <button class="privacy-modal-close" id="privacy-modal-close">×</button>
+            </div>
+            <div class="privacy-modal-body">
+                <h4>1. ОБЩИЕ ПОЛОЖЕНИЯ</h4>
+                <p>Используя наше приложение, вы соглашаетесь на обработку ваших персональных данных в соответствии с Федеральным законом №152-ФЗ «О персональных данных».</p>
+
+                <h4>2. КАКИЕ ДАННЫЕ МЫ СОБИРАЕМ</h4>
+                <ul>
+                    <li>Telegram ID, имя пользователя, имя</li>
+                    <li>Email (для отправки чеков)</li>
+                    <li>Информация о покупках и подписке</li>
+                    <li>Технические данные (IP, cookies)</li>
+                </ul>
+
+                <h4>3. ДЛЯ ЧЕГО МЫ ИСПОЛЬЗУЕМ ДАННЫЕ</h4>
+                <ul>
+                    <li>Предоставление доступа к курсам тренировок</li>
+                    <li>Обработка платежей через ЮКассу</li>
+                    <li>Отправка чеков</li>
+                    <li>Техподдержка</li>
+                </ul>
+
+                <h4>4. ПЕРЕДАЧА ДАННЫХ ТРЕТЬИМ ЛИЦАМ</h4>
+                <p>Мы передаем данные только для обеспечения работы сервиса:</p>
+                <ul>
+                    <li>ЮКасса (обработка платежей)</li>
+                    <li>Supabase (хранение данных)</li>
+                </ul>
+
+                <h4>5. ЗАЩИТА ДАННЫХ</h4>
+                <p>Мы используем современные методы защиты: HTTPS, шифрование, защищенные серверы.</p>
+
+                <h4>6. ВАШИ ПРАВА</h4>
+                <p>Вы можете запросить удаление своих данных, написав на: support@fittracker.ru</p>
+
+                <h4>7. ИЗМЕНЕНИЯ</h4>
+                <p>Мы можем обновлять политику. Изменения вступают в силу с момента публикации.</p>
             </div>
         </div>
     </div>
@@ -9941,7 +10156,7 @@
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=2"></script>
-    <script src="purchase.js?v=25"></script>
+    <script src="purchase.js?v=26"></script>
 </body>
 
 </html>

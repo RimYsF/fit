@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 25 - Убрано промежуточное окно, ЮКасса открывается сразу
+// ВЕРСИЯ 26 - Добавлен логотип ЮКассы, чекбокс политики и модальное окно политики
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=25 loaded - direct YooKassa open');
+console.log('🔄 purchase.js v=26 loaded - YooKassa logo, privacy checkbox & modal');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key для Edge Functions (специально для платежей)
@@ -12,6 +12,8 @@ const PURCHASE_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJz
 let emailModal = null;
 let emailModalInput = null;
 let emailModalError = null;
+let emailModalPrivacyCheckbox = null;
+let privacyModal = null;
 let currentUser = null;
 
 /**
@@ -83,6 +85,32 @@ function initEmailModal() {
         });
     }
 
+    // Инициализация чекбокса политики конфиденциальности
+    emailModalPrivacyCheckbox = document.getElementById('email-modal-privacy-checkbox');
+    privacyModal = document.getElementById('privacy-modal');
+
+    // Обработчик клика на ссылку политики конфиденциальности
+    const privacyLink = document.getElementById('email-modal-privacy-link');
+    if (privacyLink) {
+        privacyLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPrivacyModal();
+        });
+    }
+
+    // Закрытие модального окна политики конфиденциальности
+    const privacyCloseBtn = document.getElementById('privacy-modal-close');
+    if (privacyCloseBtn && privacyModal) {
+        privacyCloseBtn.addEventListener('click', closePrivacyModal);
+
+        // Закрытие по клику на фон
+        privacyModal.addEventListener('click', (e) => {
+            if (e.target === privacyModal) {
+                closePrivacyModal();
+            }
+        });
+    }
+
     console.log('✅ Email modal обработчики добавлены');
 }
 
@@ -131,6 +159,36 @@ function closeEmailModal() {
 
     emailModal.classList.remove('show');
     console.log('📧 Email modal закрыт');
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+
+/**
+ * Открыть модальное окно политики конфиденциальности
+ */
+function openPrivacyModal() {
+    if (!privacyModal) return;
+
+    privacyModal.classList.add('active');
+    console.log('📄 Privacy modal открыт');
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+}
+
+/**
+ * Закрыть модальное окно политики конфиденциальности
+ */
+function closePrivacyModal() {
+    if (!privacyModal) return;
+
+    privacyModal.classList.remove('active');
+    console.log('📄 Privacy modal закрыт');
 
     // Haptic feedback
     if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -242,6 +300,12 @@ async function confirmEmailPurchase() {
 
     if (!validateEmail(email)) {
         showInputError('Некорректный формат email');
+        return;
+    }
+
+    // Проверка чекбокса политики конфиденциальности
+    if (emailModalPrivacyCheckbox && !emailModalPrivacyCheckbox.checked) {
+        showInputError('Необходимо согласиться с политикой конфиденциальности');
         return;
     }
 
