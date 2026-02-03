@@ -4745,7 +4745,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.5rem;
+            flex-wrap: nowrap;
             cursor: pointer;
             font-size: 0.95rem;
             color: var(--neobrut-darkgray);
@@ -4772,6 +4772,18 @@
 
         .email-modal-privacy-link:hover {
             text-decoration-style: solid;
+        }
+
+        /* Адаптация текста для маленьких экранов */
+        @media (max-width: 380px) {
+            .email-modal-checkbox-label {
+                font-size: 0.8rem;
+            }
+        }
+        @media (max-width: 340px) {
+            .email-modal-checkbox-label {
+                font-size: 0.7rem;
+            }
         }
 
         /* Модальное окно политики конфиденциальности */
