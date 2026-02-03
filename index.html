@@ -4747,7 +4747,7 @@
             justify-content: space-between;
             flex-wrap: nowrap;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: clamp(0.65rem, 2.5vw, 0.95rem);
             color: var(--neobrut-darkgray);
         }
 
@@ -4755,11 +4755,17 @@
             width: 18px;
             height: 18px;
             flex-shrink: 0;
+            margin-left: 0.5rem;
             accent-color: var(--neobrut-black);
             cursor: pointer;
         }
 
         .email-modal-checkbox-text {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             line-height: 1.4;
         }
 
@@ -4772,18 +4778,6 @@
 
         .email-modal-privacy-link:hover {
             text-decoration-style: solid;
-        }
-
-        /* Адаптация текста для маленьких экранов */
-        @media (max-width: 380px) {
-            .email-modal-checkbox-label {
-                font-size: 0.8rem;
-            }
-        }
-        @media (max-width: 340px) {
-            .email-modal-checkbox-label {
-                font-size: 0.7rem;
-            }
         }
 
         /* Модальное окно политики конфиденциальности */

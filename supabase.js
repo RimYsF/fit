@@ -107,58 +107,62 @@ function clearSubscriptionCache() {
 
 /**
  * Проверяет наличие активной подписки у пользователя по telegram_id
- * Сначала проверяет кэш, если нет - делает запрос к БД
+ * Сначала проверяет кэш, если нет - делает запрос через Edge Function
  * @param {number} telegramId - ID пользователя из Telegram
  * @returns {Promise<boolean>} - true если есть активная подписка
  */
 async function checkSubscriptionStatus(telegramId) {
-    if (!window.supabaseClient) {
-        console.log('⚠️ Supabase клиент не инициализирован');
-        return false;
-    }
-
     if (!telegramId) {
         console.log('⚠️ telegramId не предоставлен');
         return false;
     }
 
-    // Шаг 1: Проверяем кэш
+    // Проверяем кэш
     const cached = getSubscriptionFromCache(telegramId);
     if (cached !== null) {
         window.hasSubscription = cached;
         return cached;
     }
 
-    // Шаг 2: Если нет в кэше - проверяем в БД
     try {
-        console.log('🔍 Проверка подписки в БД для telegram_id:', telegramId);
+        console.log('🔍 Проверка подписки через Edge Function для telegram_id:', telegramId);
 
-        const { data, error } = await window.supabaseClient
-            .from('subscriptions')
-            .select('status, created_at')
-            .eq('telegram_id', telegramId)
-            .eq('status', 'active')
-            .maybeSingle(); // maybeSingle возвращает null если нет записей
+        // Вызываем Edge Function вместо прямого запроса к БД
+        const response = await fetch(
+            'https://venkgteszgtpjethpftj.supabase.co/functions/v1/check-subscription',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                },
+                body: JSON.stringify({ telegram_id: telegramId })
+            }
+        );
 
-        if (error) {
-            console.error('❌ Ошибка проверки подписки:', error);
+        const result = await response.json();
+
+        if (result.error) {
+            console.error('❌ Ошибка проверки подписки:', result.error);
             window.hasSubscription = false;
             return false;
         }
 
-        const hasSub = !!data;
+        const hasSub = result.hasSubscription;
         window.hasSubscription = hasSub;
 
         // Сохраняем в кэш
         saveSubscriptionToCache(telegramId, hasSub);
 
         if (hasSub) {
-            console.log('✅ Активная подписка найдена:', data);
+            console.log('✅ Активная подписка найдена');
         } else {
             console.log('⚠️ Подписка не найдена для telegram_id:', telegramId);
         }
 
         return hasSub;
+
     } catch (err) {
         console.error('❌ Ошибка при проверке подписки:', err);
         window.hasSubscription = false;
