@@ -2,7 +2,7 @@
 // ВЕРСИЯ 26 - Добавлен логотип ЮКассы, чекбокс политики и модальное окно политики
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=26 loaded - YooKassa logo, privacy checkbox & modal');
+console.log('🔄 purchase.js v=28 loaded - Using Edge Function for subscription polling');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key для Edge Functions (специально для платежей)
@@ -455,15 +455,9 @@ async function executePurchase(email) {
         const checkInterval = setInterval(async () => {
             checkCount++;
 
-            // Проверяем статус подписки БЕЗ кэша (напрямую из БД)
-            const { data } = await window.supabaseClient
-                .from('subscriptions')
-                .select('status')
-                .eq('telegram_id', currentUser.id)
-                .eq('status', 'active')
-                .maybeSingle();
-
-            const hasSub = !!data;
+            // Проверяем статус подписки через Edge Function (сначала очищаем кэш)
+            clearSubscriptionCache(); // Очищаем кэш, чтобы получить свежие данные
+            const hasSub = await checkSubscriptionStatus(currentUser.id);
             console.log(`🔍 Polling проверка #${checkCount}: hasSub=${hasSub}`);
 
             if (hasSub) {
