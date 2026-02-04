@@ -8,9 +8,6 @@ console.log('🔧 purchase.js начинает загрузку...');
 // Supabase API Key для Edge Functions (специально для платежей)
 const PURCHASE_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndGVzemd0cGpldGhwZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTczMDAsImV4cCI6MjA4NDgzMzMwMH0.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc';
 
-// Secret token for Edge Functions authentication
-const SECRET_TOKEN = 'fittracker-secret-token-2024';
-
 // Глобальные переменные для модального окна
 let emailModal = null;
 let emailModalInput = null;
@@ -383,7 +380,7 @@ async function executePurchase(email) {
             'Content-Type': 'application/json',
             'apikey': PURCHASE_SUPABASE_KEY,
             'Authorization': `Bearer ${PURCHASE_SUPABASE_KEY}`,
-            'X-Secret-Token': SECRET_TOKEN
+            'X-Secret-Token': window.SECRET_TOKEN
         };
 
         console.log('🌐 Отправка запроса к Edge Function...');

@@ -5344,8 +5344,8 @@
         // Supabase Anon Key (same as used in purchase.js and supabase.js)
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndGVzemd0cGpldGhwZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTczMDAsImV4cCI6MjA4NDgzMzMwMH0.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc';
 
-        // Secret token for Edge Functions authentication
-        const SECRET_TOKEN = 'fittracker-secret-token-2024';
+        // Secret token for Edge Functions authentication (shared with supabase.js and purchase.js)
+        window.SECRET_TOKEN = 'fittracker-secret-token-2024';
 
         // Chat history constants
         const CHAT_HISTORY_KEY = 'fitTrackerChatHistory';
@@ -7585,7 +7585,7 @@
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'x-client-info': 'supabase-js/2.39.7',
-                        'X-Secret-Token': SECRET_TOKEN
+                        'X-Secret-Token': window.SECRET_TOKEN
                     },
                     body: JSON.stringify({
                         percentage: percentContext,
@@ -9504,7 +9504,7 @@
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'x-client-info': 'supabase-js/2.39.7',
-                        'X-Secret-Token': SECRET_TOKEN
+                        'X-Secret-Token': window.SECRET_TOKEN
                     },
                     body: JSON.stringify({
                         userMessage: userMessage,
