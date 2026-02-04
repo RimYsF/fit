@@ -6,6 +6,9 @@ const SUPABASE_URL = 'https://venkgteszgtpjethpftj.supabase.co';
 // НЕ используйте service_role ключ (начинается с sb_secret_)!
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndGVzemd0cGpldGhwZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTczMDAsImV4cCI6MjA4NDgzMzMwMH0.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc'; // Вставьте ваш полный ANON/PUBLIC ключ
 
+// Secret token for Edge Functions authentication
+const SECRET_TOKEN = 'fittracker-secret-token-2024';
+
 // Инициализация клиента Supabase (только если ещё не инициализирован)
 if (!window.supabaseClient) {
     window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -124,7 +127,8 @@ async function checkSubscriptionStatus(telegramId) {
                 headers: {
                     'Content-Type': 'application/json',
                     'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'X-Secret-Token': SECRET_TOKEN
                 },
                 body: JSON.stringify({ telegram_id: telegramId })
             }
