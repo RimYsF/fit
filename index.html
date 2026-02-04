@@ -4090,9 +4090,11 @@
 
         /* ===== КРУГЛАЯ АНИМАЦИЯ ЗАГРУЗКИ (Loading Spinner) ===== */
         .welcome-loading {
-            display: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             width: 60px;
-            height: 60px;
             margin: auto auto 1rem;
             position: relative;
         }
@@ -4110,6 +4112,13 @@
             border-top-color: var(--neobrut-black);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--neobrut-darkgray);
+            text-align: center;
         }
 
         @keyframes spin {
@@ -4900,13 +4909,15 @@
                 <div class="pulse-ring"></div>
                 <div class="pulse-ring"></div>
             </div>
+            <!-- Loading state (shown by default while checking subscription) -->
             <div class="welcome-loading" id="welcome-loading">
                 <div class="loading-spinner"></div>
+                <p class="loading-text">Проверка подписки...</p>
             </div>
-            <p class="welcome-hint">Коснись экрана, чтобы начать</p>
+            <p class="welcome-hint" id="welcome-hint" style="display: none;">Коснись экрана, чтобы начать</p>
 
-            <!-- Pricing Block (shown on tap) -->
-            <div class="pricing-block" id="pricing-block">
+            <!-- Pricing Block (hidden by default, shown after subscription check if no active subscription) -->
+            <div class="pricing-block" id="pricing-block" style="display: none;">
                 <div class="pricing-card">
                     <h2 class="pricing-title">Начни своё преобразование</h2>
                     <p class="pricing-tagline">7-дневная программа тренировок</p>
@@ -7684,43 +7695,95 @@
 
             console.log('📊 Статус подписки при загрузке:', isSubscribed ? 'АКТИВНА' : 'НЕАКТИВНА');
 
+            // === СЦЕНАРИЙ 1: Пользователь имеет активную подписку ===
+            if (isSubscribed) {
+                console.log('✅ Подписка активна, скрываем welcome-screen');
+
+                // Скрываем welcome-screen полностью
+                const welcomeScreen = document.getElementById('welcome-screen');
+                if (welcomeScreen) {
+                    welcomeScreen.classList.add('hidden');
+                }
+
+                // Продолжаем обычную инициализацию приложения
+                loadActivityData();
+                loadActiveRepost();
+                initializeTodoLists();
+
+                // Проверяем наличие сохраненной истории чата и показываем toast
+                const savedHistory = localStorage.getItem(CHAT_HISTORY_KEY);
+                if (savedHistory) {
+                    try {
+                        const history = JSON.parse(savedHistory);
+                        if (history && history.length > 0) {
+                            // Загружаем историю
+                            chatHistory = history;
+
+                            // Подсчитываем сообщения пользователя
+                            userMessageCount = countUserMessages();
+
+                            // Восстанавливаем сообщения в UI
+                            const overlayMessages = document.getElementById('chat-messages');
+                            const sliderMessages = document.getElementById('slider-chat-messages');
+
+                            if (overlayMessages) overlayMessages.innerHTML = '';
+                            if (sliderMessages) sliderMessages.innerHTML = '';
+
+                            chatHistory.forEach(msg => {
+                                addMessageToContainer('chat-messages', msg.content, msg.role === 'user');
+                                addMessageToContainer('slider-chat-messages', msg.content, msg.role === 'user');
+                            });
+
+                            // Устанавливаем флаг для показа toast при открытии чата
+                            if (userMessageCount >= 1) {
+                                pendingNewChatToast = true;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Ошибка проверки истории чата:', e);
+                    }
+                }
+
+                // Устанавливаем выбранный день тренировки на основе текущей календарной даты
+                selectedWorkout = getCurrentWorkoutDay();
+
+                renderActivityGrid();
+                renderTaskDayWidgets();
+                setupEventListeners();
+                setupModalListeners();
+
+                // Проверяем и обновляем активность на основе текущих состояний задач
+                checkAndRecordActivity();
+
+                // Показываем streak анимацию при первом входе за день
+                showStreakAnimation();
+
+                // Обновляем dashboard strip
+                updateDashboardStrip();
+
+                // Загружаем закешированный AI комментарий и генерируем новый если нужно
+                loadCachedAIComment();
+                updateAIComment();
+
+                return; // Завершаем выполнение, так как пользователь уже в приложении
+            }
+
+            // === СЦЕНАРИЙ 2: Пользователь НЕ имеет активной подписки ===
+            console.log('⚠️ Подписка неактивна, показываем pricing-block');
+
+            // Скрываем загрузчик, показываем pricing-block
+            const welcomeLoading = document.getElementById('welcome-loading');
+            const pricingBlock = document.getElementById('pricing-block');
+            const welcomeHint = document.getElementById('welcome-hint');
+
+            if (welcomeLoading) welcomeLoading.style.display = 'none';
+            if (pricingBlock) pricingBlock.style.display = 'block';
+            if (welcomeHint) welcomeHint.style.display = 'block';
+
+            // Инициализируем данные (но пользователь остаётся на welcome-screen)
             loadActivityData();
             loadActiveRepost();
             initializeTodoLists();
-
-            // Проверяем наличие сохраненной истории чата и показываем toast
-            const savedHistory = localStorage.getItem(CHAT_HISTORY_KEY);
-            if (savedHistory) {
-                try {
-                    const history = JSON.parse(savedHistory);
-                    if (history && history.length > 0) {
-                        // Загружаем историю
-                        chatHistory = history;
-
-                        // Подсчитываем сообщения пользователя
-                        userMessageCount = countUserMessages();
-
-                        // Восстанавливаем сообщения в UI
-                        const overlayMessages = document.getElementById('chat-messages');
-                        const sliderMessages = document.getElementById('slider-chat-messages');
-
-                        if (overlayMessages) overlayMessages.innerHTML = '';
-                        if (sliderMessages) sliderMessages.innerHTML = '';
-
-                        chatHistory.forEach(msg => {
-                            addMessageToContainer('chat-messages', msg.content, msg.role === 'user');
-                            addMessageToContainer('slider-chat-messages', msg.content, msg.role === 'user');
-                        });
-
-                        // Устанавливаем флаг для показа toast при открытии чата
-                        if (userMessageCount >= 1) {
-                            pendingNewChatToast = true;
-                        }
-                    }
-                } catch (e) {
-                    console.error('Ошибка проверки истории чата:', e);
-                }
-            }
 
             // Устанавливаем выбранный день тренировки на основе текущей календарной даты
             selectedWorkout = getCurrentWorkoutDay();
@@ -7733,15 +7796,8 @@
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
 
-            // Показываем streak анимацию при первом входе за день
-            showStreakAnimation();
-
-            // Обновляем dashboard strip
-            updateDashboardStrip();
-
-            // Загружаем закешированный AI комментарий и генерируем новый если нужно
+            // Загружаем закешированный AI комментарий
             loadCachedAIComment();
-            updateAIComment();
         }
 
         // Сброс всей активности (для перехода на новую систему)
