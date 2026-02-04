@@ -125,7 +125,7 @@ async function checkSubscriptionStatus(telegramId) {
                     'Content-Type': 'application/json',
                     'apikey': SUPABASE_KEY,
                     'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'X-Secret-Token': window.SECRET_TOKEN
+                    'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
                 },
                 body: JSON.stringify({ telegram_id: telegramId })
             }

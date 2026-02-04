@@ -5344,9 +5344,6 @@
         // Supabase Anon Key (same as used in purchase.js and supabase.js)
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndGVzemd0cGpldGhwZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTczMDAsImV4cCI6MjA4NDgzMzMwMH0.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc';
 
-        // Secret token for Edge Functions authentication (shared with supabase.js and purchase.js)
-        window.SECRET_TOKEN = 'fittracker-secret-token-2024';
-
         // Chat history constants
         const CHAT_HISTORY_KEY = 'fitTrackerChatHistory';
         const MAX_CHAT_HISTORY = 15;
@@ -7585,7 +7582,7 @@
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'x-client-info': 'supabase-js/2.39.7',
-                        'X-Secret-Token': window.SECRET_TOKEN
+                        'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
                     },
                     body: JSON.stringify({
                         percentage: percentContext,
@@ -9504,7 +9501,7 @@
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'x-client-info': 'supabase-js/2.39.7',
-                        'X-Secret-Token': window.SECRET_TOKEN
+                        'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
                     },
                     body: JSON.stringify({
                         userMessage: userMessage,
@@ -10168,8 +10165,8 @@
 
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js?v=3"></script>
-    <script src="purchase.js?v=28"></script>
+    <script src="supabase.js?v=4"></script>
+    <script src="purchase.js?v=29"></script>
 </body>
 
 </html>

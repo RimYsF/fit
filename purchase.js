@@ -2,7 +2,7 @@
 // ВЕРСИЯ 26 - Добавлен логотип ЮКассы, чекбокс политики и модальное окно политики
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=28 loaded - Using Edge Function for subscription polling');
+console.log('🔄 purchase.js v=29 loaded - Using Edge Function for subscription polling');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key для Edge Functions (специально для платежей)
@@ -380,7 +380,7 @@ async function executePurchase(email) {
             'Content-Type': 'application/json',
             'apikey': PURCHASE_SUPABASE_KEY,
             'Authorization': `Bearer ${PURCHASE_SUPABASE_KEY}`,
-            'X-Secret-Token': window.SECRET_TOKEN
+            'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
         };
 
         console.log('🌐 Отправка запроса к Edge Function...');
