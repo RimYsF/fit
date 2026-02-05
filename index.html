@@ -7553,7 +7553,7 @@
 
         // Найти задачу по ID во всех днях
         function findTaskById(taskId) {
-            for (let day = 1; day <= 14; day++) {
+            for (let day = 1; day <= 28; day++) {
                 if (todoData[day]) {
                     const task = todoData[day].find(t => t.id === taskId);
                     if (task) return task;
@@ -7562,9 +7562,9 @@
             return null;
         }
 
-        // Найти день (1-7) для задачи по ID
+        // Найти день (1-28) для задачи по ID
         function findDayForTask(taskId) {
-            for (let day = 1; day <= 14; day++) {
+            for (let day = 1; day <= 28; day++) {
                 if (todoData[day]) {
                     const task = todoData[day].find(t => t.id === taskId);
                     if (task) return day;
@@ -8243,7 +8243,7 @@
             let totalExercises = 0, completedExercises = 0;
             const dayBreakdown = [];
 
-            for (let day = 1; day <= 14; day++) {
+            for (let day = 1; day <= 28; day++) {
                 const tasks = todoData[day] || [];
                 const dayTasks = tasks.length;
                 const dayCompleted = tasks.filter(t => t.completed).length;
@@ -8277,7 +8277,7 @@
             // Считаем серию в пределах 28-дневной тренировки
             let workoutStreak = 0;
             let currentStreak = 0;
-            for (let day = 1; day <= 14; day++) {
+            for (let day = 1; day <= 28; day++) {
                 const tasks = todoData[day] || [];
                 const hasActivity = tasks.some(t => t.completed);
                 if (hasActivity) {
