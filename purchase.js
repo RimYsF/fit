@@ -15,6 +15,7 @@ let emailModalError = null;
 let emailModalPrivacyCheckbox = null;
 let privacyModal = null;
 let currentUser = null;
+let checkInterval = null; // Интервал опроса статуса подписки
 
 /**
  * Инициализация модального окна email
@@ -152,10 +153,24 @@ function showEmailModal() {
 }
 
 /**
+ * Очистить интервал опроса платежей
+ */
+function clearPollingInterval() {
+    if (checkInterval) {
+        clearInterval(checkInterval);
+        checkInterval = null;
+        console.log('🧹 Очищен интервал опроса платежей');
+    }
+}
+
+/**
  * Закрыть модальное окно
  */
 function closeEmailModal() {
     if (!emailModal) return;
+
+    // Очищаем интервал опроса платежей при закрытии модалки
+    clearPollingInterval();
 
     emailModal.classList.remove('show');
     console.log('📧 Email modal закрыт');
@@ -453,7 +468,7 @@ async function executePurchase(email) {
         let checkCount = 0;
         const maxChecks = 120; // Проверяем 120 раз с интервалом 0.5 секунд = 1 минута
 
-        const checkInterval = setInterval(async () => {
+        checkInterval = setInterval(async () => {
             checkCount++;
 
             // Проверяем статус подписки через Edge Function (сначала очищаем кэш)
@@ -462,7 +477,7 @@ async function executePurchase(email) {
             console.log(`🔍 Polling проверка #${checkCount}: hasSub=${hasSub}`);
 
             if (hasSub) {
-                clearInterval(checkInterval);
+                clearPollingInterval();
                 console.log('✅ Подписка активирована! Перезагружаем мини-апп...');
 
                 // Очищаем кэш
@@ -488,10 +503,14 @@ async function executePurchase(email) {
                 // Перезагружаем мини-апп
                 location.reload();
             } else if (checkCount >= maxChecks) {
-                clearInterval(checkInterval);
+                clearPollingInterval();
                 console.log('⏰ Время проверки истекло (1 минута)');
             }
         }, 500); // Каждые 0.5 секунд
+
+        // Очищаем интервал при закрытии страницы
+        window.addEventListener('beforeunload', clearPollingInterval);
+        window.addEventListener('pagehide', clearPollingInterval);
 
         console.log('🔍 Начали проверку статуса подписки (каждые 0.5 сек, максимум 1 минута)...');
 
@@ -509,6 +528,9 @@ async function executePurchase(email) {
  * Закрыть приветственный экран
  */
 function closeWelcomeScreen() {
+    // Очищаем интервал опроса платежей при переходе на главный экран
+    clearPollingInterval();
+
     const welcomeScreen = document.getElementById('welcome-screen');
     if (welcomeScreen) {
         welcomeScreen.classList.add('hidden');
