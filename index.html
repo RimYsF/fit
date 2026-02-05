@@ -7820,6 +7820,9 @@
                 7: 53
             };
 
+            // Получаем текущий день тренировки один раз перед циклом
+            const currentWorkoutDay = getCurrentWorkoutDay();
+
             // Перебираем дни 1-8 (8 - это день итогов)
             for (let day = 1; day <= 8; day++) {
                 // Day 8 - специальный виджет итогов (всегда виден)
@@ -7829,7 +7832,6 @@
                     widget.dataset.day = day;
 
                     // Вычисляем прогресс прошедших дней
-                    const currentWorkoutDay = getCurrentWorkoutDay();
                     const completedDays = Math.max(0, Math.min(currentWorkoutDay - 1, 7));
                     const daysProgressPercent = Math.round((completedDays / 7) * 100);
 
@@ -7872,7 +7874,6 @@
                 widget.dataset.day = day;
 
                 // Выделяем текущий день
-                const currentWorkoutDay = getCurrentWorkoutDay();
                 if (day === currentWorkoutDay) {
                     widget.classList.add('current');
                 }
