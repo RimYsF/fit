@@ -7825,15 +7825,16 @@
             const endDay = Math.max(8, currentWorkoutDay); // Минимум 8, иначе пусто в начале
 
             for (let day = 1; day <= endDay; day++) {
-                // Day 8 - специальный виджет итогов (всегда виден)
-                if (day === 8) {
+                // День итогов - если день больше общего количества тренировочных дней
+                if (day >= getTotalWorkoutDays()) {
                     const widget = document.createElement('div');
                     widget.className = 'task-day-widget summary-day-widget';
                     widget.dataset.day = day;
 
                     // Вычисляем прогресс прошедших дней
-                    const completedDays = Math.max(0, Math.min(currentWorkoutDay - 1, 7));
-                    const daysProgressPercent = Math.round((completedDays / 7) * 100);
+                    const totalDays = getTotalWorkoutDays();
+                    const completedDays = Math.max(0, Math.min(currentWorkoutDay - 1, totalDays));
+                    const daysProgressPercent = Math.round((completedDays / totalDays) * 100);
 
                     // Параметры кругового прогресса
                     const progressRadius = 14;
