@@ -7820,8 +7820,11 @@
                 7: 53
             };
 
-            // Перебираем дни 1-8 (8 - это день итогов)
-            for (let day = 1; day <= 8; day++) {
+            // Показываем виджеты от дня 1 до текущего дня
+            const currentWorkoutDay = getCurrentWorkoutDay();
+            const endDay = Math.max(8, currentWorkoutDay); // Минимум 8, иначе пусто в начале
+
+            for (let day = 1; day <= endDay; day++) {
                 // Day 8 - специальный виджет итогов (всегда виден)
                 if (day === 8) {
                     const widget = document.createElement('div');
@@ -7829,7 +7832,6 @@
                     widget.dataset.day = day;
 
                     // Вычисляем прогресс прошедших дней
-                    const currentWorkoutDay = getCurrentWorkoutDay();
                     const completedDays = Math.max(0, Math.min(currentWorkoutDay - 1, 7));
                     const daysProgressPercent = Math.round((completedDays / 7) * 100);
 
