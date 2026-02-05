@@ -4917,7 +4917,7 @@
 
                     <ul class="pricing-features">
                         <li>159 упражнений, из них 42 с видео-демонстрациями</li>
-                        <li>7 полноценных тренировочных дней</li>
+                        <li>14 полноценных тренировочных дней</li>
                         <li>Умный помощник для вопросов и советов 24/7</li>
                         <li>Календарь активности и прогресса</li>
                         <li>Мотивационная система серий</li>
@@ -4950,7 +4950,7 @@
             <ul class="features-modal-list">
                 <li>159 упражнений в программе</li>
                 <li>42 упражнения с видео-демонстрациями</li>
-                <li>7 полноценных тренировочных дней</li>
+                <li>14 полноценных тренировочных дней</li>
                 <li>AI-коуч с персональными комментариями к прогрессу</li>
                 <li>Карточки упражнений с адаптивным свайпом</li>
                 <li>Круговой прогресс выполнения упражнений</li>
@@ -5872,7 +5872,482 @@
                         ]
                     }
                 ],
-                8: []  // День итогов - пустой, специальная обработка
+                8: [
+                    {
+                        id: 'task-42',
+                        text: 'Утренняя растяжка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-42-1', text: 'Наклоны головы - 10 раз в каждую сторону', completed: false },
+                            { id: 'ex-42-2', text: 'Круговые движения плечами - 15 раз вперёд, 15 назад', completed: false },
+                            { id: 'ex-42-3', text: 'Растяжка грудных мышц - 30 секунд', completed: false },
+                            { id: 'ex-42-4', text: 'Растяжка трицепса - 20 секунд каждая рука', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-43',
+                        text: 'Отжимания продвинутые',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-43-1', text: 'Алмазные отжимания - 1 подход: 10 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-43-2', text: 'Отжимания с широкой постановкой - 2 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-43-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-43-4', text: 'Отжимания с поднятами ногами - 3 подход: 8 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-43-5', text: 'Плиометрические отжимания - макс. количество', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-44',
+                        text: 'Пресс интенсивный',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-44-1', text: 'Скручивания с ногами на весу - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-44-2', text: 'Подъём коленей к груди лёжа - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-44-3', text: 'Планка - 45 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-44-4', text: 'Боковая планка с подъёмом ноги - 25 секунд каждая сторона', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-45',
+                        text: 'Приседания с весом',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-45-1', text: 'Приседания плие - 1 подход: 18 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-45-2', text: 'Приседания на одной ноге - 2 подход: 10 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-45-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-45-4', text: 'Прыжковые приседания - 3 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-46',
+                        text: 'Кардио',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-46-1', text: 'Разогрев - ходьба 3 минуты', completed: false },
+                            { id: 'ex-46-2', text: 'Бег в быстром темпе - 20 минут', completed: false },
+                            { id: 'ex-46-3', text: 'Заминка - растяжка 5 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-47',
+                        text: 'Растяжка и восстановление',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-47-1', text: 'Растяжка всего тела - 10 минут', completed: false },
+                            { id: 'ex-47-2', text: 'Дыхательные упражнения - 3 минуты', completed: false }
+                        ]
+                    }
+                ],
+                9: [
+                    {
+                        id: 'task-48',
+                        text: 'Утренняя активность',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-48-1', text: 'Прогулка на свежем воздухе - 25 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-49',
+                        text: 'Тяга в наклоне',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-49-1', text: 'Тяга гантелей в наклоне - 1 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-49-2', text: 'Тяга гантелей в наклоне - 2 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-49-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-49-4', text: 'Тяга штанги в наклоне - 3 подход: 10 раз', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-50',
+                        text: 'Пресс',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-50-1', text: 'Русские скручивания - 25 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-50-2', text: 'Подъём ног лёжа - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-50-3', text: 'Планка - 50 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-50-4', text: 'Велосипед - 30 раз', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-51',
+                        text: 'Выпады',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-51-1', text: 'Выпады с гантелями - 12 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-51-2', text: 'Болгарские выпады - 10 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-51-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-51-4', text: 'Боковые выпады с прыжком - 8 раз каждая сторона', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-52',
+                        text: 'Бег',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-52-1', text: 'Разминка - 5 минут', completed: false },
+                            { id: 'ex-52-2', text: 'Интервальный бег - 10×1 минута быстро/1 минута медленно', completed: false },
+                            { id: 'ex-52-3', text: 'Заминка - 5 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-53',
+                        text: 'Фиксация прогресса',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-53-1', text: 'Запишите результаты тренировки', completed: false },
+                            { id: 'ex-53-2', text: 'Сфотографируйте прогресс', completed: false },
+                            { id: 'ex-53-3', text: 'Планирование на следующую неделю', completed: false }
+                        ]
+                    }
+                ],
+                10: [
+                    {
+                        id: 'task-54',
+                        text: 'Разогрев',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-54-1', text: 'Прыжки на месте - 2 минуты', completed: false },
+                            { id: 'ex-54-2', text: 'Вращения туловища - 25 раз', completed: false },
+                            { id: 'ex-54-3', text: 'Махи ногами - 20 раз каждой ногой', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-55',
+                        text: 'Отжимания на время',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-55-1', text: 'Отжимания за 60 секунд - макс. количество', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-55-2', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-55-3', text: 'Отжимания за 45 секунд - макс. количество', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-55-4', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-55-5', text: 'Отжимания за 30 секунд - макс. количество', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-56',
+                        text: 'Пресс',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-56-1', text: 'Альпинист - 4 подхода по 25 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-56-2', text: 'Ножницы - 4 подхода по 30 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-56-3', text: 'Планка - 60 секунд', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-57',
+                        text: 'Приседания',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-57-1', text: 'Классические приседания - 1 подход: 25 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-57-2', text: 'Приседания с широкой постановкой - 2 подход: 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-57-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-57-4', text: 'Приседания плие - 3 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-57-5', text: 'Прыжки из приседа - 15 раз', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-58',
+                        text: 'Планка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-58-1', text: 'Классическая планка - 60 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-58-2', text: 'Боковая планка левая - 40 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-58-3', text: 'Боковая планка правая - 40 секунд', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-58-4', text: 'Планка с подъёмом руки и ноги - 30 секунд каждая сторона', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-59',
+                        text: 'Растяжка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-59-1', text: 'Растяжка квадрицепса - 40 секунд каждая нога', completed: false },
+                            { id: 'ex-59-2', text: 'Растяжка приводящих мышц - 40 секунд', completed: false },
+                            { id: 'ex-59-3', text: 'Растяжка икроножных мышц - 40 секунд', completed: false }
+                        ]
+                    }
+                ],
+                11: [
+                    {
+                        id: 'task-60',
+                        text: 'Йога на утро',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-60-1', text: 'Приветствие солнцу - 5 раундов', completed: false },
+                            { id: 'ex-60-2', text: 'Поза собаки мордой вниз - 45 секунд', completed: false },
+                            { id: 'ex-60-3', text: 'Поза warrior - 45 секунд каждая сторона', completed: false },
+                            { id: 'ex-60-4', text: 'Поза треугольника - 45 секунд каждая сторона', completed: false },
+                            { id: 'ex-60-5', text: 'Поза дерева - 30 секунд каждая нога', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-61',
+                        text: 'Жим лёжа',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-61-1', text: 'Отжимания - 1 подход: 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-61-2', text: 'Отжимания - 2 подход: 15 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-61-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-61-4', text: 'Алмазные отжимания - 3 подход: 12 раз', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-62',
+                        text: 'Пресс',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-62-1', text: 'Скручивания с поворотом - 20 раз каждую сторону', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-62-2', text: 'Велосипед - 25 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-62-3', text: 'Обратные скручивания - 20 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-62-4', text: 'Планка - 55 секунд', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-63',
+                        text: 'Выпады',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-63-1', text: 'Выпады вперёд - 12 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-63-2', text: 'Обратные выпады - 10 раз каждая нога', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-63-3', text: 'Отдых - 90 секунд', isRest: true, completed: false },
+                            { id: 'ex-63-4', text: 'Боковые выпады - 10 раз каждая сторона', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-64',
+                        text: 'Беговая тренировка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-64-1', text: 'Разминка - ходьба 5 минут', completed: false },
+                            { id: 'ex-64-2', text: 'Бег в умеренном темпе - 25 минут', completed: false },
+                            { id: 'ex-64-3', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-64-4', text: 'Интервальный бег - 6×1 минута быстро/1 минута медленно', completed: false },
+                            { id: 'ex-64-5', text: 'Заминка - ходьба 5 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-65',
+                        text: 'Растяжка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-65-1', text: 'Растяжка ног - 5 минут', completed: false },
+                            { id: 'ex-65-2', text: 'Растяжка спины - 3 минуты', completed: false }
+                        ]
+                    }
+                ],
+                12: [
+                    {
+                        id: 'task-66',
+                        text: 'Утренняя йога',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-66-1', text: 'Приветствие солнцу - 4 раунда', completed: false },
+                            { id: 'ex-66-2', text: 'Поза собаки мордой вниз - 35 секунд', completed: false },
+                            { id: 'ex-66-3', text: 'Поза warrior - 35 секунд каждая сторона', completed: false },
+                            { id: 'ex-66-4', text: 'Поза треугольника - 35 секунд каждая сторона', completed: false },
+                            { id: 'ex-66-5', text: 'Поза дерева - 25 секунд каждая нога', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-67',
+                        text: 'Медитация',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-67-1', text: 'Дыхание 4-7-8 - 7 минут', completed: false },
+                            { id: 'ex-67-2', text: 'Сканирование тела - 7 минут', completed: false },
+                            { id: 'ex-67-3', text: 'Созерцание - 7 минут тишины', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-68',
+                        text: 'Силовая тренировка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-68-1', text: 'Разогрев - 4 минуты', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-68-2', text: 'Отжимания - 3 подхода по 18 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-68-3', text: 'Приседания - 3 подхода по 25 раз', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-68-4', text: 'Планка - 50 секунд', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-69',
+                        text: 'Прогулка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-69-1', text: 'Прогулка в парке - 45 минут', completed: false },
+                            { id: 'ex-69-2', text: 'Во время прогулки: глубокие вдохи', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-70',
+                        text: 'Растяжка перед сном',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-70-1', text: 'Растяжка шеи и плеч - 3 минуты', completed: false },
+                            { id: 'ex-70-2', text: 'Растяжка спины - поза ребёнка 90 секунд', completed: false },
+                            { id: 'ex-70-3', text: 'Растяжка ног - лёжа на спине 3 минуты', completed: false }
+                        ]
+                    }
+                ],
+                13: [
+                    {
+                        id: 'task-71',
+                        text: 'Утренняя активность',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-71-1', text: 'Лёгкий jog - 12 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-72',
+                        text: 'Финальный тест',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-72-1', text: 'Отжимания - макс. количество за 2 минут', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-72-2', text: 'Отдых - 3 минуты', isRest: true, completed: false },
+                            { id: 'ex-72-3', text: 'Приседания - макс. количество за 2 минуты', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-72-4', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-72-5', text: 'Планка - максимальное время', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-73',
+                        text: 'Прогулка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-73-1', text: 'Длительная прогулка - 50 минут', completed: false },
+                            { id: 'ex-73-2', text: 'Наслаждайтесь природой', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-74',
+                        text: 'Чтение',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-74-1', text: 'Почитайте книгу - 25 минут', completed: false },
+                            { id: 'ex-74-2', text: 'Запишите главную мысль', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-75',
+                        text: 'Планирование',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-75-1', text: 'Проанализируйте прогресс за 2 недели', completed: false },
+                            { id: 'ex-75-2', text: 'Запланируйте цели на следующий период', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-76',
+                        text: 'Растяжка и расслабление',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-76-1', text: 'Полная растяжка всего тела - 12 минут', completed: false },
+                            { id: 'ex-76-2', text: 'Медитация на благодарность - 7 минут', completed: false }
+                        ]
+                    }
+                ],
+                14: [
+                    {
+                        id: 'task-77',
+                        text: 'Утренняя активность',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-77-1', text: 'Лёгкая jog - 15 минут', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-78',
+                        text: 'Финальный челлендж',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-78-1', text: 'Отжимания - макс. количество за 2.5 минуты', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-78-2', text: 'Отдых - 3 минуты', isRest: true, completed: false },
+                            { id: 'ex-78-3', text: 'Приседания - макс. количество за 2.5 минуты', completed: false, videoUrl: 'отжимание.mp4' },
+                            { id: 'ex-78-4', text: 'Отдых - 2 минуты', isRest: true, completed: false },
+                            { id: 'ex-78-5', text: 'Планка - максимальное время + 10 секунд', completed: false, videoUrl: 'отжимание.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'task-79',
+                        text: 'Прогулка',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-79-1', text: 'Длительная прогулка - 60 минут', completed: false },
+                            { id: 'ex-79-2', text: 'Сфотографируйте красивые места', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-80',
+                        text: 'Рефлексия',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-80-1', text: 'Запишите достижения за 2 недели', completed: false },
+                            { id: 'ex-80-2', text: 'Что бы улучшить?', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-81',
+                        text: 'Планирование будущего',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-81-1', text: 'Подведите итоги 2-недельной программы', completed: false },
+                            { id: 'ex-81-2', text: 'Запланируйте следующие шаги', completed: false }
+                        ]
+                    },
+                    {
+                        id: 'task-82',
+                        text: 'Растяжка и расслабление',
+                        completed: false,
+                        completedAt: null,
+                        exercises: [
+                            { id: 'ex-82-1', text: 'Полная растяжка всего тела - 15 минут', completed: false },
+                            { id: 'ex-82-2', text: 'Медитация на благодарность - 10 минут', completed: false }
+                        ]
+                    }
+                ],
+                15: []  // День итогов - пустой, специальная обработка
             };
 
             // Загружаем сохраненные состояния из localStorage
@@ -6127,7 +6602,7 @@
 
         // Найти задачу по ID во всех днях
         function findTaskById(taskId) {
-            for (let day = 1; day <= 7; day++) {
+            for (let day = 1; day <= 14; day++) {
                 if (todoData[day]) {
                     const task = todoData[day].find(t => t.id === taskId);
                     if (task) return task;
@@ -6138,7 +6613,7 @@
 
         // Найти день (1-7) для задачи по ID
         function findDayForTask(taskId) {
-            for (let day = 1; day <= 7; day++) {
+            for (let day = 1; day <= 14; day++) {
                 if (todoData[day]) {
                     const task = todoData[day].find(t => t.id === taskId);
                     if (task) return day;
@@ -6613,8 +7088,8 @@
 
         // Получить название дня недели для тренировочного дня
         function getWorkoutDayName(workoutDay) {
-            // Day 8 - это специальный день итогов
-            if (workoutDay === 8) {
+            // Day 15 - это специальный день итогов
+            if (workoutDay === 15) {
                 return 'Итоги';
             }
 
@@ -6654,7 +7129,7 @@
             // День тренировки = смещение + 1
             const workoutDay = diffDays + 1;
 
-            // Минимум 1 день, без верхнего ограничения (для day 8+ и итогов)
+            // Минимум 1 день, без верхнего ограничения (для day 15+ и итогов)
             return Math.max(workoutDay, 1);
         }
 
@@ -6663,8 +7138,8 @@
             const currentDay = getCurrentWorkoutDay();
             if (currentDay > getTotalWorkoutDays()) return true;
 
-            const day7Tasks = todoData[7] || [];
-            return day7Tasks.length > 0 && day7Tasks.every(t => t.completed);
+            const day14Tasks = todoData[14] || [];
+            return day14Tasks.length > 0 && day14Tasks.every(t => t.completed);
         }
 
         // Получение даты для дня тренировки (на основе стартовой даты)
@@ -6817,7 +7292,7 @@
             let totalExercises = 0, completedExercises = 0;
             const dayBreakdown = [];
 
-            for (let day = 1; day <= 7; day++) {
+            for (let day = 1; day <= 14; day++) {
                 const tasks = todoData[day] || [];
                 const dayTasks = tasks.length;
                 const dayCompleted = tasks.filter(t => t.completed).length;
@@ -6851,7 +7326,7 @@
             // Считаем серию в пределах 7-дневной тренировки
             let workoutStreak = 0;
             let currentStreak = 0;
-            for (let day = 1; day <= 7; day++) {
+            for (let day = 1; day <= 14; day++) {
                 const tasks = todoData[day] || [];
                 const hasActivity = tasks.some(t => t.completed);
                 if (hasActivity) {
@@ -7000,7 +7475,7 @@
                 periodDates = `${startDate.toLocaleDateString('ru-RU', options)} — ${endDate.toLocaleDateString('ru-RU', options)}`;
                 periodText = 'Твоя неделя';
             } else {
-                periodDates = '7 дней активности';
+                periodDates = '14 дней активности';
                 periodText = 'Период';
             }
 
@@ -7817,16 +8292,23 @@
                 4: 60,
                 5: 70,
                 6: 72,
-                7: 53
+                7: 53,
+                8: 75,
+                9: 68,
+                10: 82,
+                11: 65,
+                12: 70,
+                13: 78,
+                14: 58
             };
 
             // Получаем текущий день тренировки один раз перед циклом
             const currentWorkoutDay = getCurrentWorkoutDay();
 
-            // Перебираем дни 1-8 (8 - это день итогов)
-            for (let day = 1; day <= 8; day++) {
-                // Day 8 - специальный виджет итогов (всегда виден)
-                if (day === 8) {
+            // Перебираем дни 1-15 (15 - это день итогов)
+            for (let day = 1; day <= 15; day++) {
+                // Day 15 - специальный виджет итогов (всегда виден)
+                if (day === 15) {
                     const widget = document.createElement('div');
                     widget.className = 'task-day-widget summary-day-widget';
                     widget.dataset.day = day;
@@ -8274,8 +8756,8 @@
             // Получаем номер дня (поддерживает как старый формат {day}, так и просто число)
             const dayNumber = typeof workout === 'object' ? workout.day : workout;
 
-            // Day 8 - это специальные итоги, маршрутизируем на другую функцию
-            if (dayNumber === 8) {
+            // Day 15 - это специальные итоги, маршрутизируем на другую функцию
+            if (dayNumber === 15) {
                 openSummaryModal();
                 return;
             }
@@ -8616,7 +9098,7 @@
                     <div class="celebration-features">
                         <div class="celebration-feature">159 упражнений в программе</div>
                         <div class="celebration-feature">42 упражнения с видео-демонстрациями</div>
-                        <div class="celebration-feature">7 полноценных тренировочных дней</div>
+                        <div class="celebration-feature">14 полноценных тренировочных дней</div>
                         <div class="celebration-feature">AI-коуч с персональными комментариями к прогрессу</div>
                         <div class="celebration-feature">Карточки упражнений с адаптивным свайпом</div>
                         <div class="celebration-feature">Круговой прогресс выполнения упражнений</div>
