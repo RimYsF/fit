@@ -7491,7 +7491,7 @@
         }
 
         // Создание HTML для todo-списка с новой логикой
-        function createTodoHtml(todos, isFutureDay = false) {
+        function createTodoHtml(todos, isLockedDay = false) {
             if (!todos || todos.length === 0) {
                 return '<div class="no-tasks">Задания не найдены</div>';
             }
@@ -7508,30 +7508,30 @@
                 let taskContent = '';
 
                 if (task.completed || allExercisesCompleted || !hasExercises) {
-                    // Показываем чекбокс (для будущих дней отключаем интерактивность)
+                    // Показываем чекбокс (для заблокированных дней отключаем интерактивность)
                     taskContent = `
-                        <div class="todo-checkbox ${isFutureDay ? 'disabled' : ''}">
+                        <div class="todo-checkbox ${isLockedDay ? 'disabled' : ''}">
                             <input type="checkbox"
                                    id="${task.id}"
                                    data-task-id="${task.id}"
                                    ${task.completed ? 'checked' : ''}
-                                   ${isFutureDay ? 'disabled' : ''}
+                                   ${isLockedDay ? 'disabled' : ''}
                                    onchange="toggleTask('${task.id}')">
                             <div class="checkbox-visual"></div>
                             <div class="checkbox-checkmark"></div>
                         </div>
-                        <div class="todo-text-wrapper ${isFutureDay ? 'future-day' : ''}">
-                            <div class="todo-text" ${!isFutureDay ? "onclick=\"toggleTask('" + task.id + "')\"" : ''}>
+                        <div class="todo-text-wrapper ${isLockedDay ? 'future-day' : ''}">
+                            <div class="todo-text" ${!isLockedDay ? "onclick=\"toggleTask('" + task.id + "')\"" : ''}>
                                 ${task.text}${task.completed && task.completedAt ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
                             </div>
                         </div>
                     `;
                 } else {
                     // Показываем только текст без чекбокса (текст сдвинут влево)
-                    // Для будущих дней убираем onclick для открытия упражнений
+                    // Для заблокированных дней убираем onclick для открытия упражнений
                     taskContent = `
-                        <div class="todo-text-wrapper todo-text-shifted ${isFutureDay ? 'future-day' : ''}">
-                            <div class="todo-text" ${!isFutureDay ? "onclick=\"openExerciseCard('" + task.id + "')\"" : ''}>
+                        <div class="todo-text-wrapper todo-text-shifted ${isLockedDay ? 'future-day' : ''}">
+                            <div class="todo-text" ${!isLockedDay ? "onclick=\"openExerciseCard('" + task.id + "')\"" : ''}>
                                 ${task.text}
                             </div>
                         </div>
@@ -7539,7 +7539,7 @@
                 }
 
                 html += `
-                    <li class="todo-item ${taskCompletedClass} ${isFutureDay ? 'future-day-item' : ''}">
+                    <li class="todo-item ${taskCompletedClass} ${isLockedDay ? 'future-day-item' : ''}">
                         ${taskContent}
                     </li>
                 `;
@@ -7613,10 +7613,10 @@
 
             // Перерендерить список задач чтобы обновить отображение
             setTimeout(() => {
-                // Проверяем, является ли день будущим для корректного отображения
+                // Проверяем, заблокирован ли день (не текущий)
                 const currentWorkoutDay = getCurrentWorkoutDay();
-                const isFutureDay = selectedWorkout > currentWorkoutDay;
-                const todoHtml = createTodoHtml(todoData[selectedWorkout], isFutureDay);
+                const isLockedDay = selectedWorkout !== currentWorkoutDay;
+                const todoHtml = createTodoHtml(todoData[selectedWorkout], isLockedDay);
                 document.getElementById('todo-modal-content').innerHTML = todoHtml;
             }, 300);
         }
@@ -9649,8 +9649,8 @@
                     if (workoutSection.classList.contains('show-todos') && selectedWorkout === day) {
                         const todoContent = document.getElementById('todo-content');
                         const currentWorkoutDay = getCurrentWorkoutDay();
-                        const isFutureDay = day > currentWorkoutDay;
-                        todoContent.innerHTML = createTodoHtml(todoData[day], isFutureDay);
+                        const isLockedDay = day !== currentWorkoutDay;
+                        todoContent.innerHTML = createTodoHtml(todoData[day], isLockedDay);
                     }
                 }
             });
@@ -9694,8 +9694,8 @@
             const todoContent = document.getElementById('todo-content');
             if (todoContent && selectedWorkout) {
                 const currentWorkoutDay = getCurrentWorkoutDay();
-                const isFutureDay = selectedWorkout > currentWorkoutDay;
-                todoContent.innerHTML = createTodoHtml(todoData[selectedWorkout] || [], isFutureDay);
+                const isLockedDay = selectedWorkout !== currentWorkoutDay;
+                todoContent.innerHTML = createTodoHtml(todoData[selectedWorkout] || [], isLockedDay);
             }
 
             // Вибрация подтверждения
@@ -9731,9 +9731,9 @@
             const todoModalContent = document.getElementById('todo-modal-content');
             const todoModalTitle = document.getElementById('todo-modal-title');
 
-            // Проверяем, является ли день будущим
+            // Проверяем, заблокирован ли день (не текущий)
             const currentWorkoutDay = getCurrentWorkoutDay();
-            const isFutureDay = dayNumber > currentWorkoutDay;
+            const isLockedDay = dayNumber !== currentWorkoutDay;
 
             // Устанавливаем заголовок с динамическим названием дня
             const dayName = getWorkoutDayName(dayNumber);
@@ -9741,7 +9741,7 @@
 
             // Отображаем todo-список для этого дня
             const dayTodos = todoData[dayNumber];
-            todoModalContent.innerHTML = createTodoHtml(dayTodos, isFutureDay);
+            todoModalContent.innerHTML = createTodoHtml(dayTodos, isLockedDay);
 
             // Показываем overlay с анимацией
             todoOverlay.style.display = 'block';
