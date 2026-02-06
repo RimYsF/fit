@@ -10871,66 +10871,43 @@
             }
         }
 
-        // Форматирование ответа AI для лучшей читаемости
+        // Форматирование ответа AI - убираем HTML и оставляем чистый текст
         function formatAIResponse(text) {
-            // Хранилище для временных плейсхолдеров
-            const placeholders = [];
-            let placeholderIndex = 0;
+            // Убираем все HTML-теги из ответа AI
+            let cleanText = text
+                // Заменяем HTML-теги на переносы строк или пробелы
+                .replace(/<\/p>/gi, '\n\n')
+                .replace(/<\/div>/gi, '\n')
+                .replace(/<\/li>/gi, '\n')
+                .replace(/<li>/gi, '• ')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/h[1-6]>/gi, '\n\n')
+                // Убираем все остальные HTML-теги
+                .replace(/<[^>]+>/g, '')
+                // Убираем множественные переносы строк
+                .replace(/\n{3,}/g, '\n\n')
+                // Убираем &nbsp; и другие HTML-сущности
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&')
+                .replace(/&quot;/g, '"')
+                // Обрабатываем markdown **жирный**
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                // Обрабатываем заголовки #
+                .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
+                .trim();
 
-            // Функция для создания временного плейсхолдера
-            const createPlaceholder = (content) => {
-                const ph = `__PLACEHOLDER_${placeholderIndex++}__`;
-                placeholders[ph] = content;
-                return ph;
-            };
+            // Экранируем HTML для безопасности
+            cleanText = escapeHtml(cleanText);
 
-            // Сначала обрабатываем форматирование и сохраняем в плейсхолдеры
-            let processed = text
-                // Обрабатываем заголовки (строки начинающиеся с #)
-                .replace(/^(#{1,3})\s+(.+)$/gm, (match, hashes, content) => {
-                    return createPlaceholder(`<h3 style="color: var(--accent-blue); margin: 12px 0 8px; font-weight: 600;">${escapeHtml(content)}</h3>`);
-                })
-                // Обрабатываем жирный текст
-                .replace(/\*\*(.+?)\*\*/g, (match, content) => {
-                    return createPlaceholder(`<strong style="color: var(--neobrut-darkgray);">${escapeHtml(content)}</strong>`);
-                })
-                // Обрабатываем списки (строки начинающиеся с -)
-                .replace(/^(\s*[-•*]\s+(.+))$/gm, (match, line) => {
-                    const content = line.replace(/^[-•*]\s+/, '').trim();
-                    return createPlaceholder(`<div class="ai-list-item">• ${escapeHtml(content)}</div>`);
-                })
-                // Обрабатываем нумерованные списки
-                .replace(/^(\s*\d+\.\s+.+)$/gm, (match, line) => {
-                    return createPlaceholder(`<div class="ai-list-item">${escapeHtml(line)}</div>`);
-                });
-
-            // Экранируем оставшийся текст (который не был обработан выше)
-            processed = escapeHtml(processed);
-
-            // Заменяем множественные переносы строк на одиночные
-            processed = processed.replace(/\n{3,}/g, '\n\n');
-
-            // Восстанавливаем плейсхолдеры
-            processed = processed.replace(/__PLACEHOLDER_(\d+)__/g, (match, index) => {
-                return placeholders[match] || match;
-            });
-
-            // Разбиваем на параграфы и форматируем
-            let formatted = processed
+            // Разбиваем на параграфы
+            return cleanText
                 .split('\n\n')
-                .map(paragraph => paragraph.trim())
-                .filter(paragraph => paragraph.length > 0)
-                .map(paragraph => {
-                    // Если параграф начинается с <h3> или <div>, оставляем как есть
-                    if (paragraph.startsWith('<h3>') || paragraph.startsWith('<div class="ai-list-item">')) {
-                        return paragraph;
-                    }
-                    // Иначе оборачиваем в параграф
-                    return `<p style="margin: 10px 0; line-height: 1.6;">${paragraph}</p>`;
-                })
+                .map(p => p.trim())
+                .filter(p => p.length > 0)
+                .map(p => `<p style="margin: 10px 0; line-height: 1.6;">${p}</p>`)
                 .join('\n');
-
-            return formatted;
         }
 
         async function generateAIResponse(userMessage) {
