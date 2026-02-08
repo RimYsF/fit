@@ -2089,34 +2089,40 @@
             border-radius: 6px;
         }
 
-        /* Информация о неделе и кнопка назад в дневных слайдах */
+        /* Информация о неделе - правый верхний угол */
         .summary-day-week-info {
+            position: absolute;
+            top: 16px;
+            right: 16px;
             font-size: 12px;
             color: #888;
-            margin-top: 4px;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 1px;
+            z-index: 5;
         }
 
-        .summary-day-back-btn {
+        /* Кнопка назад - левый верхний угол */
+        .summary-day-back-top {
+            position: absolute;
+            top: 16px;
+            left: 16px;
             font-size: 12px;
             color: var(--neobrut-blue);
             cursor: pointer;
-            margin-top: auto;
-            padding: 12px;
+            padding: 8px 12px;
             background: rgba(0,0,0,0.03);
             border-radius: 6px;
             transition: background 0.15s ease;
-            text-align: center;
             font-weight: 600;
+            z-index: 5;
         }
 
-        .summary-day-back-btn:hover {
+        .summary-day-back-top:hover {
             background: rgba(0,0,0,0.06);
         }
 
-        .summary-day-back-btn:active {
+        .summary-day-back-top:active {
             background: rgba(0,0,0,0.09);
         }
 
@@ -10418,6 +10424,9 @@
                 // Заменяем слайды в треке
                 this.track.innerHTML = weekDaysHtml;
 
+                // Обновляем количество слайдов (дней в неделе)
+                this.totalSlides = week.days.length;
+
                 // Обновляем состояние
                 this.inWeekView = false;
                 this.currentIndex = 0;
@@ -10435,6 +10444,9 @@
 
                 // Восстанавливаем оригинальные слайды недель
                 this.track.innerHTML = this.originalSlidesHtml;
+
+                // Восстанавливаем количество слайдов (9: 4 общих + 4 недели + 1 финальный)
+                this.totalSlides = this.track.children.length;
 
                 // Обновляем состояние
                 this.inWeekView = true;
@@ -10480,8 +10492,10 @@
                                 <div class="summary-day-number">ДЕНЬ ${dayNum}</div>
                                 <div class="summary-day-name">${getWorkoutDayName(dayNum)}</div>
                                 <div class="summary-day-week-info">${week.emoji} ${week.name}</div>
-                                <div class="summary-day-back-btn" onclick="summaryCarousel.backToWeeks()">← Назад к неделям</div>
                             </div>
+
+                            <!-- Кнопка назад - левый верхний угол -->
+                            <div class="summary-day-back-top" onclick="summaryCarousel.backToWeeks()">← Назад к неделям</div>
 
                             <div class="summary-day-percent ${percentClass}" data-counter="${dayData.percent}" data-suffix="%">0</div>
 
