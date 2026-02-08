@@ -11869,6 +11869,21 @@
             window.mockDate = baseDate.toISOString();
             updateAdminPanelUI();
             console.log(`🛠️ Дата ${delta > 0 ? 'увеличена' : 'уменьшена'} на ${Math.abs(delta)} дн. Новая дата:`, formatDateForDisplay(new Date()));
+
+            // Обновляем UI после изменения даты
+            if (typeof updateDashboardStrip === 'function') {
+                updateDashboardStrip();
+            }
+            if (typeof renderActivityGrid === 'function') {
+                renderActivityGrid(true);
+            }
+            if (typeof updateAIComment === 'function') {
+                updateAIComment(true);
+            }
+            // Перерисовываем виджеты дней
+            if (typeof renderTaskDayWidgets === 'function') {
+                renderTaskDayWidgets();
+            }
         }
 
         // Сбросить к реальному времени
@@ -11876,6 +11891,21 @@
             window.mockDate = null;
             updateAdminPanelUI();
             console.log('🛠️ Время сброшено к реальному');
+
+            // Обновляем UI после сброса даты
+            if (typeof updateDashboardStrip === 'function') {
+                updateDashboardStrip();
+            }
+            if (typeof renderActivityGrid === 'function') {
+                renderActivityGrid(true);
+            }
+            if (typeof updateAIComment === 'function') {
+                updateAIComment(true);
+            }
+            // Перерисовываем виджеты дней
+            if (typeof renderTaskDayWidgets === 'function') {
+                renderTaskDayWidgets();
+            }
         }
 
         // Открыть админ-панель
@@ -11916,30 +11946,10 @@
             const adminDayNext = document.getElementById('admin-day-next');
             const adminReset = document.getElementById('admin-reset');
 
-            // Активация: 5 быстрых кликов на dashboard strip
+            // Активация: 1 клик на dashboard strip
             if (dashboardStrip) {
-                let clickCount = 0;
-                let clickTimer = null;
-
                 dashboardStrip.addEventListener('click', (e) => {
-                    // Сбрасываем предыдущий таймер
-                    if (clickTimer) {
-                        clearTimeout(clickTimer);
-                    }
-
-                    clickCount++;
-
-                    // Если достигли 5 кликов
-                    if (clickCount >= 5) {
-                        openAdminPanel();
-                        clickCount = 0;
-                        return;
-                    }
-
-                    // Если пауза между кликами > 500мс, сбрасываем счётчик
-                    clickTimer = setTimeout(() => {
-                        clickCount = 0;
-                    }, 500);
+                    openAdminPanel();
                 });
             }
 
@@ -11966,7 +11976,7 @@
                 adminReset.addEventListener('click', resetDateTime);
             }
 
-            console.log('🛠️ Админ-панель инициализирована. 5 кликов на dashboard strip для активации.');
+            console.log('🛠️ Админ-панель инициализирована. 1 клик на dashboard strip для активации.');
         }
 
         // Вызываем инициализацию админ-панели после загрузки DOM
