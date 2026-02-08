@@ -2089,6 +2089,50 @@
             border-radius: 6px;
         }
 
+        /* Кнопка "Назад к неделям" */
+        .summary-week-back-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: var(--neobrut-white);
+            border-bottom: 3px solid var(--neobrut-black);
+            z-index: 10;
+        }
+
+        .summary-week-back-btn {
+            background: var(--neobrut-yellow);
+            color: var(--neobrut-black);
+            border: 3px solid var(--neobrut-black);
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .summary-week-back-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .summary-week-back-btn:active {
+            transform: translate(0, 0);
+            box-shadow: none;
+        }
+
+        .summary-week-back-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+        }
+
         /* Day 8 Widget Special Styling */
         .summary-day-widget {
             background: linear-gradient(135deg, #ffd9b3 0%, #ffe8cc 50%, #fff0e0 100%) !important;
@@ -10155,6 +10199,10 @@
             // Инициализируем карусель
             summaryCarousel.init();
 
+            // Сохраняем данные о неделях для drill-down
+            const weeks = groupDaysByWeeks(summary);
+            summaryCarousel.weeksData = weeks;
+
             // Вибрация при открытии
             if (window.Telegram?.WebApp?.HapticFeedback) {
                 Telegram.WebApp.HapticFeedback.notificationOccurred('success');
@@ -10183,6 +10231,9 @@
             track: null,
             dots: null,
             overlay: null,
+            weeksData: null, // Сохраняем данные о неделях для drill-down
+            originalSlidesHtml: null, // Сохраняем оригинальные слайды
+            inWeekView: true, // Режим: true = недели, false = дни недели
 
             init() {
                 this.track = document.getElementById('summary-carousel-track');
@@ -10196,6 +10247,9 @@
 
                 // Настраиваем свайп
                 this.setupSwipe();
+
+                // Добавляем обработчики кликов на недельные слайды
+                this.setupWeekClickHandlers();
 
                 // Обновляем отображение
                 this.update();
@@ -10341,6 +10395,135 @@
                     isDragging = false;
                     this.overlay.style.cursor = '';
                 };
+            },
+
+            // Добавить обработчики кликов на недельные слайды
+            setupWeekClickHandlers() {
+                const weekSlides = this.track.querySelectorAll('.summary-week-slide');
+                weekSlides.forEach((slide, index) => {
+                    slide.addEventListener('click', (e) => {
+                        // Предотвращаем срабатывание если dragged
+                        if (this.isDragging) return;
+
+                        const weekIndex = parseInt(slide.dataset.week);
+                        if (!isNaN(weekIndex)) {
+                            this.openWeekDetails(weekIndex);
+                        }
+                    });
+                });
+            },
+
+            // Открыть детали недели
+            openWeekDetails(weekIndex) {
+                if (!this.weeksData) return;
+
+                const week = this.weeksData[weekIndex];
+                if (!week) return;
+
+                // Сохраняем оригинальные слайды
+                if (!this.originalSlidesHtml) {
+                    this.originalSlidesHtml = this.track.innerHTML;
+                }
+
+                // Генерируем HTML для дней недели
+                const weekDaysHtml = this.generateWeekDaysHtml(week);
+
+                // Заменяем слайды в треке
+                this.track.innerHTML = weekDaysHtml;
+
+                // Обновляем состояние
+                this.inWeekView = false;
+                this.currentIndex = 0;
+
+                // Пересоздаём точки для дней недели
+                this.createDots();
+
+                // Обновляем отображение
+                this.update();
+            },
+
+            // Вернуться к неделям
+            backToWeeks() {
+                if (!this.originalSlidesHtml) return;
+
+                // Восстанавливаем оригинальные слайды недель
+                this.track.innerHTML = this.originalSlidesHtml;
+
+                // Обновляем состояние
+                this.inWeekView = true;
+                this.currentIndex = 0;
+
+                // Пересоздаём точки
+                this.createDots();
+
+                // Добавляем обработчики кликов на недели снова
+                this.setupWeekClickHandlers();
+
+                // Обновляем отображение
+                this.update();
+            },
+
+            // Сгенерировать HTML для дней недели
+            generateWeekDaysHtml(week) {
+                const summary = calculateWeeklySummary();
+
+                let html = `
+                    <div class="summary-week-back-header">
+                        <button class="summary-week-back-btn" onclick="summaryCarousel.backToWeeks()">
+                            ← Назад к неделям
+                        </button>
+                        <div class="summary-week-back-title">${week.emoji} ${week.name}</div>
+                    </div>
+                `;
+
+                // Генерируем слайд для каждого дня недели
+                week.days.forEach(dayData => {
+                    const dayNum = dayData.day;
+                    const tasks = todoData[dayNum] || [];
+                    const completedTasks = tasks.filter(t => t.completed);
+
+                    // Считаем упражнения
+                    let totalEx = 0, completedEx = 0;
+                    tasks.forEach(task => {
+                        if (task.exercises) {
+                            const active = task.exercises.filter(ex => !ex.isRest);
+                            totalEx += active.length;
+                            completedEx += active.filter(ex => ex.completed).length;
+                        }
+                    });
+
+                    const percentClass = dayData.percent >= 75 ? 'excellent' : dayData.percent >= 50 ? 'good' : 'fair';
+
+                    html += `
+                        <div class="summary-carousel-slide summary-day-slide">
+                            <div class="summary-day-header">
+                                <div class="summary-day-number">ДЕНЬ ${dayNum}</div>
+                                <div class="summary-day-name">${getWorkoutDayName(dayNum)}</div>
+                            </div>
+
+                            <div class="summary-day-percent ${percentClass}" data-counter="${dayData.percent}" data-suffix="%">0</div>
+
+                            <div class="summary-day-stats">
+                                <div class="summary-day-stat">
+                                    <div class="summary-day-stat-value" data-counter="${completedTasks.length}" data-suffix="/${tasks.length}">0</div>
+                                    <div class="summary-day-stat-label">Задачи</div>
+                                </div>
+                                <div class="summary-day-stat">
+                                    <div class="summary-day-stat-value" data-counter="${completedEx}" data-suffix="/${totalEx}">0</div>
+                                    <div class="summary-day-stat-label">Упражнения</div>
+                                </div>
+                            </div>
+
+                            <div class="summary-day-percent-bar">
+                                <div class="summary-day-bar-bg">
+                                    <div class="summary-day-bar-fill" style="width: ${dayData.percent}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                return html;
             }
         };
 
