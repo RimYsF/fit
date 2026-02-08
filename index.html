@@ -11812,26 +11812,18 @@
         const OriginalDate = window.Date;
         window.mockDate = null;
 
-        // Override Date constructor для подмены времени
-        window.Date = function(...args) {
-            if (window.mockDate && args.length === 0) {
-                return new OriginalDate(window.mockDate);
-            }
-            return new OriginalDate(...args);
-        };
-
-        // Копируем все статические свойства и методы оригинального Date
-        Object.getOwnPropertyNames(OriginalDate).forEach(prop => {
-            if (prop !== 'length' && prop !== 'name' && prop !== 'prototype') {
-                window.Date[prop] = OriginalDate[prop];
+        // Override Date constructor через Proxy для правильной работы
+        window.Date = new Proxy(OriginalDate, {
+            construct: function(Target, args) {
+                if (window.mockDate && args.length === 0) {
+                    return new OriginalDate(window.mockDate);
+                }
+                return new OriginalDate(...args);
+            },
+            get: function(target, prop) {
+                return target[prop];
             }
         });
-
-        // Копируем прототип
-        window.Date.prototype = OriginalDate.prototype;
-        window.Date.now = OriginalDate.now;
-        window.Date.parse = OriginalDate.parse;
-        window.Date.UTC = OriginalDate.UTC;
 
         // Форматирование даты для отображения
         function formatDateForDisplay(date) {
