@@ -8595,6 +8595,9 @@
 
         // Группировка дней по неделям для итогов
         function groupDaysByWeeks(summary) {
+            console.log('groupDaysByWeeks called, todoData keys:', Object.keys(todoData));
+            console.log('summary.dayBreakdown:', summary.dayBreakdown);
+
             const weeks = [
                 { name: 'Неделя 1', days: [], startDay: 1, endDay: 7, emoji: '1️⃣' },
                 { name: 'Неделя 2', days: [], startDay: 8, endDay: 14, emoji: '2️⃣' },
@@ -8642,8 +8645,11 @@
 
                 // Находим лучший день недели
                 week.bestDay = week.days.length > 0 ? week.days.reduce((best, d) => d.percent > (best?.percent || 0) ? d : best, null) : null;
+
+                console.log(`${week.name}: tasks=${week.totalTasks}, completed=${week.completedTasks}, exercises=${week.totalExercises}, percent=${week.percent}`);
             });
 
+            console.log('Final weeks:', weeks);
             return weeks;
         }
 
