@@ -11847,7 +11847,8 @@
             const dateStatus = document.getElementById('admin-date-status');
 
             if (dateValue && dateStatus) {
-                const currentDate = new Date();
+                // Используем mockDate напрямую, если он установлен
+                const currentDate = window.mockDate ? new OriginalDate(window.mockDate) : new OriginalDate();
                 dateValue.textContent = formatDateForDisplay(currentDate);
 
                 if (window.mockDate) {
@@ -11868,7 +11869,7 @@
             baseDate.setDate(baseDate.getDate() + delta);
             window.mockDate = baseDate.toISOString();
             updateAdminPanelUI();
-            console.log(`🛠️ Дата ${delta > 0 ? 'увеличена' : 'уменьшена'} на ${Math.abs(delta)} дн. Новая дата:`, formatDateForDisplay(new Date()));
+            console.log(`🛠️ Дата ${delta > 0 ? 'увеличена' : 'уменьшена'} на ${Math.abs(delta)} дн. Новая дата:`, formatDateForDisplay(baseDate));
 
             // Обновляем UI после изменения даты
             if (typeof updateDashboardStrip === 'function') {
