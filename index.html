@@ -7898,6 +7898,12 @@
 
             // Перерендерить список задач чтобы обновить отображение
             setTimeout(() => {
+                // Проверяем, что selectedWorkout валиден и существует в todoData
+                if (!selectedWorkout || !todoData[selectedWorkout]) {
+                    console.log('closeExerciseCard: selectedWorkout не валиден или отсутствует в todoData, пропускаем перерендер');
+                    return;
+                }
+
                 // Проверяем, заблокирован ли день (не текущий)
                 const currentWorkoutDay = getCurrentWorkoutDay();
                 const isLockedDay = selectedWorkout !== currentWorkoutDay;
