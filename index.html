@@ -2089,48 +2089,35 @@
             border-radius: 6px;
         }
 
-        /* Кнопка "Назад к неделям" */
-        .summary-week-back-header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: var(--neobrut-white);
-            border-bottom: 3px solid var(--neobrut-black);
-            z-index: 10;
+        /* Информация о неделе и кнопка назад в дневных слайдах */
+        .summary-day-week-info {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .summary-week-back-btn {
-            background: var(--neobrut-yellow);
-            color: var(--neobrut-black);
-            border: 3px solid var(--neobrut-black);
-            padding: 10px 16px;
-            font-size: 14px;
-            font-weight: 700;
+        .summary-day-back-btn {
+            font-size: 12px;
+            color: var(--neobrut-blue);
             cursor: pointer;
-            box-shadow: 2px 2px 0 var(--neobrut-black);
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        .summary-week-back-btn:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-        }
-
-        .summary-week-back-btn:active {
-            transform: translate(0, 0);
-            box-shadow: none;
-        }
-
-        .summary-week-back-title {
-            flex: 1;
+            margin-top: auto;
+            padding: 12px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 6px;
+            transition: background 0.15s ease;
             text-align: center;
-            font-size: 18px;
-            font-weight: 900;
-            color: var(--neobrut-black);
+            font-weight: 600;
+        }
+
+        .summary-day-back-btn:hover {
+            background: rgba(0,0,0,0.06);
+        }
+
+        .summary-day-back-btn:active {
+            background: rgba(0,0,0,0.09);
         }
 
         /* Day 8 Widget Special Styling */
@@ -10467,14 +10454,7 @@
             generateWeekDaysHtml(week) {
                 const summary = calculateWeeklySummary();
 
-                let html = `
-                    <div class="summary-week-back-header">
-                        <button class="summary-week-back-btn" onclick="summaryCarousel.backToWeeks()">
-                            ← Назад к неделям
-                        </button>
-                        <div class="summary-week-back-title">${week.emoji} ${week.name}</div>
-                    </div>
-                `;
+                let html = '';
 
                 // Генерируем слайд для каждого дня недели
                 week.days.forEach(dayData => {
@@ -10499,6 +10479,8 @@
                             <div class="summary-day-header">
                                 <div class="summary-day-number">ДЕНЬ ${dayNum}</div>
                                 <div class="summary-day-name">${getWorkoutDayName(dayNum)}</div>
+                                <div class="summary-day-week-info">${week.emoji} ${week.name}</div>
+                                <div class="summary-day-back-btn" onclick="summaryCarousel.backToWeeks()">← Назад к неделям</div>
                             </div>
 
                             <div class="summary-day-percent ${percentClass}" data-counter="${dayData.percent}" data-suffix="%">0</div>
