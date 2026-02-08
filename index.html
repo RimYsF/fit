@@ -4886,6 +4886,156 @@
         .privacy-modal-body li {
             margin: 0.25rem 0;
         }
+
+        /* ==================== АДМИН-ПАНЕЛЬ (ТЕСТИРОВАНИЕ) ==================== */
+        #admin-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            background: var(--neobrut-white);
+            border: 4px solid var(--neobrut-black);
+            box-shadow: 8px 8px 0 var(--neobrut-black);
+            padding: 1.5rem;
+            min-width: 320px;
+            max-width: 90vw;
+            display: none;
+        }
+
+        #admin-panel.show {
+            display: block;
+        }
+
+        #admin-panel.hidden {
+            display: none;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid var(--neobrut-black);
+            padding-bottom: 0.75rem;
+        }
+
+        .admin-title {
+            font-size: 1.25rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: var(--neobrut-black);
+        }
+
+        .admin-close {
+            background: var(--neobrut-red);
+            color: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            width: 36px;
+            height: 36px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .admin-close:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--neobrut-black);
+        }
+
+        .admin-close:active {
+            transform: translate(0, 0);
+            box-shadow: none;
+        }
+
+        .admin-date-display {
+            background: var(--neobrut-lightgray);
+            border: 3px solid var(--neobrut-black);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .admin-date-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-date-status {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.25rem 0.5rem;
+            display: inline-block;
+        }
+
+        .admin-date-status.real {
+            background: var(--success-green);
+            color: var(--neobrut-black);
+        }
+
+        .admin-date-status.mocked {
+            background: var(--neobrut-orange);
+            color: var(--neobrut-white);
+        }
+
+        .admin-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .admin-btn {
+            background: var(--neobrut-blue);
+            color: var(--neobrut-white);
+            border: 3px solid var(--neobrut-black);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+        }
+
+        .admin-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--neobrut-black);
+        }
+
+        .admin-btn:active {
+            transform: translate(0, 0);
+            box-shadow: none;
+        }
+
+        .admin-btn-reset {
+            background: var(--neobrut-yellow);
+            color: var(--neobrut-black);
+            grid-column: 1 / -1;
+        }
+
+        .admin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: none;
+        }
+
+        .admin-overlay.show {
+            display: block;
+        }
+        /* ==================== КОНЕЦ АДМИН-ПАНЕЛИ ==================== */
     </style>
 </head>
 
@@ -5306,6 +5456,25 @@
 
             <!-- Tooltip для активности -->
             <div class="tip" id="activity-tooltip"></div>
+
+            <!-- ==================== АДМИН-ПАНЕЛЬ (ТЕСТИРОВАНИЕ) ==================== -->
+            <div class="admin-overlay" id="admin-overlay"></div>
+            <div id="admin-panel" class="hidden">
+                <div class="admin-header">
+                    <h2 class="admin-title">🛠️ Панель тестирования</h2>
+                    <button class="admin-close" id="admin-close">×</button>
+                </div>
+                <div class="admin-date-display">
+                    <div class="admin-date-value" id="admin-date-value">01.01.2025</div>
+                    <div class="admin-date-status real" id="admin-date-status">РЕАЛЬНОЕ ВРЕМЯ</div>
+                </div>
+                <div class="admin-controls">
+                    <button class="admin-btn" id="admin-day-prev">← -1 День</button>
+                    <button class="admin-btn" id="admin-day-next">+1 День →</button>
+                    <button class="admin-btn admin-btn-reset" id="admin-reset">🔄 Сбросить время</button>
+                </div>
+            </div>
+            <!-- ==================== КОНЕЦ АДМИН-ПАНЕЛИ ==================== -->
 
             <!-- Overlay модальное окно для AI чата -->
             <div class="ai-chat-overlay" id="ai-chat-overlay">
@@ -11636,6 +11805,178 @@
                 }
             });
         }
+
+        // ==================== АДМИН-ПАНЕЛЬ (ТЕСТИРОВАНИЕ) ====================
+
+        // Сохраняем оригинальный конструктор Date
+        const OriginalDate = window.Date;
+        window.mockDate = null;
+
+        // Override Date constructor для подмены времени
+        window.Date = function(...args) {
+            if (window.mockDate && args.length === 0) {
+                return new OriginalDate(window.mockDate);
+            }
+            return new OriginalDate(...args);
+        };
+
+        // Копируем все статические свойства и методы оригинального Date
+        Object.getOwnPropertyNames(OriginalDate).forEach(prop => {
+            if (prop !== 'length' && prop !== 'name' && prop !== 'prototype') {
+                window.Date[prop] = OriginalDate[prop];
+            }
+        });
+
+        // Копируем прототип
+        window.Date.prototype = OriginalDate.prototype;
+        window.Date.now = OriginalDate.now;
+        window.Date.parse = OriginalDate.parse;
+        window.Date.UTC = OriginalDate.UTC;
+
+        // Форматирование даты для отображения
+        function formatDateForDisplay(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        // Обновить UI админ-панели
+        function updateAdminPanelUI() {
+            const dateValue = document.getElementById('admin-date-value');
+            const dateStatus = document.getElementById('admin-date-status');
+
+            if (dateValue && dateStatus) {
+                const currentDate = new Date();
+                dateValue.textContent = formatDateForDisplay(currentDate);
+
+                if (window.mockDate) {
+                    dateStatus.textContent = 'ПОДМЕНЕНО';
+                    dateStatus.classList.remove('real');
+                    dateStatus.classList.add('mocked');
+                } else {
+                    dateStatus.textContent = 'РЕАЛЬНОЕ ВРЕМЯ';
+                    dateStatus.classList.remove('mocked');
+                    dateStatus.classList.add('real');
+                }
+            }
+        }
+
+        // Сдвинуть дату на указанное количество дней
+        function shiftDays(delta) {
+            const baseDate = window.mockDate ? new OriginalDate(window.mockDate) : new OriginalDate();
+            baseDate.setDate(baseDate.getDate() + delta);
+            window.mockDate = baseDate.toISOString();
+            updateAdminPanelUI();
+            console.log(`🛠️ Дата ${delta > 0 ? 'увеличена' : 'уменьшена'} на ${Math.abs(delta)} дн. Новая дата:`, formatDateForDisplay(new Date()));
+        }
+
+        // Сбросить к реальному времени
+        function resetDateTime() {
+            window.mockDate = null;
+            updateAdminPanelUI();
+            console.log('🛠️ Время сброшено к реальному');
+        }
+
+        // Открыть админ-панель
+        function openAdminPanel() {
+            const panel = document.getElementById('admin-panel');
+            const overlay = document.getElementById('admin-overlay');
+            if (panel) {
+                panel.classList.remove('hidden');
+                panel.classList.add('show');
+            }
+            if (overlay) {
+                overlay.classList.add('show');
+            }
+            updateAdminPanelUI();
+            console.log('🛠️ Админ-панель открыта');
+        }
+
+        // Закрыть админ-панель
+        function closeAdminPanel() {
+            const panel = document.getElementById('admin-panel');
+            const overlay = document.getElementById('admin-overlay');
+            if (panel) {
+                panel.classList.remove('show');
+                panel.classList.add('hidden');
+            }
+            if (overlay) {
+                overlay.classList.remove('show');
+            }
+            console.log('🛠️ Админ-панель закрыта');
+        }
+
+        // Инициализация админ-панели (вызывается после загрузки DOM)
+        function initAdminPanel() {
+            const dashboardStrip = document.getElementById('dashboard-strip');
+            const adminClose = document.getElementById('admin-close');
+            const adminOverlay = document.getElementById('admin-overlay');
+            const adminDayPrev = document.getElementById('admin-day-prev');
+            const adminDayNext = document.getElementById('admin-day-next');
+            const adminReset = document.getElementById('admin-reset');
+
+            // Активация: 5 быстрых кликов на dashboard strip
+            if (dashboardStrip) {
+                let clickCount = 0;
+                let clickTimer = null;
+
+                dashboardStrip.addEventListener('click', (e) => {
+                    // Сбрасываем предыдущий таймер
+                    if (clickTimer) {
+                        clearTimeout(clickTimer);
+                    }
+
+                    clickCount++;
+
+                    // Если достигли 5 кликов
+                    if (clickCount >= 5) {
+                        openAdminPanel();
+                        clickCount = 0;
+                        return;
+                    }
+
+                    // Если пауза между кликами > 500мс, сбрасываем счётчик
+                    clickTimer = setTimeout(() => {
+                        clickCount = 0;
+                    }, 500);
+                });
+            }
+
+            // Кнопка закрытия админ-панели
+            if (adminClose) {
+                adminClose.addEventListener('click', closeAdminPanel);
+            }
+
+            // Закрытие по клику на overlay
+            if (adminOverlay) {
+                adminOverlay.addEventListener('click', closeAdminPanel);
+            }
+
+            // Кнопки управления датой
+            if (adminDayPrev) {
+                adminDayPrev.addEventListener('click', () => shiftDays(-1));
+            }
+
+            if (adminDayNext) {
+                adminDayNext.addEventListener('click', () => shiftDays(1));
+            }
+
+            if (adminReset) {
+                adminReset.addEventListener('click', resetDateTime);
+            }
+
+            console.log('🛠️ Админ-панель инициализирована. 5 кликов на dashboard strip для активации.');
+        }
+
+        // Вызываем инициализацию админ-панели после загрузки DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initAdminPanel);
+        } else {
+            initAdminPanel();
+        }
+
+        // ==================== КОНЕЦ АДМИН-ПАНЕЛИ ====================
     </script>
 
     <!-- Подключение Supabase -->
