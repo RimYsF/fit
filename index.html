@@ -1975,7 +1975,8 @@
 
         /* Недельные слайды */
         .summary-week-slide {
-            padding-top: 60px;
+            padding-top: 40px;
+            padding-bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1989,34 +1990,34 @@
 
         .summary-week-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .summary-week-emoji {
-            font-size: 48px;
-            margin-bottom: 8px;
+            font-size: 36px;
+            margin-bottom: 4px;
         }
 
         .summary-week-name {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 900;
             color: var(--neobrut-black);
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
         }
 
         .summary-week-dates {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
-            margin-top: 4px;
+            margin-top: 2px;
             font-weight: 500;
         }
 
         .summary-week-percent {
-            font-size: 72px;
+            font-size: 56px;
             font-weight: 900;
             line-height: 1;
-            letter-spacing: -3px;
-            margin-bottom: 24px;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
             text-align: center;
         }
 
@@ -2034,8 +2035,8 @@
 
         .summary-week-stats {
             display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 12px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -2043,49 +2044,49 @@
         .summary-week-stat {
             background: var(--neobrut-white);
             border: 2px solid var(--neobrut-black);
-            border-radius: 12px;
-            padding: 14px 20px;
+            border-radius: 10px;
+            padding: 10px 16px;
             text-align: center;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
-            min-width: 90px;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+            min-width: 75px;
         }
 
         .summary-week-stat-value {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 900;
             color: var(--neobrut-black);
             line-height: 1;
         }
 
         .summary-week-stat-label {
-            font-size: 9px;
+            font-size: 8px;
             color: #666;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
+            letter-spacing: 0.5px;
+            margin-top: 3px;
             font-weight: 600;
         }
 
         .summary-week-best {
             background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
             border: 2px solid var(--neobrut-black);
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-size: 14px;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--neobrut-black);
             box-shadow: 2px 2px 0 var(--neobrut-black);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .summary-week-hint {
-            font-size: 12px;
+            font-size: 11px;
             color: #888;
             text-align: center;
             margin-top: auto;
-            padding: 12px;
+            padding: 8px 12px;
             background: rgba(0,0,0,0.03);
-            border-radius: 8px;
+            border-radius: 6px;
         }
 
         /* Day 8 Widget Special Styling */
@@ -8611,11 +8612,33 @@
 
             // Вычисляем агрегированную статистику по каждой неделе
             weeks.forEach(week => {
-                week.totalTasks = week.days.reduce((sum, d) => sum + (d.totalTasks || 0), 0);
-                week.completedTasks = week.days.reduce((sum, d) => sum + (d.completedTasks || 0), 0);
-                week.totalExercises = week.days.reduce((sum, d) => sum + (d.totalExercises || 0), 0);
-                week.completedExercises = week.days.reduce((sum, d) => sum + (d.completedExercises || 0), 0);
-                week.percent = week.totalTasks > 0 ? Math.round(week.completedTasks / week.totalTasks * 100) : 0;
+                let weekTotalTasks = 0, weekCompletedTasks = 0;
+                let weekTotalExercises = 0, weekCompletedExercises = 0;
+
+                // Считаем статистику заново для каждого дня недели
+                for (let dayNum = week.startDay; dayNum <= week.endDay; dayNum++) {
+                    const tasks = todoData[dayNum] || [];
+                    const dayTasks = tasks.length;
+                    const dayCompleted = tasks.filter(t => t.completed).length;
+
+                    weekTotalTasks += dayTasks;
+                    weekCompletedTasks += dayCompleted;
+
+                    // Считаем упражнения (исключая отдых)
+                    tasks.forEach(task => {
+                        if (task.exercises) {
+                            const active = task.exercises.filter(ex => !ex.isRest);
+                            weekTotalExercises += active.length;
+                            weekCompletedExercises += active.filter(ex => ex.completed).length;
+                        }
+                    });
+                }
+
+                week.totalTasks = weekTotalTasks;
+                week.completedTasks = weekCompletedTasks;
+                week.totalExercises = weekTotalExercises;
+                week.completedExercises = weekCompletedExercises;
+                week.percent = weekTotalTasks > 0 ? Math.round(weekCompletedTasks / weekTotalTasks * 100) : 0;
 
                 // Находим лучший день недели
                 week.bestDay = week.days.length > 0 ? week.days.reduce((best, d) => d.percent > (best?.percent || 0) ? d : best, null) : null;
