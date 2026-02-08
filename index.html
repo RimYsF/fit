@@ -1973,6 +1973,121 @@
             font-weight: 500;
         }
 
+        /* Недельные слайды */
+        .summary-week-slide {
+            padding-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100%;
+            transition: transform 0.15s ease;
+        }
+
+        .summary-week-slide:active {
+            transform: scale(0.98);
+        }
+
+        .summary-week-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .summary-week-emoji {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .summary-week-name {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            letter-spacing: -1px;
+        }
+
+        .summary-week-dates {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .summary-week-percent {
+            font-size: 72px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -3px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .summary-week-percent.excellent {
+            color: var(--success-green);
+        }
+
+        .summary-week-percent.good {
+            color: var(--neobrut-blue);
+        }
+
+        .summary-week-percent.fair {
+            color: var(--neobrut-orange);
+        }
+
+        .summary-week-stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .summary-week-stat {
+            background: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 12px;
+            padding: 14px 20px;
+            text-align: center;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
+            min-width: 90px;
+        }
+
+        .summary-week-stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--neobrut-black);
+            line-height: 1;
+        }
+
+        .summary-week-stat-label {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .summary-week-best {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--neobrut-black);
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+            margin-bottom: 16px;
+        }
+
+        .summary-week-hint {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: auto;
+            padding: 12px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 8px;
+        }
+
         /* Day 8 Widget Special Styling */
         .summary-day-widget {
             background: linear-gradient(135deg, #ffd9b3 0%, #ffe8cc 50%, #fff0e0 100%) !important;
@@ -8477,6 +8592,38 @@
             };
         }
 
+        // Группировка дней по неделям для итогов
+        function groupDaysByWeeks(summary) {
+            const weeks = [
+                { name: 'Неделя 1', days: [], startDay: 1, endDay: 7, emoji: '1️⃣' },
+                { name: 'Неделя 2', days: [], startDay: 8, endDay: 14, emoji: '2️⃣' },
+                { name: 'Неделя 3', days: [], startDay: 15, endDay: 21, emoji: '3️⃣' },
+                { name: 'Неделя 4', days: [], startDay: 22, endDay: 28, emoji: '4️⃣' }
+            ];
+
+            // Распределяем дни по неделям
+            summary.dayBreakdown.forEach(day => {
+                const weekIndex = Math.floor((day.day - 1) / 7);
+                if (weekIndex >= 0 && weekIndex < weeks.length) {
+                    weeks[weekIndex].days.push(day);
+                }
+            });
+
+            // Вычисляем агрегированную статистику по каждой неделе
+            weeks.forEach(week => {
+                week.totalTasks = week.days.reduce((sum, d) => sum + (d.totalTasks || 0), 0);
+                week.completedTasks = week.days.reduce((sum, d) => sum + (d.completedTasks || 0), 0);
+                week.totalExercises = week.days.reduce((sum, d) => sum + (d.totalExercises || 0), 0);
+                week.completedExercises = week.days.reduce((sum, d) => sum + (d.completedExercises || 0), 0);
+                week.percent = week.totalTasks > 0 ? Math.round(week.completedTasks / week.totalTasks * 100) : 0;
+
+                // Находим лучший день недели
+                week.bestDay = week.days.length > 0 ? week.days.reduce((best, d) => d.percent > (best?.percent || 0) ? d : best, null) : null;
+            });
+
+            return weeks;
+        }
+
         // Показ анимации streak (как в Duolingo)
         function showStreakAnimation() {
             const today = new Date();
@@ -8553,6 +8700,9 @@
 
         // Создать HTML для модального окна итогов
         function createSummaryHtml(summary) {
+            // Группируем дни по неделям
+            const weeks = groupDaysByWeeks(summary);
+
             // Определяем класс результата
             const resultClass = summary.overallPercent >= 75 ? 'excellent' : summary.overallPercent >= 50 ? 'good' : 'fair';
 
@@ -8716,50 +8866,49 @@
                     </div>
                 </div>
 
-                <!-- Слайды 5-11: Дни 1-7 (минималистично) -->
-                ${summary.dayBreakdown.map(d => {
-                    const tasks = todoData[d.day] || [];
-                    const completedTasks = tasks.filter(t => t.completed);
-                    const exercises = getDayExercises(d.day);
-
-                    // Время выполнения последней задачи
-                    let timeText = 'Не выполнено';
-                    if (completedTasks.length > 0) {
-                        const lastTask = completedTasks[completedTasks.length - 1];
-                        if (lastTask.completedAt) {
-                            const time = new Date(lastTask.completedAt);
-                            timeText = time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-                        }
-                    }
+                <!-- Слайды 5-8: Недели (кликабельные) -->
+                ${weeks.map((week, index) => {
+                    const weekClass = week.percent >= 75 ? 'excellent' : week.percent >= 50 ? 'good' : 'fair';
+                    const completedDays = week.days.filter(d => d.percent > 0).length;
+                    const bestDayPercent = week.bestDay ? week.bestDay.percent : 0;
 
                     return `
-                        <div class="summary-carousel-slide summary-day-slide">
-                            <div class="summary-day-header">
-                                <div class="summary-day-number">ДЕНЬ ${d.day}</div>
-                                <div class="summary-day-name">${getWorkoutDayName(d.day)}</div>
+                        <div class="summary-carousel-slide summary-week-slide" data-week="${index}" style="cursor: pointer;">
+                            <div class="summary-week-header">
+                                <div class="summary-week-emoji">${week.emoji}</div>
+                                <div class="summary-week-name">${week.name}</div>
+                                <div class="summary-week-dates">Дни ${week.startDay}-${week.endDay}</div>
                             </div>
 
-                            <div class="summary-day-percent" data-counter="${d.percent}" data-suffix="%">0</div>
+                            <div class="summary-week-percent ${weekClass}" data-counter="${week.percent}" data-suffix="%">0</div>
 
-                            <div class="summary-day-stats">
-                                <div class="summary-day-stat">
-                                    <div class="summary-day-stat-value" data-counter="${completedTasks.length}" data-suffix="/${tasks.length}">0</div>
-                                    <div class="summary-day-stat-label">Задачи</div>
+                            <div class="summary-week-stats">
+                                <div class="summary-week-stat">
+                                    <div class="summary-week-stat-value" data-counter="${week.completedTasks}" data-suffix="/${week.totalTasks}">0</div>
+                                    <div class="summary-week-stat-label">Задачи</div>
                                 </div>
-                                <div class="summary-day-stat">
-                                    <div class="summary-day-stat-value" data-counter="${exercises.completed}" data-suffix="/${exercises.total}">0</div>
-                                    <div class="summary-day-stat-label">Упражнения</div>
+                                <div class="summary-week-stat">
+                                    <div class="summary-week-stat-value" data-counter="${week.completedExercises}" data-suffix="/${week.totalExercises}">0</div>
+                                    <div class="summary-week-stat-label">Упражнения</div>
+                                </div>
+                                <div class="summary-week-stat">
+                                    <div class="summary-week-stat-value" data-counter="${completedDays}" data-suffix="/7">0</div>
+                                    <div class="summary-week-stat-label">Дней</div>
                                 </div>
                             </div>
 
-                            <div class="summary-day-time">
-                                ⏱ ${timeText}
+                            <div class="summary-week-best">
+                                🏆 Лучший: ${bestDayPercent}%
+                            </div>
+
+                            <div class="summary-week-hint">
+                                Нажмите чтобы посмотреть детали
                             </div>
                         </div>
                     `;
                 }).join('')}
 
-                <!-- Слайд 12: Завершающий (Финал) -->
+                <!-- Слайд 9: Завершающий (Финал) -->
                 <div class="summary-carousel-slide summary-motivation-slide">
                     <div class="summary-motivation-emoji">${motivationalEmoji}</div>
                     <div class="summary-motivation-title">${motivationalTitle}</div>
@@ -9995,7 +10144,7 @@
         // Объект для управления каруселью
         const summaryCarousel = {
             currentIndex: 0,
-            totalSlides: 12,
+            totalSlides: 9,
             track: null,
             dots: null,
             overlay: null,
