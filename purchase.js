@@ -388,8 +388,6 @@ async function executePurchase(email) {
             amount: '100.00'
         };
 
-        console.log('📦 Данные для создания платежа:', paymentData);
-
         // Вызываем Edge Function с авторизацией
         const headers = {
             'Content-Type': 'application/json',
@@ -397,9 +395,6 @@ async function executePurchase(email) {
             'Authorization': `Bearer ${PURCHASE_SUPABASE_KEY}`,
             'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
         };
-
-        console.log('🌐 Отправка запроса к Edge Function...');
-        console.log('📤 Заголовки:', headers);
 
         const response = await fetch('https://venkgteszgtpjethpftj.supabase.co/functions/v1/create-payment', {
             method: 'POST',
@@ -543,7 +538,7 @@ function closeWelcomeScreen() {
 /**
  * Начать процесс покупки
  */
-function handlePurchase() {
+async function handlePurchase() {
     console.log('🛒 Начало процесса покупки...');
 
     // Проверяем Telegram WebApp
@@ -567,11 +562,31 @@ function handlePurchase() {
     // Сохраняем пользователя
     currentUser = user;
 
-    console.log('👤 Данные пользователя:', {
-        id: user.id,
-        first_name: user.first_name,
-        username: user.username
-    });
+    // >>> НОВОЕ: Отправить сообщение от бота
+    try {
+        console.log('📨 Отправка сообщения от бота...');
+        const response = await fetch('https://venkgteszgtpjethpftj.supabase.co/functions/v1/send-bot-message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': PURCHASE_SUPABASE_KEY,
+                "Authorization": `Bearer ${PURCHASE_SUPABASE_KEY}`,
+                "X-Telegram-Init-Data": window.Telegram?.WebApp?.initData || ""
+            },
+            body: JSON.stringify({
+                message: 'Привет! Ты нажал кнопку "Продолжить" 💪'
+            })
+        });
+
+        if (response.ok) {
+            console.log('✅ Сообщение от бота отправлено');
+        } else {
+            console.error('⚠️ Ошибка отправки сообщения:', response.status);
+        }
+    } catch (err) {
+        console.error('❌ Ошибка при отправке сообщения:', err);
+    }
+    // <<< КОНЕЦ НОВОГО КОДА
 
     // Показываем модальное окно для ввода email
     showEmailModal();
