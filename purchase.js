@@ -538,7 +538,7 @@ function closeWelcomeScreen() {
 /**
  * Начать процесс покупки
  */
-async function handlePurchase() {
+function handlePurchase() {
     console.log('🛒 Начало процесса покупки...');
 
     // Проверяем Telegram WebApp
@@ -561,32 +561,6 @@ async function handlePurchase() {
 
     // Сохраняем пользователя
     currentUser = user;
-
-    // >>> НОВОЕ: Отправить сообщение от бота
-    try {
-        console.log('📨 Отправка сообщения от бота...');
-        const response = await fetch('https://venkgteszgtpjethpftj.supabase.co/functions/v1/send-bot-message', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': PURCHASE_SUPABASE_KEY,
-                "Authorization": `Bearer ${PURCHASE_SUPABASE_KEY}`,
-                "X-Telegram-Init-Data": window.Telegram?.WebApp?.initData || ""
-            },
-            body: JSON.stringify({
-                message: 'Привет! Ты нажал кнопку "Продолжить" 💪'
-            })
-        });
-
-        if (response.ok) {
-            console.log('✅ Сообщение от бота отправлено');
-        } else {
-            console.error('⚠️ Ошибка отправки сообщения:', response.status);
-        }
-    } catch (err) {
-        console.error('❌ Ошибка при отправке сообщения:', err);
-    }
-    // <<< КОНЕЦ НОВОГО КОДА
 
     // Показываем модальное окно для ввода email
     showEmailModal();
