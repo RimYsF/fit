@@ -4921,37 +4921,22 @@
             transform: scale(1.6);
         }
 
-        /* Чекбокс политики конфиденциальности */
-        .email-modal-privacy {
-            margin: 0.33rem 0;
+        /* Текст соглашения с политикой конфиденциальности */
+        .email-modal-agreement {
+            margin: 1rem 0 0.5rem 0;
+            text-align: center;
         }
 
-        .email-modal-checkbox-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: nowrap;
-            cursor: pointer;
-            font-size: clamp(0.65rem, 2.5vw, 0.95rem);
+        .email-modal-agreement-text {
+            margin: 0;
+            font-size: clamp(0.65rem, 2.5vw, 0.85rem);
             color: var(--neobrut-darkgray);
-        }
-
-        .email-modal-checkbox {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-            margin-left: 0.5rem;
-            accent-color: var(--neobrut-black);
-            cursor: pointer;
-        }
-
-        .email-modal-checkbox-text {
-            flex: 1;
-            min-width: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             line-height: 1.4;
+        }
+
+        .email-modal-help-link {
+            margin: 0.5rem 0 0 0;
+            font-size: clamp(0.65rem, 2.5vw, 0.85rem);
         }
 
         .email-modal-privacy-link {
@@ -5178,12 +5163,10 @@
                     <img src="YUkassa-banner.jpg" alt="ЮКасса" class="yookassa-banner">
                 </div>
 
-                <!-- Чекбокс политики конфиденциальности -->
-                <div class="email-modal-privacy">
-                    <label class="email-modal-checkbox-label">
-                        <span class="email-modal-checkbox-text">Я согласен с <a href="#" id="email-modal-privacy-link" class="email-modal-privacy-link">политикой конфиденциальности</a></span>
-                        <input type="checkbox" id="email-modal-privacy-checkbox" class="email-modal-checkbox">
-                    </label>
+                <!-- Текст соглашения с политикой конфиденциальности -->
+                <div class="email-modal-agreement">
+                    <p class="email-modal-agreement-text">Продолжая, вы соглашаетесь с <a href="#" id="email-modal-privacy-link" class="email-modal-privacy-link">политикой конфиденциальности</a></p>
+                    <p class="email-modal-help-link"><a href="#" id="email-modal-help-link" class="email-modal-privacy-link">нужна помощь?</a></p>
                 </div>
 
                 <p class="email-modal-error" id="email-modal-error"></p>
@@ -12045,7 +12028,7 @@
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=99"></script>
-    <script src="purchase.js?v=100"></script>
+    <script src="purchase.js?v=101"></script>
 </body>
 
 </html>

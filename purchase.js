@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 30 - Добавлена кнопка обновления на экран оплаты
+// ВЕРСИЯ 31 - Убран чекбокс политики, добавлен текст соглашения и ссылка "нужна помощь?"
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=30 loaded - Added refresh button on payment screen');
+console.log('🔄 purchase.js v=31 loaded - Removed checkbox, added agreement text and help link');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key для Edge Functions (специально для платежей)
@@ -12,7 +12,6 @@ const PURCHASE_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJz
 let emailModal = null;
 let emailModalInput = null;
 let emailModalError = null;
-let emailModalPrivacyCheckbox = null;
 let privacyModal = null;
 let currentUser = null;
 let checkInterval = null; // Интервал опроса статуса подписки
@@ -86,8 +85,7 @@ function initEmailModal() {
         });
     }
 
-    // Инициализация чекбокса политики конфиденциальности
-    emailModalPrivacyCheckbox = document.getElementById('email-modal-privacy-checkbox');
+    // Инициализация модального окна политики конфиденциальности
     privacyModal = document.getElementById('privacy-modal');
 
     // Обработчик клика на ссылку политики конфиденциальности
@@ -315,12 +313,6 @@ async function confirmEmailPurchase() {
 
     if (!validateEmail(email)) {
         showInputError('Некорректный формат email');
-        return;
-    }
-
-    // Проверка чекбокса политики конфиденциальности
-    if (emailModalPrivacyCheckbox && !emailModalPrivacyCheckbox.checked) {
-        showInputError('Необходимо согласиться с политикой конфиденциальности');
         return;
     }
 
