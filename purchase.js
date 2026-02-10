@@ -1,8 +1,8 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 26 - Добавлен логотип ЮКассы, чекбокс политики и модальное окно политики
+// ВЕРСИЯ 30 - Добавлена кнопка обновления на экран оплаты
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=29 loaded - Using Edge Function for subscription polling');
+console.log('🔄 purchase.js v=30 loaded - Added refresh button on payment screen');
 console.log('🔧 purchase.js начинает загрузку...');
 
 // Supabase API Key для Edge Functions (специально для платежей)
@@ -455,8 +455,26 @@ async function executePurchase(email) {
                     <p style="font-size: 0.9rem; color: var(--neobrut-darkgray);">
                         Это окно останется открытым для отслеживания статуса оплаты. После успешной оплаты приложение обновится автоматически.
                     </p>
+                    <button id="payment-refresh-btn" class="email-modal-btn email-modal-btn-refresh" style="margin-top: 1rem;">🔄</button>
+                    <p class="payment-refresh-hint">
+                        Если у вас автоматически не открылся главный экран после оплаты, нажмите на кнопку обновления
+                    </p>
                 </div>
             `;
+
+            // Добавляем обработчик для кнопки обновления
+            const refreshBtn = document.getElementById('payment-refresh-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    console.log('🔄 Пользователь нажал кнопку обновления');
+                    // Haptic feedback
+                    if (window.Telegram?.WebApp?.HapticFeedback) {
+                        window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+                    }
+                    // Перезагружаем страницу
+                    location.reload();
+                });
+            }
         }
 
         // Запускаем периодическую проверку статуса подписки
