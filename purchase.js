@@ -1,9 +1,12 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 31 - Убран чекбокс политики, добавлен текст соглашения и ссылка "нужна помощь?"
+// ВЕРСИЯ 32 - Добавлена функция "нужна помощь?" с отправкой сообщения бота
 
 // Проверка загрузки
-console.log('🔄 purchase.js v=31 loaded - Removed checkbox, added agreement text and help link');
+console.log('🔄 purchase.js v=32 loaded - Added help support with bot message');
 console.log('🔧 purchase.js начинает загрузку...');
+
+// Supabase Edge Function URLs
+const SUPPORT_EDGE_FUNCTION_URL = 'https://venkgteszgtpjethpftj.supabase.co/functions/v1/send-support-message';
 
 // Supabase API Key для Edge Functions (специально для платежей)
 const PURCHASE_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmtndGVzemd0cGpldGhwZnRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNTczMDAsImV4cCI6MjA4NDgzMzMwMH0.vxPSCs5M7N7i0J0wGtH1eZqTDNEF3LonlZU3TFvSAwc';
@@ -14,6 +17,45 @@ let emailModalInput = null;
 let emailModalError = null;
 let currentUser = null;
 let checkInterval = null; // Интервал опроса статуса подписки
+
+/**
+ * Запросить поддержку - отправить сообщение от бота
+ */
+async function requestSupport() {
+    console.log('📞 Запрос поддержки...');
+
+    // Haptic feedback
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+    }
+
+    try {
+        const headers = {
+            'Content-Type': 'application/json',
+            'apikey': PURCHASE_SUPABASE_KEY,
+            'Authorization': `Bearer ${PURCHASE_SUPABASE_KEY}`,
+            'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
+        };
+
+        const response = await fetch(SUPPORT_EDGE_FUNCTION_URL, {
+            method: 'POST',
+            headers: headers
+        });
+
+        if (response.ok) {
+            console.log('✅ Сообщение поддержки отправлено');
+        } else {
+            console.error('❌ Ошибка отправки сообщения поддержки:', response.status);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса поддержки:', error);
+    }
+
+    // Закрываем WebApp после запроса поддержки
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.close();
+    }
+}
 
 /**
  * Инициализация модального окна email
@@ -81,6 +123,15 @@ function initEmailModal() {
             closeEmailModal();
             // Закрываем приветственный экран после успешной покупки
             closeWelcomeScreen();
+        });
+    }
+
+    // Ссылка "нужна помощь?"
+    const helpLink = document.getElementById('email-modal-help-link');
+    if (helpLink) {
+        helpLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await requestSupport();
         });
     }
 
