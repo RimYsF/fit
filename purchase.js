@@ -12,7 +12,6 @@ const PURCHASE_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJz
 let emailModal = null;
 let emailModalInput = null;
 let emailModalError = null;
-let privacyModal = null;
 let currentUser = null;
 let checkInterval = null; // Интервал опроса статуса подписки
 
@@ -85,31 +84,6 @@ function initEmailModal() {
         });
     }
 
-    // Инициализация модального окна политики конфиденциальности
-    privacyModal = document.getElementById('privacy-modal');
-
-    // Обработчик клика на ссылку политики конфиденциальности
-    const privacyLink = document.getElementById('email-modal-privacy-link');
-    if (privacyLink) {
-        privacyLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            openPrivacyModal();
-        });
-    }
-
-    // Закрытие модального окна политики конфиденциальности
-    const privacyCloseBtn = document.getElementById('privacy-modal-close');
-    if (privacyCloseBtn && privacyModal) {
-        privacyCloseBtn.addEventListener('click', closePrivacyModal);
-
-        // Закрытие по клику на фон
-        privacyModal.addEventListener('click', (e) => {
-            if (e.target === privacyModal) {
-                closePrivacyModal();
-            }
-        });
-    }
-
     console.log('✅ Email modal обработчики добавлены');
 }
 
@@ -172,36 +146,6 @@ function closeEmailModal() {
 
     emailModal.classList.remove('show');
     console.log('📧 Email modal закрыт');
-
-    // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
-}
-
-/**
- * Открыть модальное окно политики конфиденциальности
- */
-function openPrivacyModal() {
-    if (!privacyModal) return;
-
-    privacyModal.classList.add('active');
-    console.log('📄 Privacy modal открыт');
-
-    // Haptic feedback
-    if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-    }
-}
-
-/**
- * Закрыть модальное окно политики конфиденциальности
- */
-function closePrivacyModal() {
-    if (!privacyModal) return;
-
-    privacyModal.classList.remove('active');
-    console.log('📄 Privacy modal закрыт');
 
     // Haptic feedback
     if (window.Telegram?.WebApp?.HapticFeedback) {

@@ -4950,113 +4950,6 @@
             text-decoration-style: solid;
         }
 
-        /* Модальное окно политики конфиденциальности */
-        .privacy-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 10000;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-        }
-
-        .privacy-modal.active {
-            display: flex;
-        }
-
-        .privacy-modal-content {
-            background: var(--neobrut-white);
-            border: 3px solid var(--neobrut-black);
-            border-radius: 12px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 8px 8px 0 var(--neobrut-black);
-        }
-
-        .privacy-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem 1.5rem;
-            border-bottom: 2px solid var(--neobrut-black);
-            position: sticky;
-            top: 0;
-            background: var(--neobrut-white);
-        }
-
-        .privacy-modal-title {
-            font-size: 1.1rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            margin: 0;
-            color: var(--neobrut-black);
-        }
-
-        .privacy-modal-close {
-            background: var(--neobrut-red);
-            color: var(--neobrut-white);
-            border: 2px solid var(--neobrut-black);
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            font-size: 1.5rem;
-            font-weight: 900;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        .privacy-modal-close:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 4px 4px 0 var(--neobrut-black);
-        }
-
-        .privacy-modal-close:active {
-            transform: translate(0, 0);
-            box-shadow: none;
-        }
-
-        .privacy-modal-body {
-            padding: 1.5rem;
-        }
-
-        .privacy-modal-body h4 {
-            font-size: 0.95rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            margin: 1.25rem 0 0.5rem 0;
-            color: var(--neobrut-black);
-        }
-
-        .privacy-modal-body h4:first-child {
-            margin-top: 0;
-        }
-
-        .privacy-modal-body p,
-        .privacy-modal-body ul {
-            font-size: 0.85rem;
-            line-height: 1.6;
-            color: var(--neobrut-darkgray);
-            margin: 0.5rem 0;
-        }
-
-        .privacy-modal-body ul {
-            padding-left: 1.5rem;
-        }
-
-        .privacy-modal-body li {
-            margin: 0.25rem 0;
-        }
-
     </style>
 </head>
 
@@ -5165,7 +5058,7 @@
 
                 <!-- Текст соглашения с политикой конфиденциальности -->
                 <div class="email-modal-agreement">
-                    <p class="email-modal-agreement-text">Продолжая, вы соглашаетесь с <a href="#" id="email-modal-privacy-link" class="email-modal-privacy-link">политикой конфиденциальности</a></p>
+                    <p class="email-modal-agreement-text">Продолжая, вы соглашаетесь с <a href="https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-02-04-54" target="_blank" class="email-modal-privacy-link">политикой конфиденциальности</a></p>
                     <p class="email-modal-help-link"><a href="#" id="email-modal-help-link" class="email-modal-privacy-link">нужна помощь?</a></p>
                 </div>
 
@@ -5209,52 +5102,6 @@
                     <button class="email-modal-btn email-modal-btn-retry" id="email-modal-retry">Попробовать снова</button>
                     <button class="email-modal-btn email-modal-btn-cancel" id="email-modal-cancel-error">Отмена</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Privacy Policy Modal -->
-    <div class="privacy-modal" id="privacy-modal">
-        <div class="privacy-modal-content">
-            <div class="privacy-modal-header">
-                <h3 class="privacy-modal-title">ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</h3>
-                <button class="privacy-modal-close" id="privacy-modal-close">×</button>
-            </div>
-            <div class="privacy-modal-body">
-                <h4>1. ОБЩИЕ ПОЛОЖЕНИЯ</h4>
-                <p>Используя наше приложение, вы соглашаетесь на обработку ваших персональных данных в соответствии с Федеральным законом №152-ФЗ «О персональных данных».</p>
-
-                <h4>2. КАКИЕ ДАННЫЕ МЫ СОБИРАЕМ</h4>
-                <ul>
-                    <li>Telegram ID, имя пользователя, имя</li>
-                    <li>Email (для отправки чеков)</li>
-                    <li>Информация о покупках и подписке</li>
-                    <li>Технические данные (IP, cookies)</li>
-                </ul>
-
-                <h4>3. ДЛЯ ЧЕГО МЫ ИСПОЛЬЗУЕМ ДАННЫЕ</h4>
-                <ul>
-                    <li>Предоставление доступа к курсам тренировок</li>
-                    <li>Обработка платежей через ЮКассу</li>
-                    <li>Отправка чеков</li>
-                    <li>Техподдержка</li>
-                </ul>
-
-                <h4>4. ПЕРЕДАЧА ДАННЫХ ТРЕТЬИМ ЛИЦАМ</h4>
-                <p>Мы передаем данные только для обеспечения работы сервиса:</p>
-                <ul>
-                    <li>ЮКасса (обработка платежей)</li>
-                    <li>Supabase (хранение данных)</li>
-                </ul>
-
-                <h4>5. ЗАЩИТА ДАННЫХ</h4>
-                <p>Мы используем современные методы защиты: HTTPS, шифрование, защищенные серверы.</p>
-
-                <h4>6. ВАШИ ПРАВА</h4>
-                <p>Вы можете запросить удаление своих данных, написав на: support@fittracker.ru</p>
-
-                <h4>7. ИЗМЕНЕНИЯ</h4>
-                <p>Мы можем обновлять политику. Изменения вступают в силу с момента публикации.</p>
             </div>
         </div>
     </div>
