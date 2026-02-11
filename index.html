@@ -11143,7 +11143,58 @@
                 .join('\n');
         }
 
-        async function generateAIResponse(userMessage) {
+        // Функции для получения данных конкретного дня
+        function getDaySummary(dayNum) {
+            const tasks = todoData[dayNum] || [];
+            const completed = tasks.filter(t => t.completed).length;
+            return `${completed}/${tasks.length} выполнено`;
+        }
+
+        function getDayDetails(dayNum) {
+            const tasks = todoData[dayNum] || [];
+            if (tasks.length === 0) return `День ${dayNum}: Нет задач`;
+
+            const dayName = getWorkoutDayName(dayNum);
+            let result = `\n--- День ${dayNum} (${dayName}) ---`;
+
+            tasks.forEach((t, taskIndex) => {
+                result += `\n${t.completed ? '✅' : '⏳'} Задание ${taskIndex + 1}: ${t.text}`;
+                if (t.exercises && t.exercises.length > 0) {
+                    result += '\n   Упражнения:';
+                    t.exercises.forEach((ex, exIndex) => {
+                        result += `\n      ${exIndex + 1}. ${ex.completed ? '✅' : '⏳'} ${ex.videoUrl ? '🎥 ' : ''}${ex.text}${ex.isRest ? ' (отдых)' : ''}`;
+                    });
+                }
+            });
+            return result;
+        }
+
+        // UI индикаторы для загрузки дня
+        function showDayLoadingIndicator(dayNum) {
+            const dayName = getWorkoutDayName(dayNum);
+            const loadingMsg = `⏳ Загружаю данные дня ${dayName}...`;
+
+            ['chat-messages', 'slider-chat-messages'].forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message ai-message day-loading';
+                msgDiv.id = `day-loading-${containerId}`;
+                msgDiv.innerHTML = `<div class="message-content">${loadingMsg}</div>`;
+                container.appendChild(msgDiv);
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        function hideDayLoadingIndicator() {
+            ['chat-messages', 'slider-chat-messages'].forEach(containerId => {
+                const indicator = document.getElementById(`day-loading-${containerId}`);
+                if (indicator) indicator.remove();
+            });
+        }
+
+        async function generateAIResponse(userMessage, requestedDay = null) {
             const currentWorkoutDay = getCurrentWorkoutDay();
             const today = new Date();
             const dayNames = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
@@ -11161,34 +11212,27 @@
                 showTypingIndicator();
 
                 // Подготовка контекста для Edge Function
+                // Определяем целевой день
+                const targetDay = requestedDay || currentWorkoutDay;
+
                 const userContext = {
                     dateString: dateString,
                     currentWorkoutDay: currentWorkoutDay,
                     workoutDayName: getWorkoutDayName(currentWorkoutDay),
-                    todoData: {
-                        summaries: Object.keys(todoData).map(day => {
-                            const dayNum = parseInt(day);
-                            const tasks = todoData[day] || [];
-                            const completed = tasks.filter(t => t.completed).length;
-                            return `День ${dayNum} (${getWorkoutDayName(dayNum)}): ${completed}/${tasks.length} выполнено`;
-                        }).join('\n'),
-                        details: Object.keys(todoData).map(day => {
-                            const dayNum = parseInt(day);
-                            const tasks = todoData[day] || [];
-                            if (tasks.length === 0) return `\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---\nНет задач`;
-                            return `\n--- День ${dayNum} (${getWorkoutDayName(dayNum)}) ---` +
-                                tasks.map((t, taskIndex) => {
-                                    let taskStr = `\n${t.completed ? '✅' : '⏳'} Задание ${taskIndex + 1}: ${t.text}`;
-                                    if (t.exercises && t.exercises.length > 0) {
-                                        taskStr += '\n   Упражнения:';
-                                        t.exercises.forEach((ex, exIndex) => {
-                                            taskStr += `\n      ${exIndex + 1}. ${ex.completed ? '✅' : '⏳'} ${ex.videoUrl ? '🎥 ' : ''}${ex.text}${ex.isRest ? ' (отдых)' : ''}`;
-                                        });
-                                    }
-                                    return taskStr;
-                                }).join('\n');
-                        }).join('\n')
-                    },
+                    requestedDay: requestedDay || null,
+                    todoData: requestedDay
+                        ? {
+                            summaries: `День ${targetDay}: ${getDaySummary(targetDay)}`,
+                            details: getDayDetails(targetDay),
+                            currentDay: currentWorkoutDay,
+                            requestedDay: targetDay
+                        }
+                        : {
+                            summaries: `День ${currentWorkoutDay}: ${getDaySummary(currentWorkoutDay)}`,
+                            details: getDayDetails(currentWorkoutDay),
+                            currentDay: currentWorkoutDay,
+                            availableDays: Object.keys(todoData).map(d => parseInt(d))
+                        },
                     activeRepost: activeRepost ? {
                         day: activeRepost.day,
                         workoutDayName: getWorkoutDayName(activeRepost.day),
@@ -11232,6 +11276,25 @@
                 }
 
                 const aiMessage = result.response || "Извините, произошла ошибка. Попробуйте еще раз.";
+
+                // Проверяем тег [NEED_DAY:N] для двухэтапного запроса
+                const needDayMatch = aiMessage.match(/\[NEED_DAY:(\d+)\]/);
+                if (needDayMatch) {
+                    const requestedDay = parseInt(needDayMatch[1]);
+                    hideTypingIndicator();
+
+                    // Показываем индикатор загрузки дня
+                    showDayLoadingIndicator(requestedDay);
+
+                    // Повторный запрос с данными запрошенного дня
+                    const followUpResponse = await generateAIResponse(
+                        `[SYSTEM: Пользователь запросил день ${requestedDay}. Данные дня загружены.]`,
+                        requestedDay
+                    );
+
+                    hideDayLoadingIndicator();
+                    return formatAIResponse(followUpResponse.trim());
+                }
 
                 hideTypingIndicator();
                 return formatAIResponse(aiMessage.trim());
