@@ -5370,6 +5370,46 @@
         const USER_MESSAGES_FOR_NEW_CHAT = 10; // Показывать toast после каждого N-го сообщения пользователя
         const NEW_CHAT_TOAST_DURATION = 10000; // 10 секунд
 
+        // AI adaptation constants
+        const AI_METRICS_KEY = 'fitTrackerAIMetrics';
+        const AI_PROFILE_KEY = 'fitTrackerAIProfile';
+
+        // AI adaptation functions
+        function getAIMetrics() {
+            try {
+                const cached = localStorage.getItem(AI_METRICS_KEY);
+                return cached ? JSON.parse(cached) : { communicationMotivation: 50, activityLevel: 50 };
+            } catch (e) {
+                console.error('Ошибка загрузки метрик ИИ:', e);
+                return { communicationMotivation: 50, activityLevel: 50 };
+            }
+        }
+
+        function saveAIMetrics(metrics) {
+            try {
+                localStorage.setItem(AI_METRICS_KEY, JSON.stringify(metrics));
+            } catch (e) {
+                console.error('Ошибка сохранения метрик ИИ:', e);
+            }
+        }
+
+        function getAIProfile() {
+            try {
+                return localStorage.getItem(AI_PROFILE_KEY) || '';
+            } catch (e) {
+                console.error('Ошибка загрузки профиля ИИ:', e);
+                return '';
+            }
+        }
+
+        function saveAIProfile(profile) {
+            try {
+                localStorage.setItem(AI_PROFILE_KEY, profile);
+            } catch (e) {
+                console.error('Ошибка сохранения профиля ИИ:', e);
+            }
+        }
+
         // Функция для экранирования HTML (защита от XSS)
         function escapeHtml(unsafe) {
             return unsafe
@@ -11215,6 +11255,10 @@
                 // Определяем целевой день
                 const targetDay = requestedDay || currentWorkoutDay;
 
+                // Получаем текущие метрики и профиль для адаптации
+                const currentMetrics = getAIMetrics();
+                const currentProfile = getAIProfile();
+
                 const userContext = {
                     dateString: dateString,
                     currentWorkoutDay: currentWorkoutDay,
@@ -11258,7 +11302,9 @@
                     body: JSON.stringify({
                         userMessage: userMessage,
                         userContext: userContext,
-                        chatHistory: chatHistory
+                        chatHistory: chatHistory,
+                        metrics: currentMetrics,
+                        profile: currentProfile
                     })
                 });
 
@@ -11276,6 +11322,14 @@
                 }
 
                 const aiMessage = result.response || "Извините, произошла ошибка. Попробуйте еще раз.";
+
+                // Сохраняем обновлённые метрики и профиль (если они вернулись)
+                if (result.metrics) {
+                    saveAIMetrics(result.metrics);
+                }
+                if (result.profile !== undefined && result.profile !== '') {
+                    saveAIProfile(result.profile);
+                }
 
                 // Проверяем тег [NEED_DAY:N] для двухэтапного запроса
                 const needDayMatch = aiMessage.match(/\[NEED_DAY:(\d+)\]/);
