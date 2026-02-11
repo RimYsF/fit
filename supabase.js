@@ -10,8 +10,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 if (!window.supabaseClient) {
     window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     console.log('✅ Supabase подключен!');
-    console.log('URL:', SUPABASE_URL);
-    console.log('Клиент:', window.supabaseClient);
 }
 
 // Тестовая функция для проверки соединения (теперь через Edge Function)
@@ -26,6 +24,7 @@ testSupabaseConnection();
 
 // Глобальная переменная для кэширования статуса подписки
 window.hasSubscription = null;
+window.subscriptionData = null; // Данные подписки (daysLeft, expires_at)
 
 // Ключ для localStorage кэша подписки
 const SUBSCRIPTION_CACHE_KEY = 'fitTrackerSubscriptionCache';
@@ -34,8 +33,9 @@ const CACHE_TTL = 24 * 60 * 60 * 1000;
 
 /**
  * Получает статус подписки из кэша localStorage
+ * Проверяет срок действия кэша И срок действия подписки
  * @param {number} telegramId - ID пользователя из Telegram
- * @returns {boolean|null} - true/false из кэша, или null если нет в кэше или просрочен
+ * @returns {object|null} - {hasSubscription, daysLeft, expiresAt} или null если нет/просрочен
  */
 function getSubscriptionFromCache(telegramId) {
     if (!telegramId) return null;
@@ -49,16 +49,32 @@ function getSubscriptionFromCache(telegramId) {
         // Проверяем что кэш для этого же пользователя
         if (data.telegramId !== telegramId) return null;
 
-        // Проверяем что кэш не просрочен
         const now = Date.now();
+
+        // Проверяем что кэш не просрочен (24 часа)
         if (now - data.timestamp > CACHE_TTL) {
-            console.log('⏰ Кэш подписки просрочен');
+            console.log('⏰ Кэш подписки просрочен (24ч)');
             localStorage.removeItem(SUBSCRIPTION_CACHE_KEY);
             return null;
         }
 
-        console.log('✅ Подписка из кэша:', data.hasSubscription);
-        return data.hasSubscription;
+        // ПРОВЕРКА СРОКА ПОДПИСКИ
+        // Если в кэше есть expiresAt - проверяем не истекла ли подписка
+        if (data.expiresAt) {
+            const expiresAtTime = new Date(data.expiresAt).getTime();
+            if (now > expiresAtTime) {
+                console.log('⏰ Подписка ИСТЕКЛА - очищаем кэш');
+                localStorage.removeItem(SUBSCRIPTION_CACHE_KEY);
+                return null;
+            }
+        }
+
+        console.log('✅ Подписка из кэша:', data.hasSubscription, 'дней осталось:', data.daysLeft || '?');
+        return {
+            hasSubscription: data.hasSubscription,
+            daysLeft: data.daysLeft,
+            expiresAt: data.expiresAt
+        };
     } catch (err) {
         console.error('❌ Ошибка чтения кэша:', err);
         return null;
@@ -69,18 +85,21 @@ function getSubscriptionFromCache(telegramId) {
  * Сохраняет статус подписки в кэш localStorage
  * @param {number} telegramId - ID пользователя из Telegram
  * @param {boolean} hasSubscription - Статус подписки
+ * @param {object} subscriptionData - Данные подписки {expiresAt, daysLeft}
  */
-function saveSubscriptionToCache(telegramId, hasSubscription) {
+function saveSubscriptionToCache(telegramId, hasSubscription, subscriptionData = null) {
     if (!telegramId) return;
 
     try {
         const data = {
             telegramId: telegramId,
             hasSubscription: hasSubscription,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            expiresAt: subscriptionData?.expiresAt || null,
+            daysLeft: subscriptionData?.daysLeft || null
         };
         localStorage.setItem(SUBSCRIPTION_CACHE_KEY, JSON.stringify(data));
-        console.log('💾 Подписка сохранена в кэш:', hasSubscription);
+        console.log('💾 Подписка сохранена в кэш:', hasSubscription, 'до:', data.expiresAt);
     } catch (err) {
         console.error('❌ Ошибка сохранения кэша:', err);
     }
@@ -106,11 +125,12 @@ async function checkSubscriptionStatus(telegramId) {
         return false;
     }
 
-    // Проверяем кэш
+    // Проверяем кэш (теперь возвращает объект или null)
     const cached = getSubscriptionFromCache(telegramId);
     if (cached !== null) {
-        window.hasSubscription = cached;
-        return cached;
+        window.hasSubscription = cached.hasSubscription;
+        window.subscriptionData = cached;
+        return cached.hasSubscription;
     }
 
     try {
@@ -142,12 +162,16 @@ async function checkSubscriptionStatus(telegramId) {
         const hasSub = result.hasSubscription;
         window.hasSubscription = hasSub;
 
-        // Сохраняем в кэш
-        saveSubscriptionToCache(telegramId, hasSub);
-
-        if (hasSub) {
-            console.log('✅ Активная подписка найдена');
+        // Сохраняем в кэш с данными о сроке
+        if (hasSub && result.data) {
+            window.subscriptionData = result.data;
+            saveSubscriptionToCache(telegramId, hasSub, {
+                expiresAt: result.data.expires_at,
+                daysLeft: result.data.daysLeft
+            });
+            console.log('✅ Активная подписка найдена, дней до окончания:', result.data.daysLeft);
         } else {
+            saveSubscriptionToCache(telegramId, hasSub);
             console.log('⚠️ Подписка не найдена для telegram_id:', telegramId);
         }
 
