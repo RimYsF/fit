@@ -5367,7 +5367,7 @@
         // Chat history constants
         const CHAT_HISTORY_KEY = 'fitTrackerChatHistory';
         const MAX_CHAT_HISTORY = 15;
-        const USER_MESSAGES_FOR_NEW_CHAT = 10; // Показывать toast после каждого N-го сообщения пользователя
+        const USER_MESSAGES_FOR_NEW_CHAT = 20; // Показывать toast после каждого N-го сообщения пользователя
         const NEW_CHAT_TOAST_DURATION = 10000; // 10 секунд
 
         // AI adaptation constants
@@ -5395,19 +5395,29 @@
 
         function getAIProfile() {
             try {
-                return localStorage.getItem(AI_PROFILE_KEY) || '';
+                const cached = localStorage.getItem(AI_PROFILE_KEY);
+                return cached ? JSON.parse(cached) : {};
             } catch (e) {
                 console.error('Ошибка загрузки профиля ИИ:', e);
-                return '';
+                return {};
             }
         }
 
         function saveAIProfile(profile) {
             try {
-                localStorage.setItem(AI_PROFILE_KEY, profile);
+                localStorage.setItem(AI_PROFILE_KEY, JSON.stringify(profile));
             } catch (e) {
                 console.error('Ошибка сохранения профиля ИИ:', e);
             }
+        }
+
+        // Применяет изменения к профилю (дифференциальное обновление)
+        function mergeProfile(updates) {
+            const current = getAIProfile();
+            const merged = { ...current, ...updates };
+            saveAIProfile(merged);
+            console.log('🔄 Profile merged:', { old: current, updates, new: merged });
+            return merged;
         }
 
         // Функция для экранирования HTML (защита от XSS)
@@ -10908,8 +10918,9 @@
             chatHistory = [];
             saveChatHistory();
 
-            // ВАЖНО: НЕ сбрасываем userMessageCount - чтобы toast "Новый чат"
-            // продолжал появляться каждые 10 сообщений, напоминая о функции профиля
+            // Сбрасываем счётчик сообщений для НОВОГО чата
+            // Теперь toast будет появляться каждые 10 сообщений НОВОГО чата
+            userMessageCount = 0;
 
             // Очищаем UI
             const overlayMessages = document.getElementById('chat-messages');
@@ -11261,11 +11272,15 @@
                 const currentMetrics = getAIMetrics();
                 const currentProfile = getAIProfile();
 
+                // Определяем новый чат или нет (пустая история или только приветствие)
+                const isNewChat = chatHistory.length <= 1;
+
                 const userContext = {
                     dateString: dateString,
                     currentWorkoutDay: currentWorkoutDay,
                     workoutDayName: getWorkoutDayName(currentWorkoutDay),
                     requestedDay: requestedDay || null,
+                    isNewChat: isNewChat,  // Флаг для AI - знает когда новый чат
                     todoData: requestedDay
                         ? {
                             summaries: `День ${targetDay}: ${getDaySummary(targetDay)}`,
@@ -11291,54 +11306,83 @@
                     activeDaysCount: Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length
                 };
 
-                // Вызов Supabase Edge Function
-                const response = await fetch(AI_CHAT_EDGE_FUNCTION_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'x-client-info': 'supabase-js/2.39.7',
-                        'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
-                    },
-                    body: JSON.stringify({
-                        userMessage: userMessage,
-                        userContext: userContext,
-                        chatHistory: chatHistory,
-                        metrics: currentMetrics,
-                        profile: currentProfile
-                    })
-                });
+                // Вызов Supabase Edge Function с retry логикой
+                let aiResponse = null;
+                let lastError = null;
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                    console.error('Edge Function Error:', errorData);
-                    throw new Error(`Edge Function Error: ${response.status} - ${errorData.error || response.statusText}`);
+                // Пробуем до 3 раз с интервалами
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 сек timeout
+
+                        const response = await fetch(AI_CHAT_EDGE_FUNCTION_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                                'x-client-info': 'supabase-js/2.39.7',
+                                'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
+                            },
+                            body: JSON.stringify({
+                                userMessage: userMessage,
+                                userContext: userContext,
+                                chatHistory: chatHistory,
+                                metrics: currentMetrics,
+                                profile: currentProfile
+                            }),
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        if (!response.ok) {
+                            // Если это не timeout - сохраняем ошибку для retry
+                            if (!response.statusText.includes('fetch')) {
+                                lastError = `Edge Function Error: ${response.status}`;
+                            }
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+
+                        const result = await response.json();
+
+                        if (result.error) {
+                            lastError = result.error;
+                            throw new Error(result.error);
+                        }
+
+                        // Успех! Сохраняем результат
+                        aiResponse = result;
+                        break; // Выходим из цикла retry
+
+                    } catch (error) {
+                        console.warn(`Попытка ${attempt} не удалась:`, error.message);
+
+                        // Если это последняя попытка - выбрасываем ошибку
+                        if (attempt === 3) {
+                            lastError = lastError || error.message || 'Timeout';
+                            throw new Error(`Не удалось получить ответ после 3 попыток: ${lastError}`);
+                        }
+
+                        // Пауза перед следующей попыткой (1 сек)
+                        if (attempt < 3) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
                 }
 
-                const result = await response.json();
-
-                if (result.error) {
-                    console.error('AI Chat Error:', result.error);
-                    throw new Error(result.error);
-                }
-
-                const aiMessage = result.response || "Извините, произошла ошибка. Попробуйте еще раз.";
+                const aiMessage = aiResponse.response || "Извините, произошла ошибка. Попробуйте еще раз.";
 
                 // Сохраняем обновлённые метрики и профиль (если они вернулись)
-                if (result.metrics) {
-                    console.log('📊 Saving AI metrics:', result.metrics);
-                    saveAIMetrics(result.metrics);
+                if (aiResponse.metrics) {
+                    console.log('📊 Saving AI metrics:', aiResponse.metrics);
+                    saveAIMetrics(aiResponse.metrics);
                 }
-                if (result.profile !== undefined && result.profile !== '') {
-                    console.log('👤 Saving AI profile:', {
-                        received: result.profile,
-                        previous: currentProfile,
-                        length: result.profile.length
-                    });
-                    saveAIProfile(result.profile);
-                } else {
-                    console.log('⚠️ AI profile not saved (empty or undefined). Received:', result.profile);
+                // 🔄 Дифференциальное обновление профиля (только изменения!)
+                if (aiResponse.profile && Object.keys(aiResponse.profile).length > 0) {
+                    console.log('🔄 Merging AI profile updates:', aiResponse.profile);
+                    mergeProfile(aiResponse.profile);
                 }
 
                 // Проверяем тег [NEED_DAY:N] для двухэтапного запроса
@@ -11365,7 +11409,22 @@
             } catch (error) {
                 console.error('AI API Error:', error);
                 hideTypingIndicator();
-                // Fallback ответы при ошибке API
+
+                // Проверяем тип ошибки
+                const errorMsg = error?.message || String(error);
+
+                // Если это таймаут или обрыв соединения - это проблема Edge Function
+                if (errorMsg.includes('fetch') || errorMsg.includes('timeout') ||
+                    errorMsg.includes('Edge Function') || errorMsg.includes('API Error')) {
+                    const timeoutResponses = [
+                        "⏳ AI долго думает... Попробуйте ещё раз.",
+                        "⏳ Кажется, ответ застрял. Нажмите ещё раз.",
+                        "⏳ Проблема с соединением. Попробуйте через минуту."
+                    ];
+                    return timeoutResponses[Math.floor(Math.random() * timeoutResponses.length)];
+                }
+
+                // Fallback ответы при других ошибках
                 const fallbackResponses = [
                     "Произошла ошибка подключения. Давайте я помогу своими силами!",
                     "Не удалось связаться с AI. Попробуйте еще раз через минуту.",
