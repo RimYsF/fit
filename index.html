@@ -10904,10 +10904,12 @@
             // Скрываем toast
             hideNewChatToast();
 
-            // Очищаем историю
+            // Очищаем историю чата (сообщения)
             chatHistory = [];
-            userMessageCount = 0; // Сбрасываем счётчик
             saveChatHistory();
+
+            // ВАЖНО: НЕ сбрасываем userMessageCount - чтобы toast "Новый чат"
+            // продолжал появляться каждые 10 сообщений, напоминая о функции профиля
 
             // Очищаем UI
             const overlayMessages = document.getElementById('chat-messages');
@@ -11325,10 +11327,18 @@
 
                 // Сохраняем обновлённые метрики и профиль (если они вернулись)
                 if (result.metrics) {
+                    console.log('📊 Saving AI metrics:', result.metrics);
                     saveAIMetrics(result.metrics);
                 }
                 if (result.profile !== undefined && result.profile !== '') {
+                    console.log('👤 Saving AI profile:', {
+                        received: result.profile,
+                        previous: currentProfile,
+                        length: result.profile.length
+                    });
                     saveAIProfile(result.profile);
+                } else {
+                    console.log('⚠️ AI profile not saved (empty or undefined). Received:', result.profile);
                 }
 
                 // Проверяем тег [NEED_DAY:N] для двухэтапного запроса
