@@ -93,7 +93,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('fantasy-bg-new.jpg') center/cover no-repeat;
+            background: url('GG.jpg') center/cover no-repeat;
             z-index: -1;
         }
 
@@ -4091,7 +4091,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('fantasy-bg-new.jpg') center/cover no-repeat;
+            background: url('GG.jpg') center/cover no-repeat;
             z-index: 10000;
             opacity: 1;
             transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
@@ -5370,18 +5370,17 @@
         const USER_MESSAGES_FOR_NEW_CHAT = 20; // Показывать toast после каждого N-го сообщения пользователя
         const NEW_CHAT_TOAST_DURATION = 10000; // 10 секунд
 
-        // AI adaptation constants
+        // AI adaptation constants - только два показателя
         const AI_METRICS_KEY = 'fitTrackerAIMetrics';
-        const AI_PROFILE_KEY = 'fitTrackerAIProfile';
 
-        // AI adaptation functions
+        // AI metrics functions - общительность и разговорчивость
         function getAIMetrics() {
             try {
                 const cached = localStorage.getItem(AI_METRICS_KEY);
-                return cached ? JSON.parse(cached) : { communicationMotivation: 50, activityLevel: 50 };
+                return cached ? JSON.parse(cached) : { sociability: 50, talkativeness: 50 };
             } catch (e) {
                 console.error('Ошибка загрузки метрик ИИ:', e);
-                return { communicationMotivation: 50, activityLevel: 50 };
+                return { sociability: 50, talkativeness: 50 };
             }
         }
 
@@ -5391,33 +5390,6 @@
             } catch (e) {
                 console.error('Ошибка сохранения метрик ИИ:', e);
             }
-        }
-
-        function getAIProfile() {
-            try {
-                const cached = localStorage.getItem(AI_PROFILE_KEY);
-                return cached ? JSON.parse(cached) : {};
-            } catch (e) {
-                console.error('Ошибка загрузки профиля ИИ:', e);
-                return {};
-            }
-        }
-
-        function saveAIProfile(profile) {
-            try {
-                localStorage.setItem(AI_PROFILE_KEY, JSON.stringify(profile));
-            } catch (e) {
-                console.error('Ошибка сохранения профиля ИИ:', e);
-            }
-        }
-
-        // Применяет изменения к профилю (дифференциальное обновление)
-        function mergeProfile(updates) {
-            const current = getAIProfile();
-            const merged = { ...current, ...updates };
-            saveAIProfile(merged);
-            console.log('🔄 Profile merged:', { old: current, updates, new: merged });
-            return merged;
         }
 
         // Функция для экранирования HTML (защита от XSS)
@@ -11268,9 +11240,8 @@
                 // Определяем целевой день
                 const targetDay = requestedDay || currentWorkoutDay;
 
-                // Получаем текущие метрики и профиль для адаптации
+                // Получаем текущие метрики для адаптации
                 const currentMetrics = getAIMetrics();
-                const currentProfile = getAIProfile();
 
                 // Определяем новый чат или нет (пустая история или только приветствие)
                 const isNewChat = chatHistory.length <= 1;
@@ -11280,30 +11251,7 @@
                     currentWorkoutDay: currentWorkoutDay,
                     workoutDayName: getWorkoutDayName(currentWorkoutDay),
                     requestedDay: requestedDay || null,
-                    isNewChat: isNewChat,  // Флаг для AI - знает когда новый чат
-                    todoData: requestedDay
-                        ? {
-                            summaries: `День ${targetDay}: ${getDaySummary(targetDay)}`,
-                            details: getDayDetails(targetDay),
-                            currentDay: currentWorkoutDay,
-                            requestedDay: targetDay
-                        }
-                        : {
-                            summaries: `День ${currentWorkoutDay}: ${getDaySummary(currentWorkoutDay)}`,
-                            details: getDayDetails(currentWorkoutDay),
-                            currentDay: currentWorkoutDay,
-                            availableDays: Object.keys(todoData).map(d => parseInt(d))
-                        },
-                    activeRepost: activeRepost ? {
-                        day: activeRepost.day,
-                        workoutDayName: getWorkoutDayName(activeRepost.day),
-                        taskName: activeRepost.taskName,
-                        exerciseText: activeRepost.exerciseText
-                    } : null,
-                    completionPercentage: currentWorkoutDay > totalDays
-                        ? calculateWeeklySummary().overallPercent
-                        : calculateCompletionPercentage(currentWorkoutDay),
-                    activeDaysCount: Object.keys(activityData).filter(date => activityData[date] && activityData[date] !== 'none').length
+                    isNewChat: isNewChat  // Флаг для AI - знает когда новый чат
                 };
 
                 // Вызов Supabase Edge Function с retry логикой
@@ -11329,8 +11277,7 @@
                                 userMessage: userMessage,
                                 userContext: userContext,
                                 chatHistory: chatHistory,
-                                metrics: currentMetrics,
-                                profile: currentProfile
+                                metrics: currentMetrics
                             }),
                             signal: controller.signal
                         });
@@ -11374,15 +11321,10 @@
 
                 const aiMessage = aiResponse.response || "Извините, произошла ошибка. Попробуйте еще раз.";
 
-                // Сохраняем обновлённые метрики и профиль (если они вернулись)
+                // Сохраняем обновлённые метрики (если они вернулись)
                 if (aiResponse.metrics) {
                     console.log('📊 Saving AI metrics:', aiResponse.metrics);
                     saveAIMetrics(aiResponse.metrics);
-                }
-                // 🔄 Дифференциальное обновление профиля (только изменения!)
-                if (aiResponse.profile && Object.keys(aiResponse.profile).length > 0) {
-                    console.log('🔄 Merging AI profile updates:', aiResponse.profile);
-                    mergeProfile(aiResponse.profile);
                 }
 
                 // Проверяем тег [NEED_DAY:N] для двухэтапного запроса
