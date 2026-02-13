@@ -160,6 +160,7 @@
             contain: layout style;
             will-change: height;
             pointer-events: none;
+            background: rgba(255, 255, 255, 0.3);
         }
 
         body.dragging-mode .activity-section > * {
@@ -2362,6 +2363,8 @@
             z-index: 1;
             will-change: transform;
             touch-action: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .divider-button:hover {
@@ -2373,6 +2376,12 @@
         .divider-button:active {
             transform: translate(-50%, -50%) scale(0.95);
             box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .divider-button:focus,
+        .divider-button:focus-visible {
+            outline: none;
+            box-shadow: 3px 3px 0 var(--neobrut-black);
         }
 
         /* Нижняя секция с активностью */
