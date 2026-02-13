@@ -2741,6 +2741,60 @@
             transition: all 0.2s;
             position: relative;
             touch-action: manipulation;
+            will-change: auto;
+        }
+
+        /* Предотвращаем лаги activity-cell при перетаскивании разделителя */
+        body.dragging-mode .activity-cell {
+            transition: none !important;
+            will-change: auto;
+        }
+
+        body.dragging-mode .activity-cell .date-number {
+            transform: translate(-50%, -50%) !important;
+            will-change: auto;
+        }
+
+        /* Предотвращаем лаги для today ячейки при перетаскивании */
+        body.dragging-mode .activity-cell.today,
+        body.dragging-mode .activity-cell.today:hover,
+        body.dragging-mode .activity-cell.today:active {
+            will-change: auto;
+        }
+
+        /* Предотвращаем лаги структуры календаря при перетаскивании */
+        body.dragging-mode .calendar-month {
+            contain: layout style;
+            will-change: auto;
+        }
+
+        body.dragging-mode .calendar-week {
+            contain: layout style;
+            will-change: auto;
+        }
+
+        body.dragging-mode .calendar-weekday {
+            will-change: auto;
+        }
+
+        body.dragging-mode .calendar-month-header {
+            will-change: auto;
+        }
+
+        /* Предотвращаем лаги кнопок календаря при перетаскивании */
+        body.dragging-mode .reset-btn,
+        body.dragging-mode .reset-btn:hover,
+        body.dragging-mode .reset-btn:active {
+            transition: none !important;
+            will-change: auto;
+        }
+
+        body.dragging-mode .year-nav {
+            will-change: auto;
+        }
+
+        body.dragging-mode .current-year {
+            will-change: auto;
         }
 
         /* Эффекты для ячеек с активностью */
