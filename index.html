@@ -163,6 +163,47 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        /* Предотвращаем мигание activity-grid-vertical при перетаскивании */
+        body.dragging-mode .activity-grid-vertical {
+            contain: layout style;
+            will-change: height;
+        }
+
+        /* Предотвращаем мигание слайдера при перетаскивании */
+        body.dragging-mode .activity-slider {
+            contain: layout style;
+            will-change: height;
+        }
+
+        /* Предотвращаем мигание calendar-container при перетаскивании */
+        body.dragging-mode .calendar-container {
+            contain: layout style;
+            transition: none !important;
+        }
+
+        body.dragging-mode .calendar-wrapper {
+            contain: layout style;
+            will-change: height;
+        }
+
+        /* Предотвращаем мигание виджетов задач при перетаскивании */
+        body.dragging-mode .tasks-container {
+            contain: layout style;
+            will-change: height;
+        }
+
+        body.dragging-mode .task-day-widget {
+            contain: layout style;
+            will-change: auto;
+        }
+
+        body.dragging-mode .task-day-widget,
+        body.dragging-mode .task-day-widget:hover,
+        body.dragging-mode .task-day-widget:active,
+        body.dragging-mode .task-day-widget.current {
+            transition: none !important;
+        }
+
         body.dragging-mode .activity-section > * {
             pointer-events: auto;
         }
