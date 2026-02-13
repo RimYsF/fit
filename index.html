@@ -2781,6 +2781,20 @@
             will-change: auto;
         }
 
+        /* Предотвращаем лаги и автоскролл календаря при перетаскивании */
+        body.dragging-mode .calendar-wrapper {
+            contain: layout style;
+            overflow: hidden !important;
+        }
+
+        body.dragging-mode .calendar-months {
+            contain: layout style;
+            overflow: hidden !important;
+            overscroll-behavior: contain;
+            scroll-behavior: auto;
+            max-height: 100%;
+        }
+
         /* Предотвращаем лаги кнопок календаря при перетаскивании */
         body.dragging-mode .reset-btn,
         body.dragging-mode .reset-btn:hover,
@@ -11672,14 +11686,15 @@
         // Переменные для плавной интерполяции (lerp)
         let targetHeight = 0;
         let currentHeight = 0;
-        const lerpFactor = 0.18; // Плавное отставание для минимизации лагов
+        const lerpFactor = 0.3; // Более быстрое реагирование для меньшего количества кадров
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
             minTopHeight: 60,
             minBottomHeight: 200,
             dividerHeight: 0,
-            viewportHeight: 0
+            viewportHeight: 0,
+            calendarScrollTop: 0
         };
 
         const dividerButton = document.querySelector('.divider-button');
@@ -11706,6 +11721,12 @@
         function cacheMeasurements() {
             cachedMeasurements.viewportHeight = window.innerHeight;
             cachedMeasurements.dividerHeight = divider.getBoundingClientRect().height;
+
+            // Сохраняем позицию скролла календаря чтобы не сбрасывать при перетаскивании
+            const calendarMonths = document.getElementById('calendar-months');
+            if (calendarMonths) {
+                cachedMeasurements.calendarScrollTop = calendarMonths.scrollTop;
+            }
 
             if (!hasCalendarChecked) {
                 cachedDayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
@@ -11739,17 +11760,26 @@
         }
 
         // Функция обновления через RAF (работает на 60fps автоматически)
+        let lastAppliedHeight = 0;
         function updateFrame() {
             // Плавно двигаем текущую высоту к цели
             currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
 
-            // Применяем текущую высоту
-            workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+            // Применяем только если изменение значимое (больше 0.5px)
+            if (Math.abs(currentHeight - lastAppliedHeight) > 0.5) {
+                workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                lastAppliedHeight = currentHeight;
+            }
 
             // Продолжаем цикл пока перетаскиваем
             if (isDragging) {
                 rafId = requestAnimationFrame(updateFrame);
             }
+        }
+
+        // Сбрасываем lastAppliedHeight при начале перетаскивания
+        function resetLastAppliedHeight() {
+            lastAppliedHeight = currentHeight = startTopHeight;
         }
 
         // Обновляем целевую позицию
@@ -11766,6 +11796,7 @@
             startTopHeight = workoutSection.getBoundingClientRect().height;
             currentHeight = startTopHeight;
             targetHeight = startTopHeight;
+            resetLastAppliedHeight();
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
             document.body.classList.add('dragging-mode');
@@ -11798,6 +11829,11 @@
                         requestAnimationFrame(finishAnimation);
                     } else {
                         workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                        // Восстанавливаем позицию скролла календаря
+                        const calendarMonths = document.getElementById('calendar-months');
+                        if (calendarMonths && cachedMeasurements.calendarScrollTop !== undefined) {
+                            calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                        }
                         // Убираем dragging-mode ПОСЛЕ завершения анимации
                         document.body.style.cursor = '';
                         document.body.style.userSelect = '';
@@ -11817,6 +11853,7 @@
             startTopHeight = workoutSection.getBoundingClientRect().height;
             currentHeight = startTopHeight;
             targetHeight = startTopHeight;
+            resetLastAppliedHeight();
             document.body.classList.add('dragging-mode');
             workoutSection.classList.add('dragging');
             cacheMeasurements();
@@ -11847,6 +11884,11 @@
                         requestAnimationFrame(finishAnimation);
                     } else {
                         workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                        // Восстанавливаем позицию скролла календаря
+                        const calendarMonths = document.getElementById('calendar-months');
+                        if (calendarMonths && cachedMeasurements.calendarScrollTop !== undefined) {
+                            calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                        }
                         // Убираем dragging-mode ПОСЛЕ завершения анимации
                         document.body.classList.remove('dragging-mode');
                         workoutSection.classList.remove('dragging');
