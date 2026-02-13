@@ -157,43 +157,36 @@
 
         /* Оптимизация для activity-section при перетаскивании */
         body.dragging-mode .activity-section {
-            contain: layout style;
-            will-change: height;
             pointer-events: none;
             background: rgba(255, 255, 255, 0.3);
         }
 
         /* Предотвращаем мигание activity-grid-vertical при перетаскивании */
         body.dragging-mode .activity-grid-vertical {
-            contain: layout style;
-            will-change: height;
+            will-change: auto;
         }
 
         /* Предотвращаем мигание слайдера при перетаскивании */
         body.dragging-mode .activity-slider {
-            contain: layout style;
-            will-change: height;
+            will-change: auto;
         }
 
         /* Предотвращаем мигание calendar-container при перетаскивании */
         body.dragging-mode .calendar-container {
-            contain: layout style;
             transition: none !important;
         }
 
+        /* НЕ используем contain и will-change для calendar-wrapper - это сбрасывает скролл! */
         body.dragging-mode .calendar-wrapper {
-            contain: layout style;
-            will-change: height;
+            will-change: auto;
         }
 
         /* Предотвращаем мигание виджетов задач при перетаскивании */
         body.dragging-mode .tasks-container {
-            contain: layout style;
-            will-change: height;
+            will-change: auto;
         }
 
         body.dragging-mode .task-day-widget {
-            contain: layout style;
             will-change: auto;
         }
 
@@ -2764,12 +2757,10 @@
 
         /* Предотвращаем лаги структуры календаря при перетаскивании */
         body.dragging-mode .calendar-month {
-            contain: layout style;
             will-change: auto;
         }
 
         body.dragging-mode .calendar-week {
-            contain: layout style;
             will-change: auto;
         }
 
@@ -2781,18 +2772,13 @@
             will-change: auto;
         }
 
-        /* Предотвращаем лаги и автоскролл календаря при перетаскивании */
+        /* НЕ меняем overflow у календаря - это сбрасывает позицию скролла! */
         body.dragging-mode .calendar-wrapper {
-            contain: layout style;
-            overflow: hidden !important;
+            will-change: auto;
         }
 
         body.dragging-mode .calendar-months {
-            contain: layout style;
-            overflow: hidden !important;
-            overscroll-behavior: contain;
-            scroll-behavior: auto;
-            max-height: 100%;
+            will-change: auto;
         }
 
         /* Предотвращаем лаги кнопок календаря при перетаскивании */
@@ -11722,10 +11708,12 @@
             cachedMeasurements.viewportHeight = window.innerHeight;
             cachedMeasurements.dividerHeight = divider.getBoundingClientRect().height;
 
-            // Сохраняем позицию скролла календаря чтобы не сбрасывать при перетаскивании
+            // Фиксируем высоту calendar-months чтобы не сбрасывался скролл
             const calendarMonths = document.getElementById('calendar-months');
             if (calendarMonths) {
                 cachedMeasurements.calendarScrollTop = calendarMonths.scrollTop;
+                cachedMeasurements.calendarMonthsHeight = calendarMonths.offsetHeight + 'px';
+                calendarMonths.style.height = cachedMeasurements.calendarMonthsHeight;
             }
 
             if (!hasCalendarChecked) {
@@ -11829,10 +11817,15 @@
                         requestAnimationFrame(finishAnimation);
                     } else {
                         workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
-                        // Восстанавливаем позицию скролла календаря
+                        // Восстанавливаем высоту и позицию скролла календаря
                         const calendarMonths = document.getElementById('calendar-months');
-                        if (calendarMonths && cachedMeasurements.calendarScrollTop !== undefined) {
-                            calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                        if (calendarMonths) {
+                            // Сначала восстанавливаем высоту
+                            calendarMonths.style.height = '';
+                            // Затем восстанавливаем скролл
+                            if (cachedMeasurements.calendarScrollTop !== undefined) {
+                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                            }
                         }
                         // Убираем dragging-mode ПОСЛЕ завершения анимации
                         document.body.style.cursor = '';
@@ -11884,10 +11877,13 @@
                         requestAnimationFrame(finishAnimation);
                     } else {
                         workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
-                        // Восстанавливаем позицию скролла календаря
+                        // Восстанавливаем высоту и позицию скролла календаря
                         const calendarMonths = document.getElementById('calendar-months');
-                        if (calendarMonths && cachedMeasurements.calendarScrollTop !== undefined) {
-                            calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                        if (calendarMonths) {
+                            calendarMonths.style.height = '';
+                            if (cachedMeasurements.calendarScrollTop !== undefined) {
+                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                            }
                         }
                         // Убираем dragging-mode ПОСЛЕ завершения анимации
                         document.body.classList.remove('dragging-mode');
