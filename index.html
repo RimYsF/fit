@@ -11840,10 +11840,11 @@
         // Функция обновления через RAF (работает на 60fps автоматически)
         let lastAppliedHeight = 0;
         let frameCount = 0;
+        let endDrag = false; // Флаг для завершения перетаскивания с плавной доводкой
+
         function updateFrame() {
             frameCount++;
             // Применяем целевую высоту напрямую БЕЗ интерполяции - быстрее на мобильных
-            // УМЕНЬШЕН ПОРОГ с 0.5 до 0.1 для плавности - предотвращает ступенчатость
             if (Math.abs(targetHeight - lastAppliedHeight) > 0.1) {
                 workoutSection.style.height = targetHeight + 'px';
                 lastAppliedHeight = targetHeight;
@@ -11853,14 +11854,26 @@
                     console.log('🔄 Frame update:', {
                         frame: frameCount,
                         targetHeight: targetHeight.toFixed(1),
-                        appliedHeight: lastAppliedHeight.toFixed(1)
+                        appliedHeight: lastAppliedHeight.toFixed(1),
+                        isDragging: isDragging,
+                        endDrag: endDrag
                     });
                 }
             }
 
-            // Продолжаем цикл пока перетаскиваем
+            // Продолжаем цикл пока перетаскиваем ИЛИ завершаем плавно
             if (isDragging) {
                 rafId = requestAnimationFrame(updateFrame);
+            } else if (endDrag) {
+                // Проверяем, высота установилась
+                if (Math.abs(targetHeight - lastAppliedHeight) < 0.1) {
+                    // Высота установлена, можно завершать
+                    endDrag = false;
+                    console.log('✅ Height settled, endDrag complete');
+                } else {
+                    // Продолжаем доводить высоту
+                    rafId = requestAnimationFrame(updateFrame);
+                }
             }
         }
 
@@ -11886,6 +11899,7 @@
             });
 
             isDragging = true;
+            endDrag = false; // Сбрасываем флаг завершения
             startY = e.clientY;
             currentY = e.clientY;
             startTopHeight = workoutSection.getBoundingClientRect().height;
@@ -11922,52 +11936,48 @@
                     finalHeight: targetHeight.toFixed(1)
                 });
 
-                // КЛЮЧЕВОЕ: Сначала устанавливаем флаг завершения, но НЕ отменяем RAF
-                // RAF сам естественным образом завершится на следующем кадре
+                // КЛЮЧЕВОЕ: Устанавливаем флаг завершения RAF, НО НЕ применяем высоту синхронно!
                 isDragging = false;
-                console.log('✅ Dragging flag set to false - RAF will finish naturally');
+                endDrag = true; // Запускаем плавную доводку высоты
+                console.log('✅ isDragging=false, endDrag=true - RAF will finish smoothly');
 
-                // Используем двойной RAF для отложенного применения финального состояния
-                // Это позволяет браузеру отрисовать последний кадр drag-анимации
-                requestAnimationFrame(() => {
-                    console.log('🔄 First RAF after drag end');
-                    // Теперь применяем финальную высоту
-                    workoutSection.style.height = targetHeight + 'px';
-                    console.log('📏 Final height applied via RAF:', targetHeight.toFixed(1) + 'px');
+                // НЕ применяем высоту синхронно - пусть RAF сам догонит!
+                // НЕ восстанавливаем календарь синхронно - сделаем это позже!
 
-                    // Восстанавливаем состояние календаря
-                    const calendarMonths = document.getElementById('calendar-months');
-                    if (calendarMonths) {
-                        calendarMonths.style.height = '';
-                        if (cachedMeasurements.calendarScrollTop !== undefined) {
-                            calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
-                        }
-                        console.log('📅 Calendar restored via RAF');
-                    }
+                // Отложенное удаление классов через setTimeout (после завершения RAF)
+                setTimeout(() => {
+                    console.log('🔄 Removing classes after RAF settled');
+                    workoutSection.classList.remove('dragging');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                    document.body.classList.remove('dragging-mode');
 
-                    // Второй RAF - удаляем классы после того как браузер отрисовал
+                    // Восстанавливаем календарь ПОСЛЕ удаления классов (в отдельном RAF)
                     requestAnimationFrame(() => {
-                        console.log('🔄 Second RAF - removing classes');
-                        workoutSection.classList.remove('dragging');
-                        document.body.style.cursor = '';
-                        document.body.style.userSelect = '';
-                        document.body.classList.remove('dragging-mode');
-                        console.log('✅ All classes removed via double-RAF');
-                        console.log('⏱️ Total drag end time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
+                        const calendarMonths = document.getElementById('calendar-months');
+                        if (calendarMonths) {
+                            calendarMonths.style.height = '';
+                            if (cachedMeasurements.calendarScrollTop !== undefined) {
+                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                            }
+                            console.log('📅 Calendar restored after classes removed');
+                        }
+                    });
 
-                        // Проверяем финальные стили
-                        requestAnimationFrame(() => {
-                            const workoutStyles = window.getComputedStyle(workoutSection);
-                            const activityStyles = window.getComputedStyle(activitySection);
-                            console.log('🎨 Final styles:', {
-                                workoutBoxShadow: workoutStyles.boxShadow,
-                                workoutTransform: workoutStyles.transform,
-                                activityBoxShadow: activityStyles.boxShadow,
-                                activityTransform: activityStyles.transform
-                            });
+                    console.log('✅ All classes removed, total time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
+
+                    // Проверяем финальные стили
+                    requestAnimationFrame(() => {
+                        const workoutStyles = window.getComputedStyle(workoutSection);
+                        const activityStyles = window.getComputedStyle(activitySection);
+                        console.log('🎨 Final styles:', {
+                            workoutBoxShadow: workoutStyles.boxShadow,
+                            workoutTransform: workoutStyles.transform,
+                            activityBoxShadow: activityStyles.boxShadow,
+                            activityTransform: activityStyles.transform
                         });
                     });
-                });
+                }, 16); // ~1 кадр при 60fps
 
                 frameCount = 0; // Сброс счетчика
             }
@@ -11983,6 +11993,7 @@
             });
 
             isDragging = true;
+            endDrag = false; // Сбрасываем флаг завершения
             startY = e.touches[0].clientY;
             currentY = e.touches[0].clientY;
             startTopHeight = workoutSection.getBoundingClientRect().height;
@@ -12013,36 +12024,31 @@
                     finalHeight: targetHeight.toFixed(1)
                 });
 
-                // КЛЮЧЕВОЕ: Сначала устанавливаем флаг завершения, но НЕ отменяем RAF
+                // КЛЮЧЕВОЕ: Устанавливаем флаг завершения RAF, НО НЕ применяем высоту синхронно!
                 isDragging = false;
-                console.log('✅ Dragging flag set to false - RAF will finish naturally');
+                endDrag = true; // Запускаем плавную доводку высоты
+                console.log('✅ isDragging=false, endDrag=true - RAF will finish smoothly');
 
-                // Используем двойной RAF для отложенного применения финального состояния
-                requestAnimationFrame(() => {
-                    console.log('🔄 First RAF after touch end');
-                    // Применяем финальную высоту
-                    workoutSection.style.height = targetHeight + 'px';
-                    console.log('📏 Final height applied via RAF:', targetHeight.toFixed(1) + 'px');
+                // Отложенное удаление классов через setTimeout (после завершения RAF)
+                setTimeout(() => {
+                    console.log('🔄 Removing classes after RAF settled');
+                    workoutSection.classList.remove('dragging');
+                    document.body.classList.remove('dragging-mode');
 
-                    // Восстанавливаем состояние календаря
-                    const calendarMonths = document.getElementById('calendar-months');
-                    if (calendarMonths) {
-                        calendarMonths.style.height = '';
-                        if (cachedMeasurements.calendarScrollTop !== undefined) {
-                            calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
-                        }
-                        console.log('📅 Calendar restored via RAF');
-                    }
-
-                    // Второй RAF - удаляем классы
+                    // Восстанавливаем календарь ПОСЛЕ удаления классов (в отдельном RAF)
                     requestAnimationFrame(() => {
-                        console.log('🔄 Second RAF - removing classes');
-                        workoutSection.classList.remove('dragging');
-                        document.body.classList.remove('dragging-mode');
-                        console.log('✅ All classes removed via double-RAF');
-                        console.log('⏱️ Total drag end time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
+                        const calendarMonths = document.getElementById('calendar-months');
+                        if (calendarMonths) {
+                            calendarMonths.style.height = '';
+                            if (cachedMeasurements.calendarScrollTop !== undefined) {
+                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
+                            }
+                            console.log('📅 Calendar restored after classes removed');
+                        }
                     });
-                });
+
+                    console.log('✅ All classes removed, total time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
+                }, 16); // ~1 кадр при 60fps
 
                 frameCount = 0;
             }
