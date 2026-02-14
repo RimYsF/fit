@@ -93,30 +93,8 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('HH.jpg') center/cover no-repeat;
+            background: url('GG.jpg') center/cover no-repeat;
             z-index: -1;
-            will-change: auto; /* Отключаем will-change для фона */
-        }
-
-        /* Изолируем фон при перетаскивании - предотвращаем перерисовку */
-        body.dragging-mode::after {
-            transform: translateZ(0); /* GPU-ускорение для фона */
-            will-change: auto;
-        }
-
-        /* Плавный transition для фона при окончании перетаскивания - предотвращает рывок */
-        body::after {
-            transition: transform 0.15s ease;
-        }
-
-        /* Глобально отключаем ВСЕ transitions при перетаскивании - предотвращаем мигание */
-        body.dragging-mode * {
-            transition: none !important;
-        }
-
-        /* Глобально отключаем ВСЕ анимации при перетаскивании - предотвращаем мигание от анимаций */
-        body.dragging-mode * {
-            animation: none !important;
         }
 
         body::-webkit-scrollbar {
@@ -126,36 +104,31 @@
         /* Верхняя секция с прокруткой тренировок */
         .workout-section {
             background: rgba(255, 255, 255, 0.3);
-            /* backdrop-filter: blur(5px) УБРАН - слишком дорого на мобильных */
+            backdrop-filter: blur(5px);
             border-bottom: 4px solid var(--neobrut-black);
             padding: 0;
             position: relative;
             box-shadow: 8px 8px 0 var(--neobrut-black);
             flex-shrink: 0;
-            /* flex-basis УБРАНО - используем height напрямую для лучшей производительности на мобильных */
+            flex-basis: var(--workout-basis, auto);
             overflow-y: auto;
             min-height: 50px;
-            /* ОТКЛЮЧАЕМ transition для box-shadow чтобы не было мигания */
-            transition: none !important;
-            /* УБРАЛИ will-change чтобы не создавать лишние слои */
+            transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease;
         }
 
         /* Оптимизация при перетаскивании */
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            isolation: isolate; /* Изолируем stacking context - уменьшает перерисовку */
-            flex: none; /* Отключаем flex при перетаскивании - используем height */
-            transition: none !important;
+            will-change: height;
+            contain: layout style;
+            transition: none;
             z-index: 1;
             overflow-y: hidden;
-            /* УБРАЛИ transform: translateZ(0) - это вызывало проблему с translateZ */
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
             pointer-events: none; /* Отключаем события внутри при перетаскивании */
-        }
-
-        /* Плавное восстановление после перетаскивания - только box-shadow */
-        .workout-section:not(.dragging) {
-            transition: box-shadow 0.15s ease;
         }
 
         /* Включаем pointer-events только для самого элемента */
@@ -184,62 +157,13 @@
 
         /* Оптимизация для activity-section при перетаскивании */
         body.dragging-mode .activity-section {
+            contain: layout style;
+            will-change: height;
             pointer-events: none;
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: none !important; /* Отключаем тень - предотвращает перерисовку */
-            /* УБРАЛИ transform: translateZ(0) и will-change - это вызывало перерисовку */
-        }
-
-        /* Предотвращаем мигание activity-grid-vertical при перетаскивании */
-        body.dragging-mode .activity-grid-vertical {
-            will-change: auto;
-        }
-
-        /* Предотвращаем мигание слайдера при перетаскивании */
-        body.dragging-mode .activity-slider {
-            will-change: auto;
-            transform: translateZ(0); /* Аппаратное ускорение */
-        }
-
-        /* Предотвращаем мигание calendar-container при перетаскивании */
-        body.dragging-mode .calendar-container {
-            transition: none !important;
-            transform: translateZ(0); /* Аппаратное ускорение */
-        }
-
-        /* НЕ используем contain и will-change для calendar-wrapper - это сбрасывает скролл! */
-        body.dragging-mode .calendar-wrapper {
-            will-change: auto;
-        }
-
-        /* Предотвращаем мигание виджетов задач при перетаскивании */
-        body.dragging-mode .tasks-container {
-            will-change: auto;
-            transform: translateZ(0); /* Аппаратное ускорение */
-        }
-
-        body.dragging-mode .task-day-widget {
-            will-change: auto;
-            transform: none !important; /* Сбрасываем любой transform */
-        }
-
-        body.dragging-mode .task-day-widget,
-        body.dragging-mode .task-day-widget:hover,
-        body.dragging-mode .task-day-widget:active,
-        body.dragging-mode .task-day-widget.current {
-            transition: none !important;
-            transform: none !important; /* Сбрасываем transform во всех состояниях */
-            box-shadow: 4px 4px 0 var(--neobrut-black) !important; /* Фиксированная тень */
         }
 
         body.dragging-mode .activity-section > * {
             pointer-events: auto;
-        }
-
-        /* Исключение: tasks-container и виджеты задач не должны реагировать на события при перетаскивании */
-        body.dragging-mode .tasks-container,
-        body.dragging-mode .tasks-container > .task-day-widget {
-            pointer-events: none !important;
         }
 
         .workout-header {
@@ -1225,21 +1149,8 @@
             stroke: url(#progressGradient);
             stroke-width: 3.5;
             stroke-linecap: round;
-            /* Плавная анимация прогресса - ОТКЛЮЧЕНА при перетаскивании для производительности */
-        }
-
-        /* Отключаем SVG анимацию прогресса при перетаскивании */
-        body.dragging-mode .task-progress-circle,
-        body.dragging-mode .task-progress-circle svg,
-        body.dragging-mode .task-progress-circle circle {
-            transition: none !important;
-        }
-
-        /* Отключаем SVG анимацию сложности при перетаскивании */
-        body.dragging-mode .task-difficulty-circle,
-        body.dragging-mode .task-difficulty-circle svg,
-        body.dragging-mode .task-difficulty-circle circle {
-            transition: none !important;
+            /* Плавная анимация прогресса */
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .exercise-check-icon {
@@ -2447,12 +2358,10 @@
             transform: translate(-50%, -50%);
             box-shadow: 3px 3px 0 var(--neobrut-black);
             cursor: pointer;
-            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
             z-index: 1;
             will-change: transform;
             touch-action: none;
-            outline: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .divider-button:hover {
@@ -2464,23 +2373,6 @@
         .divider-button:active {
             transform: translate(-50%, -50%) scale(0.95);
             box-shadow: 2px 2px 0 var(--neobrut-black);
-        }
-
-        /* Отключаем transitions на кнопке разделителя при перетаскивании - предотвращает мигание */
-        body.dragging-mode .divider-button,
-        body.dragging-mode .divider-button:hover,
-        body.dragging-mode .divider-button:active {
-            transition: none !important;
-            transform: translate(-50%, -50%) scale(0.95) !important; /* Фиксируем в нажатом состоянии */
-            background: var(--neobrut-orange) !important;
-            box-shadow: 2px 2px 0 var(--neobrut-black) !important;
-            will-change: auto !important; /* Отключаем will-change - предотвращает перерисовку */
-        }
-
-        .divider-button:focus,
-        .divider-button:focus-visible {
-            outline: none;
-            box-shadow: 3px 3px 0 var(--neobrut-black);
         }
 
         /* Нижняя секция с активностью */
@@ -2496,8 +2388,6 @@
             box-shadow: 0 -4px 0 var(--neobrut-black);
             min-height: 0;
             position: relative;
-            /* ОТКЛЮЧАЕМ все transitions для предотвращения мигания при перетаскивании */
-            transition: none !important;
         }
 
         /* Вертикальная сетка активности */
@@ -2801,67 +2691,6 @@
             transition: all 0.2s;
             position: relative;
             touch-action: manipulation;
-            will-change: auto;
-        }
-
-        /* Предотвращаем лаги activity-cell при перетаскивании разделителя */
-        body.dragging-mode .activity-cell {
-            transition: none !important;
-            will-change: auto;
-        }
-
-        body.dragging-mode .activity-cell .date-number {
-            transform: translate(-50%, -50%) !important;
-            will-change: auto;
-        }
-
-        /* Предотвращаем лаги для today ячейки при перетаскивании */
-        body.dragging-mode .activity-cell.today,
-        body.dragging-mode .activity-cell.today:hover,
-        body.dragging-mode .activity-cell.today:active {
-            will-change: auto;
-        }
-
-        /* Предотвращаем лаги структуры календаря при перетаскивании */
-        body.dragging-mode .calendar-month {
-            will-change: auto;
-        }
-
-        body.dragging-mode .calendar-week {
-            will-change: auto;
-        }
-
-        body.dragging-mode .calendar-weekday {
-            will-change: auto;
-        }
-
-        body.dragging-mode .calendar-month-header {
-            will-change: auto;
-        }
-
-        /* НЕ меняем overflow у календаря - это сбрасывает позицию скролла! */
-        body.dragging-mode .calendar-wrapper {
-            will-change: auto;
-        }
-
-        body.dragging-mode .calendar-months {
-            will-change: auto;
-        }
-
-        /* Предотвращаем лаги кнопок календаря при перетаскивании */
-        body.dragging-mode .reset-btn,
-        body.dragging-mode .reset-btn:hover,
-        body.dragging-mode .reset-btn:active {
-            transition: none !important;
-            will-change: auto;
-        }
-
-        body.dragging-mode .year-nav {
-            will-change: auto;
-        }
-
-        body.dragging-mode .current-year {
-            will-change: auto;
         }
 
         /* Эффекты для ячеек с активностью */
@@ -3140,12 +2969,6 @@
 
         .activity-section {
             animation-delay: 0.1s;
-        }
-
-        /* Отключаем начальную анимацию при перетаскивании - предотвращает перерисовку */
-        body.dragging-mode .workout-section,
-        body.dragging-mode .activity-section {
-            animation: none !important;
         }
 
         /* Tooltip для дня активности */
@@ -4268,7 +4091,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: url('HH.jpg') center/cover no-repeat;
+            background: url('GG.jpg') center/cover no-repeat;
             z-index: 10000;
             opacity: 1;
             transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
@@ -10691,10 +10514,8 @@
             // Инициализация начальных стилей для контейнеров
             calendarContainers.forEach((container, index) => {
                 const offset = index - currentSlide;
-                if (!window.isDragging) { // Блокируем при перетаскивании разделителя
-                    container.style.transform = `translateX(${offset * 110}%)`;
-                    container.style.zIndex = index === currentSlide ? '2' : '1';
-                }
+                container.style.transform = `translateX(${offset * 110}%)`;
+                container.style.zIndex = index === currentSlide ? '2' : '1';
             });
 
             // ===== НАВИГАЦИОННЫЕ КНОПКИ =====
@@ -11110,7 +10931,6 @@
 
             toast.addEventListener('touchmove', (e) => {
                 if (!isDragging) return;
-                if (window.isDragging) return; // Блокируем при перетаскивании разделителя
                 currentX = e.touches[0].clientX;
                 const diff = currentX - startX;
                 toast.style.transform = `translateX(calc(-50% + ${diff}px))`;
@@ -11707,10 +11527,8 @@
 
                         // Применяем трансформацию для визуальной обратной связи
                         const transform = Math.min(deltaY * 0.5, 100);
-                        if (!window.isDragging) { // Блокируем при перетаскивании разделителя
-                            aiChatOverlay.style.transform = `translateY(${transform}px)`;
-                            aiChatOverlay.style.opacity = 1 - (deltaY / 300);
-                        }
+                        aiChatOverlay.style.transform = `translateY(${transform}px)`;
+                        aiChatOverlay.style.opacity = 1 - (deltaY / 300);
 
                         // Предотвращаем скролл сообщений во время свайпа
                         e.preventDefault();
@@ -11747,19 +11565,17 @@
         let rafId = null;
         let currentY = 0;
 
-        // Переменные для обновления высоты (без интерполяции для максимальной производительности)
+        // Переменные для плавной интерполяции (lerp)
         let targetHeight = 0;
         let currentHeight = 0;
-        // lerpFactor УБРАН - используем прямое применение без интерполяции
-        // const lerpFactor = 0.6;
+        const lerpFactor = 0.18; // Плавное отставание для минимизации лагов
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
             minTopHeight: 60,
             minBottomHeight: 200,
             dividerHeight: 0,
-            viewportHeight: 0,
-            calendarScrollTop: 0
+            viewportHeight: 0
         };
 
         const dividerButton = document.querySelector('.divider-button');
@@ -11779,34 +11595,17 @@
             const initialHeight = baseHeight + additionalHeight;
             currentHeight = initialHeight;
             targetHeight = initialHeight;
-            // Используем height напрямую - быстрее на мобильных
-            workoutSection.style.height = initialHeight + 'px';
+            workoutSection.style.setProperty('--workout-basis', initialHeight + 'px');
         }, 100);
 
         // Кэшируем измерения при начале перетаскивания
         function cacheMeasurements() {
-            console.log('📐 Caching measurements...');
-            const start = performance.now();
-
             cachedMeasurements.viewportHeight = window.innerHeight;
             cachedMeasurements.dividerHeight = divider.getBoundingClientRect().height;
-
-            // Фиксируем высоту calendar-months чтобы не сбрасывался скролл
-            const calendarMonths = document.getElementById('calendar-months');
-            if (calendarMonths) {
-                cachedMeasurements.calendarScrollTop = calendarMonths.scrollTop;
-                cachedMeasurements.calendarMonthsHeight = calendarMonths.offsetHeight + 'px';
-                calendarMonths.style.height = cachedMeasurements.calendarMonthsHeight;
-                console.log('📅 Calendar fixed:', {
-                    scrollTop: cachedMeasurements.calendarScrollTop,
-                    height: cachedMeasurements.calendarMonthsHeight
-                });
-            }
 
             if (!hasCalendarChecked) {
                 cachedDayLabels = document.querySelectorAll('.calendar-weekday, .day-label');
                 hasCalendarChecked = true;
-                console.log('🏷️ Day labels cached:', cachedDayLabels.length);
             }
 
             if (cachedDayLabels && cachedDayLabels.length > 0) {
@@ -11816,8 +11615,6 @@
                 const headerHeight = activityHeader ? activityHeader.getBoundingClientRect().height : 60;
                 cachedMeasurements.minBottomHeight = headerHeight + 250;
             }
-
-            console.log('✅ Measurements cached in', (performance.now() - start).toFixed(2), 'ms');
         }
 
         // Вычисляем целевую высоту с ограничениями
@@ -11832,54 +11629,23 @@
             return height;
         }
 
-        // Плавная интерполяция (lerp) - больше не используется
+        // Плавная интерполяция (lerp)
         function lerp(start, end, factor) {
             return start + (end - start) * factor;
         }
 
         // Функция обновления через RAF (работает на 60fps автоматически)
-        let lastAppliedHeight = 0;
-        let frameCount = 0;
-        let endDrag = false; // Флаг для завершения перетаскивания с плавной доводкой
-
         function updateFrame() {
-            frameCount++;
-            // Применяем целевую высоту напрямую БЕЗ интерполяции - быстрее на мобильных
-            if (Math.abs(targetHeight - lastAppliedHeight) > 0.1) {
-                workoutSection.style.height = targetHeight + 'px';
-                lastAppliedHeight = targetHeight;
-                currentHeight = targetHeight;
-                // Логируем каждые 30 кадров (примерно каждые 0.5 сек)
-                if (frameCount % 30 === 0) {
-                    console.log('🔄 Frame update:', {
-                        frame: frameCount,
-                        targetHeight: targetHeight.toFixed(1),
-                        appliedHeight: lastAppliedHeight.toFixed(1),
-                        isDragging: isDragging,
-                        endDrag: endDrag
-                    });
-                }
-            }
+            // Плавно двигаем текущую высоту к цели
+            currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
 
-            // Продолжаем цикл пока перетаскиваем ИЛИ завершаем плавно
+            // Применяем текущую высоту
+            workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+
+            // Продолжаем цикл пока перетаскиваем
             if (isDragging) {
                 rafId = requestAnimationFrame(updateFrame);
-            } else if (endDrag) {
-                // Проверяем, высота установилась
-                if (Math.abs(targetHeight - lastAppliedHeight) < 0.1) {
-                    // Высота установлена, можно завершать
-                    endDrag = false;
-                    console.log('✅ Height settled, endDrag complete');
-                } else {
-                    // Продолжаем доводить высоту
-                    rafId = requestAnimationFrame(updateFrame);
-                }
             }
-        }
-
-        // Сбрасываем lastAppliedHeight при начале перетаскивания
-        function resetLastAppliedHeight() {
-            lastAppliedHeight = currentHeight = startTopHeight;
         }
 
         // Обновляем целевую позицию
@@ -11890,32 +11656,17 @@
 
         // Обработчики для мыши
         dividerButton.addEventListener('mousedown', (e) => {
-            performance.mark('drag-start');
-            console.log('🖱️ DRAG START', {
-                timestamp: performance.now().toFixed(2),
-                clientY: e.clientY,
-                workoutHeight: workoutSection.getBoundingClientRect().height,
-                activityHeight: activitySection.getBoundingClientRect().height
-            });
-
             isDragging = true;
-            endDrag = false; // Сбрасываем флаг завершения
             startY = e.clientY;
             currentY = e.clientY;
             startTopHeight = workoutSection.getBoundingClientRect().height;
             currentHeight = startTopHeight;
             targetHeight = startTopHeight;
-            resetLastAppliedHeight();
             document.body.style.cursor = 'ns-resize';
             document.body.style.userSelect = 'none';
             document.body.classList.add('dragging-mode');
             workoutSection.classList.add('dragging');
-            console.log('✅ Classes added: dragging-mode, dragging');
-
-            performance.mark('classes-added');
             cacheMeasurements();
-            performance.mark('measurements-cached');
-
             // Запускаем постоянный цикл
             rafId = requestAnimationFrame(updateFrame);
             e.preventDefault();
@@ -11928,81 +11679,41 @@
 
         document.addEventListener('mouseup', () => {
             if (isDragging) {
-                performance.mark('drag-end');
-                const dragEndTime = performance.now();
-                console.log('🖱️ DRAG END (mouseup)', {
-                    timestamp: dragEndTime.toFixed(2),
-                    totalFrames: frameCount,
-                    finalHeight: targetHeight.toFixed(1)
-                });
-
-                // КЛЮЧЕВОЕ: Устанавливаем флаг завершения RAF, НО НЕ применяем высоту синхронно!
                 isDragging = false;
-                endDrag = true; // Запускаем плавную доводку высоты
-                console.log('✅ isDragging=false, endDrag=true - RAF will finish smoothly');
-
-                // НЕ применяем высоту синхронно - пусть RAF сам догонит!
-                // НЕ восстанавливаем календарь синхронно - сделаем это позже!
-
-                // Отложенное удаление классов через setTimeout (после завершения RAF)
-                setTimeout(() => {
-                    console.log('🔄 Removing classes after RAF settled');
-                    workoutSection.classList.remove('dragging');
-                    document.body.style.cursor = '';
-                    document.body.style.userSelect = '';
-                    document.body.classList.remove('dragging-mode');
-
-                    // Восстанавливаем календарь ПОСЛЕ удаления классов (в отдельном RAF)
-                    requestAnimationFrame(() => {
-                        const calendarMonths = document.getElementById('calendar-months');
-                        if (calendarMonths) {
-                            calendarMonths.style.height = '';
-                            if (cachedMeasurements.calendarScrollTop !== undefined) {
-                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
-                            }
-                            console.log('📅 Calendar restored after classes removed');
-                        }
-                    });
-
-                    console.log('✅ All classes removed, total time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
-
-                    // Проверяем финальные стили
-                    requestAnimationFrame(() => {
-                        const workoutStyles = window.getComputedStyle(workoutSection);
-                        const activityStyles = window.getComputedStyle(activitySection);
-                        console.log('🎨 Final styles:', {
-                            workoutBoxShadow: workoutStyles.boxShadow,
-                            workoutTransform: workoutStyles.transform,
-                            activityBoxShadow: activityStyles.boxShadow,
-                            activityTransform: activityStyles.transform
-                        });
-                    });
-                }, 16); // ~1 кадр при 60fps
-
-                frameCount = 0; // Сброс счетчика
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.body.classList.remove('dragging-mode');
+                workoutSection.classList.remove('dragging');
+                // Финальное обновление до точной позиции
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+                // Плавно доводим до конечной позиции
+                const finishAnimation = () => {
+                    const diff = Math.abs(targetHeight - currentHeight);
+                    if (diff > 0.5) {
+                        currentHeight = lerp(currentHeight, targetHeight, 0.2);
+                        workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                        requestAnimationFrame(finishAnimation);
+                    } else {
+                        workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                    }
+                };
+                finishAnimation();
             }
         });
 
         // Обработчики для touch (мобильные устройства)
         dividerButton.addEventListener('touchstart', (e) => {
-            console.log('📱 TOUCH START', {
-                timestamp: performance.now().toFixed(2),
-                clientY: e.touches[0].clientY,
-                workoutHeight: workoutSection.getBoundingClientRect().height,
-                activityHeight: activitySection.getBoundingClientRect().height
-            });
-
             isDragging = true;
-            endDrag = false; // Сбрасываем флаг завершения
             startY = e.touches[0].clientY;
             currentY = e.touches[0].clientY;
             startTopHeight = workoutSection.getBoundingClientRect().height;
             currentHeight = startTopHeight;
             targetHeight = startTopHeight;
-            resetLastAppliedHeight();
             document.body.classList.add('dragging-mode');
             workoutSection.classList.add('dragging');
-            console.log('✅ Classes added: dragging-mode, dragging');
             cacheMeasurements();
             // Запускаем постоянный цикл
             rafId = requestAnimationFrame(updateFrame);
@@ -12017,40 +11728,25 @@
 
         document.addEventListener('touchend', () => {
             if (isDragging) {
-                const dragEndTime = performance.now();
-                console.log('📱 TOUCH END', {
-                    timestamp: dragEndTime.toFixed(2),
-                    totalFrames: frameCount,
-                    finalHeight: targetHeight.toFixed(1)
-                });
-
-                // КЛЮЧЕВОЕ: Устанавливаем флаг завершения RAF, НО НЕ применяем высоту синхронно!
                 isDragging = false;
-                endDrag = true; // Запускаем плавную доводку высоты
-                console.log('✅ isDragging=false, endDrag=true - RAF will finish smoothly');
-
-                // Отложенное удаление классов через setTimeout (после завершения RAF)
-                setTimeout(() => {
-                    console.log('🔄 Removing classes after RAF settled');
-                    workoutSection.classList.remove('dragging');
-                    document.body.classList.remove('dragging-mode');
-
-                    // Восстанавливаем календарь ПОСЛЕ удаления классов (в отдельном RAF)
-                    requestAnimationFrame(() => {
-                        const calendarMonths = document.getElementById('calendar-months');
-                        if (calendarMonths) {
-                            calendarMonths.style.height = '';
-                            if (cachedMeasurements.calendarScrollTop !== undefined) {
-                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
-                            }
-                            console.log('📅 Calendar restored after classes removed');
-                        }
-                    });
-
-                    console.log('✅ All classes removed, total time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
-                }, 16); // ~1 кадр при 60fps
-
-                frameCount = 0;
+                document.body.classList.remove('dragging-mode');
+                workoutSection.classList.remove('dragging');
+                if (rafId) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+                // Финальная доводка
+                const finishAnimation = () => {
+                    const diff = Math.abs(targetHeight - currentHeight);
+                    if (diff > 0.5) {
+                        currentHeight = lerp(currentHeight, targetHeight, 0.2);
+                        workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                        requestAnimationFrame(finishAnimation);
+                    } else {
+                        workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                    }
+                };
+                finishAnimation();
             }
         });
 
@@ -12058,62 +11754,6 @@
         dividerButton.addEventListener('selectstart', (e) => {
             e.preventDefault();
         });
-
-        // ===== ДЕБАГ: Отслеживание CSS transitions =====
-        // Отслеживаем transitionstart для box-shadow
-        workoutSection.addEventListener('transitionstart', (e) => {
-            if (e.propertyName === 'box-shadow') {
-                console.log('🎬 TRANSITION START: box-shadow', {
-                    timestamp: performance.now().toFixed(2),
-                    target: e.target.className
-                });
-            }
-        });
-
-        // Отслеживаем transitionend для box-shadow
-        workoutSection.addEventListener('transitionend', (e) => {
-            if (e.propertyName === 'box-shadow') {
-                console.log('🏁 TRANSITION END: box-shadow', {
-                    timestamp: performance.now().toFixed(2),
-                    target: e.target.className,
-                    elapsedTime: e.elapsedTime.toFixed(2)
-                });
-            }
-        });
-
-        // Отслеживаем все transition на activity-section
-        activitySection.addEventListener('transitionstart', (e) => {
-            console.log('🎬 TRANSITION START on activity-section:', e.propertyName, {
-                timestamp: performance.now().toFixed(2)
-            });
-        });
-
-        activitySection.addEventListener('transitionend', (e) => {
-            console.log('🏁 TRANSITION END on activity-section:', e.propertyName, {
-                timestamp: performance.now().toFixed(2)
-            });
-        });
-
-        // Отслеживаем force reflow через Performance Observer
-        if ('PerformanceObserver' in window) {
-            const observer = new PerformanceObserver((list) => {
-                for (const entry of list.getEntries()) {
-                    if (entry.duration > 10) { // Логируем только задачи дольше 10мс
-                        console.log('⚠️ Long task detected:', {
-                            name: entry.name,
-                            duration: entry.duration.toFixed(2),
-                            startTime: entry.startTime.toFixed(2)
-                        });
-                    }
-                }
-            });
-            try {
-                observer.observe({ entryTypes: ['measure', 'longtask'] });
-                console.log('✅ Performance Observer initialized');
-            } catch (e) {
-                console.log('⚠️ Performance Observer not supported');
-            }
-        }
 
         // ===== ПРИВЕТСТВЕННЫЙ ЭКРАН (Welcome Screen) =====
         const welcomeScreen = document.getElementById('welcome-screen');
