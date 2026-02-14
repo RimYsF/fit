@@ -64,8 +64,6 @@
             padding-right: env(safe-area-inset-right);
             overflow-x: hidden;
             width: 100%;
-            /* Изолируем перерисовку для улучшения производительности */
-            contain: layout style;
         }
 
         /* Предотвращение свайп-навигации в мобильных браузерах */
@@ -137,12 +135,9 @@
             /* flex-basis УБРАНО - используем height напрямую для лучшей производительности на мобильных */
             overflow-y: auto;
             min-height: 50px;
-            /* Плавный переход для box-shadow и backdrop-filter после перетаскивания */
-            transition: box-shadow 0.2s ease, backdrop-filter 0.2s ease;
+            transition: box-shadow 0.15s ease;
             /* Оптимизация для перетаскивания - даёт браузеру подсказку */
             will-change: transform, height;
-            /* Изолируем перерисовку секции */
-            contain: layout style paint;
         }
 
         /* Оптимизация при перетаскивании */
@@ -152,11 +147,16 @@
             will-change: transform; /* GPU-ускорение во время перетаскивания */
             isolation: isolate; /* Изолируем stacking context - уменьшает перерисовку */
             flex: none; /* Отключаем flex при перетаскивании - используем height */
-            transition: none;
+            transition: none !important;
             z-index: 1;
             overflow-y: hidden;
             transform: translateZ(0);
             pointer-events: none; /* Отключаем события внутри при перетаскивании */
+        }
+
+        /* Плавное восстановление после перетаскивания - только box-shadow */
+        .workout-section:not(.dragging) {
+            transition: box-shadow 0.15s ease;
         }
 
         /* Включаем pointer-events только для самого элемента */
@@ -190,7 +190,6 @@
             box-shadow: none !important; /* Отключаем тень - предотвращает перерисовку */
             transform: translateZ(0); /* GPU-ускорение для плавности */
             will-change: transform;
-            transition: none !important; /* Отключаем переходы во время перетаскивания */
         }
 
         /* Предотвращаем мигание activity-grid-vertical при перетаскивании */
@@ -2499,11 +2498,9 @@
             box-shadow: 0 -4px 0 var(--neobrut-black);
             min-height: 0;
             position: relative;
-            /* Плавный переход для box-shadow и background после перетаскивания */
-            transition: box-shadow 0.2s ease, background 0.2s ease, padding 0s;
+            /* Оптимизация для перетаскивания - отключаем transitions */
+            transition: padding 0s, background 0s;
             will-change: transform; /* GPU-ускорение для изменений размера */
-            /* Изолируем перерисовку секции */
-            contain: layout style paint;
         }
 
         /* Вертикальная сетка активности */
@@ -11893,7 +11890,7 @@
                     cancelAnimationFrame(rafId);
                     rafId = null;
                 }
-                // Сразу применяем конечную высоту (без плавной анимации - предотвращает мигание)
+                // Сразу применяем конечную высоту
                 workoutSection.style.height = targetHeight + 'px';
                 // Восстанавливаем высоту и позицию скролла календаря
                 const calendarMonths = document.getElementById('calendar-months');
@@ -11903,16 +11900,18 @@
                         calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
                     }
                 }
-                // Сначала восстанавливаем cursor и userSelect
-                document.body.style.cursor = '';
-                document.body.style.userSelect = '';
-                // Убираем dragging-mode сначала - это убирает transition: none со всех элементов
-                document.body.classList.remove('dragging-mode');
-                // Убираем dragging класс с workout-section с небольшой задержкой
-                // Это даёт браузеру время восстановить transitions перед изменением стилей
+
+                // КЛЮЧЕВОЕ: Сначала убираем dragging, чтобы запустить box-shadow transition
+                // Это происходит пока dragging-mode еще активен, поэтому глобально transitions еще выключены
+                // Но у workout-section есть свой transition который будет работать
+                workoutSection.classList.remove('dragging');
+
+                // Ждем завершения transition (150ms) затем убираем dragging-mode
                 setTimeout(() => {
-                    workoutSection.classList.remove('dragging');
-                }, 16); // ~1 кадр при 60fps
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                    document.body.classList.remove('dragging-mode');
+                }, 150);
             }
         });
 
@@ -11947,7 +11946,7 @@
                     cancelAnimationFrame(rafId);
                     rafId = null;
                 }
-                // Сразу применяем конечную высоту (без плавной анимации - предотвращает мигание)
+                // Сразу применяем конечную высоту
                 workoutSection.style.height = targetHeight + 'px';
                 // Восстанавливаем высоту и позицию скролла календаря
                 const calendarMonths = document.getElementById('calendar-months');
@@ -11957,13 +11956,16 @@
                         calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
                     }
                 }
-                // Убираем dragging-mode сначала - это убирает transition: none со всех элементов
-                document.body.classList.remove('dragging-mode');
-                // Убираем dragging класс с workout-section с небольшой задержкой
-                // Это даёт браузеру время восстановить transitions перед изменением стилей
+
+                // КЛЮЧЕВОЕ: Сначала убираем dragging, чтобы запустить box-shadow transition
+                // Это происходит пока dragging-mode еще активен, поэтому глобально transitions еще выключены
+                // Но у workout-section есть свой transition который будет работать
+                workoutSection.classList.remove('dragging');
+
+                // Ждем завершения transition (150ms) затем убираем dragging-mode
                 setTimeout(() => {
-                    workoutSection.classList.remove('dragging');
-                }, 16); // ~1 кадр при 60fps
+                    document.body.classList.remove('dragging-mode');
+                }, 150);
             }
         });
 
