@@ -2405,7 +2405,7 @@
             transform: translate(-50%, -50%);
             box-shadow: 3px 3px 0 var(--neobrut-black);
             cursor: pointer;
-            transition: background 0.2s ease, box-shadow 0.2s ease;
+            transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
             z-index: 1;
             will-change: transform;
             touch-action: none;
@@ -2422,6 +2422,17 @@
         .divider-button:active {
             transform: translate(-50%, -50%) scale(0.95);
             box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        /* Отключаем transitions на кнопке разделителя при перетаскивании - предотвращает мигание */
+        body.dragging-mode .divider-button,
+        body.dragging-mode .divider-button:hover,
+        body.dragging-mode .divider-button:active {
+            transition: none !important;
+            transform: translate(-50%, -50%) scale(0.95) !important; /* Фиксируем в нажатом состоянии */
+            background: var(--neobrut-orange) !important;
+            box-shadow: 2px 2px 0 var(--neobrut-black) !important;
+            will-change: auto !important; /* Отключаем will-change - предотвращает перерисовку */
         }
 
         .divider-button:focus,
@@ -11815,38 +11826,26 @@
         document.addEventListener('mouseup', () => {
             if (isDragging) {
                 isDragging = false;
-                // Финальное обновление до точной позиции
+                // Отменяем RAF цикл
                 if (rafId) {
                     cancelAnimationFrame(rafId);
                     rafId = null;
                 }
-                // Плавно доводим до конечной позиции
-                const finishAnimation = () => {
-                    const diff = Math.abs(targetHeight - currentHeight);
-                    if (diff > 0.5) {
-                        currentHeight = lerp(currentHeight, targetHeight, 0.2);
-                        workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
-                        requestAnimationFrame(finishAnimation);
-                    } else {
-                        workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
-                        // Восстанавливаем высоту и позицию скролла календаря
-                        const calendarMonths = document.getElementById('calendar-months');
-                        if (calendarMonths) {
-                            // Сначала восстанавливаем высоту
-                            calendarMonths.style.height = '';
-                            // Затем восстанавливаем скролл
-                            if (cachedMeasurements.calendarScrollTop !== undefined) {
-                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
-                            }
-                        }
-                        // Убираем dragging-mode ПОСЛЕ завершения анимации
-                        document.body.style.cursor = '';
-                        document.body.style.userSelect = '';
-                        document.body.classList.remove('dragging-mode');
-                        workoutSection.classList.remove('dragging');
+                // Сразу применяем конечную высоту (без плавной анимации - предотвращает мигание)
+                workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                // Восстанавливаем высоту и позицию скролла календаря
+                const calendarMonths = document.getElementById('calendar-months');
+                if (calendarMonths) {
+                    calendarMonths.style.height = '';
+                    if (cachedMeasurements.calendarScrollTop !== undefined) {
+                        calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
                     }
-                };
-                finishAnimation();
+                }
+                // Убираем dragging-mode СРАЗУ (без задержки)
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.body.classList.remove('dragging-mode');
+                workoutSection.classList.remove('dragging');
             }
         });
 
@@ -11876,33 +11875,24 @@
         document.addEventListener('touchend', () => {
             if (isDragging) {
                 isDragging = false;
+                // Отменяем RAF цикл
                 if (rafId) {
                     cancelAnimationFrame(rafId);
                     rafId = null;
                 }
-                // Финальная доводка
-                const finishAnimation = () => {
-                    const diff = Math.abs(targetHeight - currentHeight);
-                    if (diff > 0.5) {
-                        currentHeight = lerp(currentHeight, targetHeight, 0.2);
-                        workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
-                        requestAnimationFrame(finishAnimation);
-                    } else {
-                        workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
-                        // Восстанавливаем высоту и позицию скролла календаря
-                        const calendarMonths = document.getElementById('calendar-months');
-                        if (calendarMonths) {
-                            calendarMonths.style.height = '';
-                            if (cachedMeasurements.calendarScrollTop !== undefined) {
-                                calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
-                            }
-                        }
-                        // Убираем dragging-mode ПОСЛЕ завершения анимации
-                        document.body.classList.remove('dragging-mode');
-                        workoutSection.classList.remove('dragging');
+                // Сразу применяем конечную высоту (без плавной анимации - предотвращает мигание)
+                workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                // Восстанавливаем высоту и позицию скролла календаря
+                const calendarMonths = document.getElementById('calendar-months');
+                if (calendarMonths) {
+                    calendarMonths.style.height = '';
+                    if (cachedMeasurements.calendarScrollTop !== undefined) {
+                        calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
                     }
-                };
-                finishAnimation();
+                }
+                // Убираем dragging-mode СРАЗУ (без задержки)
+                document.body.classList.remove('dragging-mode');
+                workoutSection.classList.remove('dragging');
             }
         });
 
