@@ -3139,7 +3139,7 @@
         }
 
         .user-message {
-            background: rgba(78, 205, 196, 0.1);
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .user-message .message-content {
@@ -3147,7 +3147,7 @@
         }
 
         .ai-message {
-            background: rgba(255, 255, 255, 0.5);
+            background: transparent;
         }
 
         .ai-message .message-content {
@@ -3353,17 +3353,17 @@
         }
 
         .chat-wrapper .message.user-message {
-            background: var(--neobrut-blue);
+            background: rgba(255, 255, 255, 0.5);
             transform: rotate(0deg);
             align-self: flex-end;
         }
 
         .chat-wrapper .message.user-message .message-content {
-            color: var(--neobrut-white);
+            color: var(--neobrut-darkgray);
         }
 
         .chat-wrapper .message.ai-message {
-            background: var(--neobrut-white);
+            background: transparent;
             transform: rotate(0deg);
         }
 
@@ -8966,9 +8966,9 @@
             // Обновляем прогресс
             document.getElementById('strip-progress-value').textContent = `${percentage}%`;
 
-            // Для дня больше общего количества показываем "Итоги недели", иначе "День X из Y"
+            // Для дня больше общего количества показываем "Итоги", иначе "День X из Y"
             if (displayDay > getTotalWorkoutDays()) {
-                document.getElementById('strip-progress-sub').textContent = 'Итоги недели';
+                document.getElementById('strip-progress-sub').textContent = 'Итоги';
             } else {
                 document.getElementById('strip-progress-sub').textContent = `День ${displayDay} из ${getTotalWorkoutDays()}`;
             }
