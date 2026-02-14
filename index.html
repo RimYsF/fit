@@ -104,6 +104,11 @@
             will-change: auto;
         }
 
+        /* Плавный transition для фона при окончании перетаскивания - предотвращает рывок */
+        body::after {
+            transition: transform 0.15s ease;
+        }
+
         /* Глобально отключаем ВСЕ transitions при перетаскивании - предотвращаем мигание */
         body.dragging-mode * {
             transition: none !important;
@@ -131,6 +136,8 @@
             overflow-y: auto;
             min-height: 50px;
             transition: box-shadow 0.15s ease;
+            /* Оптимизация для перетаскивания - даёт браузеру подсказку */
+            will-change: transform, height;
         }
 
         /* Отключаем box-shadow transition сразу после перетаскивания - предотвращает рывки */
@@ -2491,8 +2498,9 @@
             box-shadow: 0 -4px 0 var(--neobrut-black);
             min-height: 0;
             position: relative;
-            /* Отключаем box-shadow transition - предотвращает рывки при изменении размера */
+            /* Оптимизация для перетаскивания - отключаем transitions */
             transition: padding 0s, background 0s;
+            will-change: transform; /* GPU-ускорение для изменений размера */
         }
 
         /* Вертикальная сетка активности */
@@ -11893,13 +11901,16 @@
                     }
                 }
                 // Используем RAF для задержки удаления классов - предотвращает рывную перерисовку
+                // Используем 3 вложенных RAF (~48мс) чтобы браузер успел завершить все рендеры
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        // Убираем dragging-mode через 2 кадра - даёт браузеру время отрисовать конечное состояние
-                        document.body.style.cursor = '';
-                        document.body.style.userSelect = '';
-                        document.body.classList.remove('dragging-mode');
-                        workoutSection.classList.remove('dragging');
+                        requestAnimationFrame(() => {
+                            // Убираем dragging-mode через 3 кадра - даёт браузеру больше времени на отрисовку
+                            document.body.style.cursor = '';
+                            document.body.style.userSelect = '';
+                            document.body.classList.remove('dragging-mode');
+                            workoutSection.classList.remove('dragging');
+                        });
                     });
                 });
             }
@@ -11946,12 +11957,14 @@
                         calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
                     }
                 }
-                // Используем RAF для задержки удаления классов - предотвращает рывную перерисовку
+                // Используем 3 вложенных RAF (~48мс) чтобы браузер успел завершить все рендеры
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        // Убираем dragging-mode через 2 кадра - даёт браузеру время отрисовать конечное состояние
-                        document.body.classList.remove('dragging-mode');
-                        workoutSection.classList.remove('dragging');
+                        requestAnimationFrame(() => {
+                            // Убираем dragging-mode через 3 кадра - даёт браузеру больше времени на отрисовку
+                            document.body.classList.remove('dragging-mode');
+                            workoutSection.classList.remove('dragging');
+                        });
                     });
                 });
             }
