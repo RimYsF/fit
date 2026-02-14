@@ -112,11 +112,12 @@
             flex-basis: var(--workout-basis, auto);
             overflow-y: auto;
             min-height: 50px;
-            transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease;
+            transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease, opacity 0.15s ease;
         }
 
         /* Оптимизация при перетаскивании */
         .workout-section.dragging {
+            opacity: 0.5;
             backdrop-filter: none;
             box-shadow: none;
             will-change: height;
@@ -156,6 +157,7 @@
 
         /* Оптимизация для activity-section при перетаскивании */
         body.dragging-mode .activity-section {
+            opacity: 0.5;
             contain: layout style;
             will-change: height;
             pointer-events: none;
@@ -2376,6 +2378,7 @@
 
         /* Нижняя секция с активностью */
         .activity-section {
+            transition: opacity 0.15s ease;
             padding: 5px;
             background: linear-gradient(
                 rgba(255, 255, 255, 0.2),
