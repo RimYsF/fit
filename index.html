@@ -10674,8 +10674,10 @@
             // Инициализация начальных стилей для контейнеров
             calendarContainers.forEach((container, index) => {
                 const offset = index - currentSlide;
-                container.style.transform = `translateX(${offset * 110}%)`;
-                container.style.zIndex = index === currentSlide ? '2' : '1';
+                if (!window.isDragging) { // Блокируем при перетаскивании разделителя
+                    container.style.transform = `translateX(${offset * 110}%)`;
+                    container.style.zIndex = index === currentSlide ? '2' : '1';
+                }
             });
 
             // ===== НАВИГАЦИОННЫЕ КНОПКИ =====
@@ -11091,6 +11093,7 @@
 
             toast.addEventListener('touchmove', (e) => {
                 if (!isDragging) return;
+                if (window.isDragging) return; // Блокируем при перетаскивании разделителя
                 currentX = e.touches[0].clientX;
                 const diff = currentX - startX;
                 toast.style.transform = `translateX(calc(-50% + ${diff}px))`;
@@ -11687,8 +11690,10 @@
 
                         // Применяем трансформацию для визуальной обратной связи
                         const transform = Math.min(deltaY * 0.5, 100);
-                        aiChatOverlay.style.transform = `translateY(${transform}px)`;
-                        aiChatOverlay.style.opacity = 1 - (deltaY / 300);
+                        if (!window.isDragging) { // Блокируем при перетаскивании разделителя
+                            aiChatOverlay.style.transform = `translateY(${transform}px)`;
+                            aiChatOverlay.style.opacity = 1 - (deltaY / 300);
+                        }
 
                         // Предотвращаем скролл сообщений во время свайпа
                         e.preventDefault();
