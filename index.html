@@ -11250,6 +11250,18 @@
                     isNewChat: isNewChat  // Флаг для AI - знает когда новый чат
                 };
 
+                // Читаем контекст репоста упражнения (если есть)
+                const activeRepostData = localStorage.getItem('fitTrackerActiveRepost');
+                let repostContext = null;
+                if (activeRepostData) {
+                    try {
+                        repostContext = JSON.parse(activeRepostData);
+                        console.log('📌 Репост отправлен в AI:', repostContext);
+                    } catch (e) {
+                        console.error('Error parsing repost data:', e);
+                    }
+                }
+
                 // Вызов Supabase Edge Function с retry логикой
                 let aiResponse = null;
                 let lastError = null;
@@ -11273,7 +11285,8 @@
                                 userMessage: userMessage,
                                 userContext: userContext,
                                 chatHistory: chatHistory,
-                                metrics: currentMetrics
+                                metrics: currentMetrics,
+                                repost: repostContext
                             }),
                             signal: controller.signal
                         });
