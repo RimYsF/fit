@@ -169,11 +169,13 @@
         /* Предотвращаем мигание слайдера при перетаскивании */
         body.dragging-mode .activity-slider {
             will-change: auto;
+            transform: translateZ(0); /* Аппаратное ускорение */
         }
 
         /* Предотвращаем мигание calendar-container при перетаскивании */
         body.dragging-mode .calendar-container {
             transition: none !important;
+            transform: translateZ(0); /* Аппаратное ускорение */
         }
 
         /* НЕ используем contain и will-change для calendar-wrapper - это сбрасывает скролл! */
@@ -184,10 +186,12 @@
         /* Предотвращаем мигание виджетов задач при перетаскивании */
         body.dragging-mode .tasks-container {
             will-change: auto;
+            transform: translateZ(0); /* Аппаратное ускорение */
         }
 
         body.dragging-mode .task-day-widget {
             will-change: auto;
+            transform: none !important; /* Сбрасываем любой transform */
         }
 
         body.dragging-mode .task-day-widget,
@@ -195,10 +199,18 @@
         body.dragging-mode .task-day-widget:active,
         body.dragging-mode .task-day-widget.current {
             transition: none !important;
+            transform: none !important; /* Сбрасываем transform во всех состояниях */
+            box-shadow: 4px 4px 0 var(--neobrut-black) !important; /* Фиксированная тень */
         }
 
         body.dragging-mode .activity-section > * {
             pointer-events: auto;
+        }
+
+        /* Исключение: tasks-container и виджеты задач не должны реагировать на события при перетаскивании */
+        body.dragging-mode .tasks-container,
+        body.dragging-mode .tasks-container > .task-day-widget {
+            pointer-events: none !important;
         }
 
         .workout-header {
@@ -11672,7 +11684,7 @@
         // Переменные для плавной интерполяции (lerp)
         let targetHeight = 0;
         let currentHeight = 0;
-        const lerpFactor = 0.3; // Более быстрое реагирование для меньшего количества кадров
+        const lerpFactor = 0.6; // Увеличено для более быстрого отклика (было 0.3)
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
