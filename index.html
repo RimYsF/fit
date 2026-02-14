@@ -135,22 +135,21 @@
             /* flex-basis УБРАНО - используем height напрямую для лучшей производительности на мобильных */
             overflow-y: auto;
             min-height: 50px;
-            transition: box-shadow 0.15s ease;
-            /* Оптимизация для перетаскивания - даёт браузеру подсказку */
-            will-change: transform, height;
+            /* ОТКЛЮЧАЕМ transition для box-shadow чтобы не было мигания */
+            transition: none !important;
+            /* УБРАЛИ will-change чтобы не создавать лишние слои */
         }
 
         /* Оптимизация при перетаскивании */
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            will-change: transform; /* GPU-ускорение во время перетаскивания */
             isolation: isolate; /* Изолируем stacking context - уменьшает перерисовку */
             flex: none; /* Отключаем flex при перетаскивании - используем height */
             transition: none !important;
             z-index: 1;
             overflow-y: hidden;
-            transform: translateZ(0);
+            /* УБРАЛИ transform: translateZ(0) - это вызывало проблему с translateZ */
             pointer-events: none; /* Отключаем события внутри при перетаскивании */
         }
 
@@ -188,8 +187,7 @@
             pointer-events: none;
             background: rgba(255, 255, 255, 0.3);
             box-shadow: none !important; /* Отключаем тень - предотвращает перерисовку */
-            transform: translateZ(0); /* GPU-ускорение для плавности */
-            will-change: transform;
+            /* УБРАЛИ transform: translateZ(0) и will-change - это вызывало перерисовку */
         }
 
         /* Предотвращаем мигание activity-grid-vertical при перетаскивании */
@@ -2498,9 +2496,8 @@
             box-shadow: 0 -4px 0 var(--neobrut-black);
             min-height: 0;
             position: relative;
-            /* Оптимизация для перетаскивания - отключаем transitions */
-            transition: padding 0s, background 0s;
-            will-change: transform; /* GPU-ускорение для изменений размера */
+            /* ОТКЛЮЧАЕМ все transitions для предотвращения мигания при перетаскивании */
+            transition: none !important;
         }
 
         /* Вертикальная сетка активности */
@@ -11952,69 +11949,43 @@
                     performance.mark('after-calendar-restore');
                 }
 
-                // КЛЮЧЕВОЕ: Сначала убираем dragging, чтобы запустить box-shadow transition
-                console.log('🔄 Step 1: Removing "dragging" class...');
-                performance.mark('before-remove-dragging');
-                const beforeRemoveDragging = performance.now();
-                workoutSection.classList.remove('dragging');
-                performance.mark('after-remove-dragging');
-                console.log('✅ "dragging" class removed in', (performance.now() - beforeRemoveDragging).toFixed(2), 'ms');
+                // Убираем оба класса СРАЗУ - transitions отключены, поэтому плавность не нужна
+                console.log('🔄 Removing both classes immediately...');
+                performance.mark('before-remove-classes');
 
-                // Измеряем potential reflow
-                performance.mark('before-get-computed-1');
-                // Проверяем вычисленные стили после удаления dragging
+                workoutSection.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                document.body.classList.remove('dragging-mode');
+
+                performance.mark('after-remove-classes');
+                console.log('✅ All classes removed in', (performance.now() - performance.now()).toFixed(2), 'ms');
+                console.log('⏱️ Total drag end time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
+
+                performance.measure('total-drag-end', 'drag-end', 'after-remove-classes');
+
+                // Проверяем финальные стили
                 requestAnimationFrame(() => {
-                    performance.mark('inside-raf-after-dragging-removed');
+                    performance.mark('inside-raf-final');
                     const workoutStyles = window.getComputedStyle(workoutSection);
                     const activityStyles = window.getComputedStyle(activitySection);
-                    console.log('🎨 Styles after removing "dragging":', {
+                    console.log('🎨 Final styles:', {
                         workoutBoxShadow: workoutStyles.boxShadow,
                         workoutTransform: workoutStyles.transform,
                         activityBoxShadow: activityStyles.boxShadow,
                         activityTransform: activityStyles.transform
                     });
-                    performance.measure('get-computed-styles-1', 'before-get-computed-1', 'inside-raf-after-dragging-removed');
-                });
 
-                // Ждем завершения transition (150ms) затем убираем dragging-mode
-                setTimeout(() => {
-                    console.log('🔄 Step 2: Removing "dragging-mode" class...');
-                    performance.mark('before-remove-dragging-mode');
-                    const beforeRemoveMode = performance.now();
-                    document.body.style.cursor = '';
-                    document.body.style.userSelect = '';
-                    document.body.classList.remove('dragging-mode');
-                    performance.mark('after-remove-dragging-mode');
-                    console.log('✅ "dragging-mode" class removed in', (performance.now() - beforeRemoveMode).toFixed(2), 'ms');
-                    console.log('⏱️ Total drag end time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
-
-                    performance.measure('total-drag-end', 'drag-end', 'after-remove-dragging-mode');
-
-                    // Проверяем стили после удаления dragging-mode
-                    requestAnimationFrame(() => {
-                        performance.mark('inside-raf-final');
-                        const workoutStyles = window.getComputedStyle(workoutSection);
-                        const activityStyles = window.getComputedStyle(activitySection);
-                        console.log('🎨 Final styles after removing "dragging-mode":', {
-                            workoutBoxShadow: workoutStyles.boxShadow,
-                            workoutTransform: workoutStyles.transform,
-                            activityBoxShadow: activityStyles.boxShadow,
-                            activityTransform: activityStyles.transform,
-                            bodyHasDraggingMode: document.body.classList.contains('dragging-mode'),
-                            workoutHasDragging: workoutSection.classList.contains('dragging')
-                        });
-
-                        // Выводим все performance measures
-                        performance.getEntriesByType('measure').forEach(entry => {
-                            if (entry.name.includes('drag')) {
-                                console.log('📊 Performance Measure:', {
-                                    name: entry.name,
-                                    duration: entry.duration.toFixed(2) + 'ms'
-                                });
-                            }
-                        });
+                    // Выводим все performance measures
+                    performance.getEntriesByType('measure').forEach(entry => {
+                        if (entry.name.includes('drag')) {
+                            console.log('📊 Performance Measure:', {
+                                name: entry.name,
+                                duration: entry.duration.toFixed(2) + 'ms'
+                            });
+                        }
                     });
-                }, 150);
+                });
 
                 frameCount = 0; // Сброс счетчика
             }
@@ -12022,6 +11993,13 @@
 
         // Обработчики для touch (мобильные устройства)
         dividerButton.addEventListener('touchstart', (e) => {
+            console.log('📱 TOUCH START', {
+                timestamp: performance.now().toFixed(2),
+                clientY: e.touches[0].clientY,
+                workoutHeight: workoutSection.getBoundingClientRect().height,
+                activityHeight: activitySection.getBoundingClientRect().height
+            });
+
             isDragging = true;
             startY = e.touches[0].clientY;
             currentY = e.touches[0].clientY;
@@ -12031,6 +12009,7 @@
             resetLastAppliedHeight();
             document.body.classList.add('dragging-mode');
             workoutSection.classList.add('dragging');
+            console.log('✅ Classes added: dragging-mode, dragging');
             cacheMeasurements();
             // Запускаем постоянный цикл
             rafId = requestAnimationFrame(updateFrame);
@@ -12045,14 +12024,23 @@
 
         document.addEventListener('touchend', () => {
             if (isDragging) {
+                const dragEndTime = performance.now();
+                console.log('📱 TOUCH END', {
+                    timestamp: dragEndTime.toFixed(2),
+                    totalFrames: frameCount,
+                    finalHeight: targetHeight.toFixed(1)
+                });
+
                 isDragging = false;
                 // Отменяем RAF цикл
                 if (rafId) {
                     cancelAnimationFrame(rafId);
                     rafId = null;
+                    console.log('✅ RAF cancelled');
                 }
                 // Сразу применяем конечную высоту
                 workoutSection.style.height = targetHeight + 'px';
+                console.log('📏 Final height applied:', targetHeight.toFixed(1) + 'px');
                 // Восстанавливаем высоту и позицию скролла календаря
                 const calendarMonths = document.getElementById('calendar-months');
                 if (calendarMonths) {
@@ -12060,17 +12048,17 @@
                     if (cachedMeasurements.calendarScrollTop !== undefined) {
                         calendarMonths.scrollTop = cachedMeasurements.calendarScrollTop;
                     }
+                    console.log('📅 Calendar scroll restored');
                 }
 
-                // КЛЮЧЕВОЕ: Сначала убираем dragging, чтобы запустить box-shadow transition
-                // Это происходит пока dragging-mode еще активен, поэтому глобально transitions еще выключены
-                // Но у workout-section есть свой transition который будет работать
+                // Убираем оба класса СРАЗУ
+                console.log('🔄 Removing both classes immediately...');
                 workoutSection.classList.remove('dragging');
+                document.body.classList.remove('dragging-mode');
+                console.log('✅ All classes removed');
+                console.log('⏱️ Total drag end time:', (performance.now() - dragEndTime).toFixed(2), 'ms');
 
-                // Ждем завершения transition (150ms) затем убираем dragging-mode
-                setTimeout(() => {
-                    document.body.classList.remove('dragging-mode');
-                }, 150);
+                frameCount = 0;
             }
         });
 
