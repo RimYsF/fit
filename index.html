@@ -137,16 +137,13 @@
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            /* will-change: height УБРАН - вызывает лаги на мобильных */
-            /* contain: layout style УБРАНО - слишком дорого для мобильных */
+            will-change: transform; /* GPU-ускорение во время перетаскивания */
             isolation: isolate; /* Изолируем stacking context - уменьшает перерисовку */
             flex: none; /* Отключаем flex при перетаскивании - используем height */
             transition: none;
             z-index: 1;
             overflow-y: hidden;
             transform: translateZ(0);
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
             pointer-events: none; /* Отключаем события внутри при перетаскивании */
         }
 
@@ -179,6 +176,8 @@
             pointer-events: none;
             background: rgba(255, 255, 255, 0.3);
             box-shadow: none !important; /* Отключаем тень - предотвращает перерисовку */
+            transform: translateZ(0); /* GPU-ускорение для плавности */
+            will-change: transform;
         }
 
         /* Предотвращаем мигание activity-grid-vertical при перетаскивании */
@@ -11814,8 +11813,8 @@
         let lastAppliedHeight = 0;
         function updateFrame() {
             // Применяем целевую высоту напрямую БЕЗ интерполяции - быстрее на мобильных
-            // Проверяем что высота реально изменилась
-            if (Math.abs(targetHeight - lastAppliedHeight) > 0.5) {
+            // УМЕНЬШЕН ПОРОГ с 0.5 до 0.1 для плавности - предотвращает ступенчатость
+            if (Math.abs(targetHeight - lastAppliedHeight) > 0.1) {
                 workoutSection.style.height = targetHeight + 'px';
                 lastAppliedHeight = targetHeight;
                 currentHeight = targetHeight;
