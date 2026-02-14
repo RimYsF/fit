@@ -5374,17 +5374,17 @@
         const USER_MESSAGES_FOR_NEW_CHAT = 20; // Показывать toast после каждого N-го сообщения пользователя
         const NEW_CHAT_TOAST_DURATION = 10000; // 10 секунд
 
-        // AI adaptation constants - только два показателя
+        // AI adaptation constants - три показателя
         const AI_METRICS_KEY = 'fitTrackerAIMetrics';
 
-        // AI metrics functions - общительность и разговорчивость
+        // AI metrics functions - общительность, разговорчивость, активность
         function getAIMetrics() {
             try {
                 const cached = localStorage.getItem(AI_METRICS_KEY);
-                return cached ? JSON.parse(cached) : { sociability: 50, talkativeness: 50 };
+                return cached ? JSON.parse(cached) : { sociability: 50, talkativeness: 50, activity: 50 };
             } catch (e) {
                 console.error('Ошибка загрузки метрик ИИ:', e);
-                return { sociability: 50, talkativeness: 50 };
+                return { sociability: 50, talkativeness: 50, activity: 50 };
             }
         }
 
@@ -5393,6 +5393,27 @@
                 localStorage.setItem(AI_METRICS_KEY, JSON.stringify(metrics));
             } catch (e) {
                 console.error('Ошибка сохранения метрик ИИ:', e);
+            }
+        }
+
+        // AI Profile - хранит информацию о пользователе (скрыто от пользователя)
+        const AI_PROFILE_KEY = 'fitTrackerUserProfile';
+
+        function getUserProfile() {
+            try {
+                const cached = localStorage.getItem(AI_PROFILE_KEY);
+                return cached ? JSON.parse(cached) : {};
+            } catch (e) {
+                console.error('Ошибка загрузки профиля ИИ:', e);
+                return {};
+            }
+        }
+
+        function saveUserProfile(profile) {
+            try {
+                localStorage.setItem(AI_PROFILE_KEY, JSON.stringify(profile));
+            } catch (e) {
+                console.error('Ошибка сохранения профиля ИИ:', e);
             }
         }
 
@@ -11127,8 +11148,16 @@
 
         // Форматирование ответа AI - убираем HTML и оставляем чистый текст
         function formatAIResponse(text) {
-            // Убираем все HTML-теги из ответа AI
+            // Сначала убираем служебные теги [METRICS], [PROFILE] и [RESPONSE] (на случай если AI вернул их в тексте)
+            // Затем обрабатываем HTML-теги и markdown
             let cleanText = text
+                // Убираем [METRICS]...[/METRICS] полностью
+                .replace(/\[METRICS\][\s\S]*?\[\/METRICS\]/gi, '')
+                // Убираем [PROFILE]...[/PROFILE] полностью
+                .replace(/\[PROFILE\][\s\S]*?\[\/PROFILE\]/gi, '')
+                // Убираем [RESPONSE] и [/RESPONSE] теги
+                .replace(/\[RESPONSE\]/gi, '')
+                .replace(/\[\/RESPONSE\]/gi, '')
                 // Заменяем HTML-теги на переносы строк или пробелы
                 .replace(/<\/p>/gi, '\n\n')
                 .replace(/<\/div>/gi, '\n')
@@ -11262,6 +11291,9 @@
                     }
                 }
 
+                // Получаем профиль пользователя (скрытый, только для ИИ)
+                const userProfile = getUserProfile();
+
                 // Вызов Supabase Edge Function с retry логикой
                 let aiResponse = null;
                 let lastError = null;
@@ -11286,7 +11318,8 @@
                                 userContext: userContext,
                                 chatHistory: chatHistory,
                                 metrics: currentMetrics,
-                                repost: repostContext
+                                repost: repostContext,
+                                profile: userProfile
                             }),
                             signal: controller.signal
                         });
@@ -11334,6 +11367,12 @@
                 if (aiResponse.metrics) {
                     console.log('📊 Saving AI metrics:', aiResponse.metrics);
                     saveAIMetrics(aiResponse.metrics);
+                }
+
+                // Сохраняем обновлённый профиль (если он вернулся)
+                if (aiResponse.profile && Object.keys(aiResponse.profile).length > 0) {
+                    console.log('👤 Saving AI profile:', aiResponse.profile);
+                    saveUserProfile(aiResponse.profile);
                 }
 
                 // Проверяем тег [NEED_DAY:N] для двухэтапного запроса
