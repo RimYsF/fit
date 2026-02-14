@@ -95,6 +95,18 @@
             bottom: 0;
             background: url('HH.jpg') center/cover no-repeat;
             z-index: -1;
+            will-change: auto; /* Отключаем will-change для фона */
+        }
+
+        /* Изолируем фон при перетаскивании - предотвращаем перерисовку */
+        body.dragging-mode::after {
+            transform: translateZ(0); /* GPU-ускорение для фона */
+            will-change: auto;
+        }
+
+        /* Глобально отключаем ВСЕ transitions при перетаскивании - предотвращаем мигание */
+        body.dragging-mode * {
+            transition: none !important;
         }
 
         body::-webkit-scrollbar {
@@ -104,16 +116,16 @@
         /* Верхняя секция с прокруткой тренировок */
         .workout-section {
             background: rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
+            /* backdrop-filter: blur(5px) УБРАН - слишком дорого на мобильных */
             border-bottom: 4px solid var(--neobrut-black);
             padding: 0;
             position: relative;
             box-shadow: 8px 8px 0 var(--neobrut-black);
             flex-shrink: 0;
-            flex-basis: var(--workout-basis, auto);
+            /* flex-basis УБРАНО - используем height напрямую для лучшей производительности на мобильных */
             overflow-y: auto;
             min-height: 50px;
-            transition: box-shadow 0.15s ease, backdrop-filter 0.15s ease;
+            transition: box-shadow 0.15s ease; /* УБРАЛИ backdrop-filter transition */
         }
 
         /* Оптимизация при перетаскивании */
@@ -161,6 +173,7 @@
         body.dragging-mode .activity-section {
             pointer-events: none;
             background: rgba(255, 255, 255, 0.3);
+            box-shadow: none !important; /* Отключаем тень - предотвращает перерисовку */
         }
 
         /* Предотвращаем мигание activity-grid-vertical при перетаскивании */
@@ -11694,10 +11707,11 @@
         let rafId = null;
         let currentY = 0;
 
-        // Переменные для плавной интерполяции (lerp)
+        // Переменные для обновления высоты (без интерполяции для максимальной производительности)
         let targetHeight = 0;
         let currentHeight = 0;
-        const lerpFactor = 0.6; // Увеличено для более быстрого отклика (было 0.3)
+        // lerpFactor УБРАН - используем прямое применение без интерполяции
+        // const lerpFactor = 0.6;
 
         // Кэшированные измерения для производительности
         let cachedMeasurements = {
@@ -11768,7 +11782,7 @@
             return height;
         }
 
-        // Плавная интерполяция (lerp)
+        // Плавная интерполяция (lerp) - больше не используется
         function lerp(start, end, factor) {
             return start + (end - start) * factor;
         }
@@ -11776,14 +11790,12 @@
         // Функция обновления через RAF (работает на 60fps автоматически)
         let lastAppliedHeight = 0;
         function updateFrame() {
-            // Плавно двигаем текущую высоту к цели
-            currentHeight = lerp(currentHeight, targetHeight, lerpFactor);
-
-            // Применяем только если изменение значимое (больше 0.5px)
-            if (Math.abs(currentHeight - lastAppliedHeight) > 0.5) {
-                // На мобильных быстрее менять height напрямую, не flex-basis через CSS переменную
-                workoutSection.style.height = currentHeight + 'px';
-                lastAppliedHeight = currentHeight;
+            // Применяем целевую высоту напрямую БЕЗ интерполяции - быстрее на мобильных
+            // Проверяем что высота реально изменилась
+            if (Math.abs(targetHeight - lastAppliedHeight) > 0.5) {
+                workoutSection.style.height = targetHeight + 'px';
+                lastAppliedHeight = targetHeight;
+                currentHeight = targetHeight;
             }
 
             // Продолжаем цикл пока перетаскиваем
