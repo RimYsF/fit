@@ -10503,14 +10503,6 @@
                     container.style.transform = `translateX(${offset * 110}%)`;
                     container.style.zIndex = index === currentSlide ? '2' : '1';
                 });
-
-                // Фокус на поле ввода при открытии чата
-                if (currentSlide === 0) {
-                    setTimeout(() => {
-                        const chatInput = document.getElementById('slider-chat-input');
-                        if (chatInput) chatInput.focus();
-                    }, 300);
-                }
             }
 
             // Инициализация начальных стилей для контейнеров
