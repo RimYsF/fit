@@ -11684,8 +11684,6 @@
                 isDragging = false;
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-                document.body.classList.remove('dragging-mode');
-                workoutSection.classList.remove('dragging');
                 // Финальное обновление до точной позиции
                 if (rafId) {
                     cancelAnimationFrame(rafId);
@@ -11700,6 +11698,9 @@
                         requestAnimationFrame(finishAnimation);
                     } else {
                         workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                        // Удаляем dragging-классы только после завершения анимации
+                        document.body.classList.remove('dragging-mode');
+                        workoutSection.classList.remove('dragging');
                     }
                 };
                 finishAnimation();
@@ -11731,8 +11732,6 @@
         document.addEventListener('touchend', () => {
             if (isDragging) {
                 isDragging = false;
-                document.body.classList.remove('dragging-mode');
-                workoutSection.classList.remove('dragging');
                 if (rafId) {
                     cancelAnimationFrame(rafId);
                     rafId = null;
@@ -11746,6 +11745,9 @@
                         requestAnimationFrame(finishAnimation);
                     } else {
                         workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                        // Удаляем dragging-классы только после завершения анимации
+                        document.body.classList.remove('dragging-mode');
+                        workoutSection.classList.remove('dragging');
                     }
                 };
                 finishAnimation();
