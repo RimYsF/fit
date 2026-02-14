@@ -120,8 +120,10 @@
         .workout-section.dragging {
             backdrop-filter: none;
             box-shadow: none;
-            will-change: height;
-            contain: layout style;
+            /* will-change: height УБРАН - вызывает лаги на мобильных */
+            /* contain: layout style УБРАНО - слишком дорого для мобильных */
+            isolation: isolate; /* Изолируем stacking context - уменьшает перерисовку */
+            flex: none; /* Отключаем flex при перетаскивании - используем height */
             transition: none;
             z-index: 1;
             overflow-y: hidden;
@@ -11723,7 +11725,8 @@
             const initialHeight = baseHeight + additionalHeight;
             currentHeight = initialHeight;
             targetHeight = initialHeight;
-            workoutSection.style.setProperty('--workout-basis', initialHeight + 'px');
+            // Используем height напрямую - быстрее на мобильных
+            workoutSection.style.height = initialHeight + 'px';
         }, 100);
 
         // Кэшируем измерения при начале перетаскивания
@@ -11778,7 +11781,8 @@
 
             // Применяем только если изменение значимое (больше 0.5px)
             if (Math.abs(currentHeight - lastAppliedHeight) > 0.5) {
-                workoutSection.style.setProperty('--workout-basis', currentHeight + 'px');
+                // На мобильных быстрее менять height напрямую, не flex-basis через CSS переменную
+                workoutSection.style.height = currentHeight + 'px';
                 lastAppliedHeight = currentHeight;
             }
 
@@ -11832,7 +11836,7 @@
                     rafId = null;
                 }
                 // Сразу применяем конечную высоту (без плавной анимации - предотвращает мигание)
-                workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                workoutSection.style.height = targetHeight + 'px';
                 // Восстанавливаем высоту и позицию скролла календаря
                 const calendarMonths = document.getElementById('calendar-months');
                 if (calendarMonths) {
@@ -11881,7 +11885,7 @@
                     rafId = null;
                 }
                 // Сразу применяем конечную высоту (без плавной анимации - предотвращает мигание)
-                workoutSection.style.setProperty('--workout-basis', targetHeight + 'px');
+                workoutSection.style.height = targetHeight + 'px';
                 // Восстанавливаем высоту и позицию скролла календаря
                 const calendarMonths = document.getElementById('calendar-months');
                 if (calendarMonths) {
