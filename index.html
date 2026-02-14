@@ -109,6 +109,11 @@
             transition: none !important;
         }
 
+        /* Глобально отключаем ВСЕ анимации при перетаскивании - предотвращаем мигание от анимаций */
+        body.dragging-mode * {
+            animation: none !important;
+        }
+
         body::-webkit-scrollbar {
             display: none;
         }
@@ -1211,8 +1216,21 @@
             stroke: url(#progressGradient);
             stroke-width: 3.5;
             stroke-linecap: round;
-            /* Плавная анимация прогресса */
-            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Плавная анимация прогресса - ОТКЛЮЧЕНА при перетаскивании для производительности */
+        }
+
+        /* Отключаем SVG анимацию прогресса при перетаскивании */
+        body.dragging-mode .task-progress-circle,
+        body.dragging-mode .task-progress-circle svg,
+        body.dragging-mode .task-progress-circle circle {
+            transition: none !important;
+        }
+
+        /* Отключаем SVG анимацию сложности при перетаскивании */
+        body.dragging-mode .task-difficulty-circle,
+        body.dragging-mode .task-difficulty-circle svg,
+        body.dragging-mode .task-difficulty-circle circle {
+            transition: none !important;
         }
 
         .exercise-check-icon {
