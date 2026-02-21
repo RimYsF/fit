@@ -3650,6 +3650,17 @@
             box-shadow: 2px 2px 0 var(--neobrut-black);
             transition: all 0.1s;
             flex-shrink: 0;
+            position: relative;
+        }
+
+        .new-chat-toast-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 33px;
+            height: 33px;
         }
 
         .new-chat-toast-btn:hover {
