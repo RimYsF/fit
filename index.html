@@ -11556,13 +11556,24 @@
                 // Определяем новый чат или нет (пустая история или только приветствие)
                 const isNewChat = chatHistory.length <= 1;
 
+                // Вычисляем статистику для AI
+                const streak = calculateStreak()
+                const todayTodos = todoData[currentWorkoutDay] || []
+                const completedTasks = todayTodos.filter(t => t.completed).length
+                const totalTasks = todayTodos.length
+                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
                 const userContext = {
                     dateString: dateString,
                     currentWorkoutDay: currentWorkoutDay,
                     workoutDayName: getWorkoutDayName(currentWorkoutDay),
                     requestedDay: requestedDay || null,
-                    isNewChat: isNewChat  // Флаг для AI - знает когда новый чат
-                };
+                    isNewChat: isNewChat,
+                    streak: streak,
+                    totalTasks: totalTasks,
+                    completedTasks: completedTasks,
+                    percentage: percentage
+                }
 
                 // Читаем контекст репоста упражнения (если есть)
                 const activeRepostData = localStorage.getItem('fitTrackerActiveRepost');
