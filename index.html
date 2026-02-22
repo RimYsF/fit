@@ -5586,7 +5586,10 @@
 
         function saveUserProfile(profile) {
             try {
-                localStorage.setItem(AI_PROFILE_KEY, JSON.stringify(profile));
+                const existing = getUserProfile()
+                const merged = { ...existing, ...profile }
+                localStorage.setItem(AI_PROFILE_KEY, JSON.stringify(merged))
+                console.log('👤 Profile saved:', merged)
             } catch (e) {
                 console.error('Ошибка сохранения профиля ИИ:', e);
             }
