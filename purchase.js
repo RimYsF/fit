@@ -1,5 +1,5 @@
 // purchase.js - Обработчик покупки подписки с модальным окном
-// ВЕРСИЯ 32 - Добавлена функция "нужна помощь?" с отправкой сообщения бота
+// ВЕРСИЯ 33 - Улучшена валидация email
 
 // Проверка загрузки
 console.log('🔄 purchase.js v=32 loaded - Added help support with bot message');
@@ -285,11 +285,39 @@ function hideAllModalBodies() {
 }
 
 /**
- * Валидация email
+ * Валидация email (улучшенная)
+ * - Проверяет формат: local@domain.tld
+ * - Минимум 2 символа в TLD
+ * - Корректные символы
  */
 function validateEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
+    const trimmed = email.trim()
+    
+    // Проверка длины
+    if (trimmed.length < 5 || trimmed.length > 254) return false
+    
+    // Улучшенная регулярка
+    // - local часть: буквы, цифры, точки, подчёркивания, дефисы, плюс
+    // - домен: буквы, цифры, дефисы
+    // - TLD: минимум 2 буквы
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    
+    if (!emailRegex.test(trimmed)) return false
+    
+    // Дополнительные проверки
+    const [localPart, domain] = trimmed.split('@')
+    
+    // Local часть не может начинаться или заканчиваться точкой
+    if (localPart.startsWith('.') || localPart.endsWith('.')) return false
+    
+    // Не может быть две точки подряд
+    if (localPart.includes('..')) return false
+    
+    // Домен не может начинаться или заканчиваться дефисом или точкой
+    if (domain.startsWith('-') || domain.endsWith('-')) return false
+    if (domain.startsWith('.') || domain.endsWith('.')) return false
+    
+    return true
 }
 
 /**

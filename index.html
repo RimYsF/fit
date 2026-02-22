@@ -3204,9 +3204,77 @@
 
         .chat-input-container {
             display: flex;
-            padding: 16px 20px;
+            flex-direction: column;
+            padding: 12px 20px;
             background: var(--neobrut-white);
             border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input-row-overlay {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Индикатор лимита символов */
+        .char-limit-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0 0 0;
+            font-size: 11px;
+            color: var(--neobrut-gray);
+            opacity: 0;
+            transition: opacity 0.2s;
+            height: 18px;
+        }
+
+        .char-limit-indicator.visible {
+            opacity: 1;
+        }
+
+        .char-limit-indicator.warning {
+            color: var(--neobrut-orange);
+        }
+
+        .char-limit-indicator.danger {
+            color: var(--neobrut-red);
+        }
+
+        .char-limit-circle {
+            width: 16px;
+            height: 16px;
+            position: relative;
+        }
+
+        .char-limit-circle svg {
+            width: 16px;
+            height: 16px;
+            transform: rotate(-90deg);
+        }
+
+        .char-limit-circle .circle-bg {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 2;
+        }
+
+        .char-limit-circle .circle-progress {
+            fill: none;
+            stroke: var(--neobrut-gray);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-dasharray: 44;
+            stroke-dashoffset: 44;
+            transition: stroke-dashoffset 0.2s, stroke 0.2s;
+        }
+
+        .char-limit-indicator.warning .circle-progress {
+            stroke: var(--neobrut-orange);
+        }
+
+        .char-limit-indicator.danger .circle-progress {
+            stroke: var(--neobrut-red);
         }
 
         .chat-input {
@@ -3504,7 +3572,48 @@
         .chat-input-row {
             display: flex;
             gap: 8px;
-            padding: 8px 12px 12px;
+            padding: 8px 12px 4px;
+        }
+
+        /* Индикатор лимита символов для slider chat */
+        .char-limit-slider {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 12px 8px;
+            font-size: 11px;
+            color: var(--neobrut-gray);
+            opacity: 0;
+            transition: opacity 0.2s;
+            height: 18px;
+        }
+
+        .char-limit-slider.visible {
+            opacity: 1;
+        }
+
+        .char-limit-slider.warning {
+            color: var(--neobrut-orange);
+        }
+
+        .char-limit-slider.danger {
+            color: var(--neobrut-red);
+        }
+
+        .char-limit-slider .char-limit-circle .circle-progress {
+            transition: stroke-dashoffset 0.2s, stroke 0.2s;
+        }
+
+        .char-limit-slider.warning .circle-progress {
+            stroke: var(--neobrut-orange);
+        }
+
+        .char-limit-slider.danger .circle-progress {
+            stroke: var(--neobrut-red);
+        }
+
+        .char-limit-slider.danger .char-limit-text {
+            color: var(--neobrut-red);
         }
 
         .chat-input-neobrut {
@@ -5342,10 +5451,19 @@
                                 <span class="repost-indicator-text" id="repost-indicator-text"></span>
                             </div>
                             <div class="chat-input-row">
-                                <input type="text" class="chat-input-neobrut" id="slider-chat-input" placeholder="Спроси меня что угодно...">
+                                <input type="text" class="chat-input-neobrut" id="slider-chat-input" placeholder="Спроси меня что угодно..." maxlength="500">
                                 <button class="chat-send-neobrut" id="slider-chat-send">
                                     <span>→</span>
                                 </button>
+                            </div>
+                            <div class="char-limit-slider" id="slider-char-limit">
+                                <div class="char-limit-circle">
+                                    <svg viewBox="0 0 16 16">
+                                        <circle class="circle-bg" cx="8" cy="8" r="7"></circle>
+                                        <circle class="circle-progress" cx="8" cy="8" r="7"></circle>
+                                    </svg>
+                                </div>
+                                <span class="char-limit-text">0/500</span>
                             </div>
                         </div>
                     </div>
@@ -5393,8 +5511,19 @@
                             </div>
                         </div>
                         <div class="chat-input-container">
-                            <input type="text" class="chat-input" id="chat-input" placeholder="Введите ваше сообщение...">
-                            <button class="chat-send" id="chat-send">Отправить</button>
+                            <div class="chat-input-row-overlay">
+                                <input type="text" class="chat-input" id="chat-input" placeholder="Введите ваше сообщение..." maxlength="500">
+                                <button class="chat-send" id="chat-send">Отправить</button>
+                            </div>
+                            <div class="char-limit-indicator" id="chat-char-limit">
+                                <div class="char-limit-circle">
+                                    <svg viewBox="0 0 16 16">
+                                        <circle class="circle-bg" cx="8" cy="8" r="7"></circle>
+                                        <circle class="circle-progress" cx="8" cy="8" r="7"></circle>
+                                    </svg>
+                                </div>
+                                <span class="char-limit-text">0/500</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -9394,6 +9523,7 @@
             renderTaskDayWidgets();
             setupEventListeners();
             setupModalListeners();
+            initCharLimitHandlers();
 
             // Проверяем и обновляем активность на основе текущих состояний задач
             checkAndRecordActivity();
@@ -11195,8 +11325,9 @@
             // Добавляем сообщение пользователя
             addMessage(message, true);
 
-            // Очищаем поле ввода
+            // Очищаем поле ввода и индикатор
             chatInput.value = '';
+            updateCharLimitIndicator('chat-input', 'chat-char-limit');
 
             // Получаем ответ от AI
             try {
@@ -11218,8 +11349,9 @@
             // Добавляем сообщение пользователя
             addMessage(message, true);
 
-            // Очищаем поле ввода
+            // Очищаем поле ввода и индикатор
             chatInput.value = '';
+            updateCharLimitIndicator('slider-chat-input', 'slider-char-limit');
 
             // Получаем ответ от AI
             try {
@@ -11228,6 +11360,69 @@
             } catch (error) {
                 console.error('Error in sendSliderMessage:', error);
                 addMessage("Произошла ошибка. Попробуйте еще раз.", false);
+            }
+        }
+
+        // ============================================
+        // ИНДИКАТОР ЛИМИТА СИМВОЛОВ (500 макс)
+        // ============================================
+        const MAX_MESSAGE_LENGTH = 500
+        const SHOW_INDICATOR_THRESHOLD = 50 // Показывать когда осталось 50 символов
+
+        function updateCharLimitIndicator(inputId, indicatorId) {
+            const input = document.getElementById(inputId)
+            const indicator = document.getElementById(indicatorId)
+            if (!input || !indicator) return
+
+            const length = input.value.length
+            const remaining = MAX_MESSAGE_LENGTH - length
+
+            // Показываем индикатор когда осталось <= 50 символов
+            if (remaining <= SHOW_INDICATOR_THRESHOLD) {
+                indicator.classList.add('visible')
+            } else {
+                indicator.classList.remove('visible')
+            }
+
+            // Обновляем текст
+            const textEl = indicator.querySelector('.char-limit-text')
+            if (textEl) {
+                textEl.textContent = `${length}/${MAX_MESSAGE_LENGTH}`
+            }
+
+            // Обновляем круговой прогресс
+            const progressCircle = indicator.querySelector('.circle-progress')
+            if (progressCircle) {
+                const circumference = 44 // 2 * PI * 7
+                const progress = length / MAX_MESSAGE_LENGTH
+                const offset = circumference * (1 - progress)
+                progressCircle.style.strokeDashoffset = offset
+            }
+
+            // Цвета: normal -> warning (осталось < 50) -> danger (осталось < 10)
+            indicator.classList.remove('warning', 'danger')
+            if (remaining <= 10) {
+                indicator.classList.add('danger')
+            } else if (remaining <= SHOW_INDICATOR_THRESHOLD) {
+                indicator.classList.add('warning')
+            }
+        }
+
+        // Инициализация обработчиков лимита символов
+        function initCharLimitHandlers() {
+            const overlayInput = document.getElementById('chat-input')
+            const sliderInput = document.getElementById('slider-chat-input')
+
+            if (overlayInput) {
+                overlayInput.addEventListener('input', () => {
+                    updateCharLimitIndicator('chat-input', 'chat-char-limit')
+                })
+            }
+
+            if (sliderInput) {
+                sliderInput.addEventListener('input', () => {
+                    updateCharLimitIndicator('slider-chat-input', 'slider-char-limit')
+                })
             }
         }
 
@@ -12138,7 +12333,7 @@
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=100"></script>
-    <script src="purchase.js?v=103"></script>
+    <script src="purchase.js?v=104"></script>
 </body>
 
 </html>
