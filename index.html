@@ -3901,6 +3901,9 @@
             overflow: hidden;
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
         }
 
         .ai-comment:hover {
@@ -3913,19 +3916,38 @@
             box-shadow: 3px 3px 0 var(--neobrut-black);
         }
 
-        .ai-comment::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.3;
-            pointer-events: none;
+        .ai-comment.loading {
+            background: linear-gradient(135deg, var(--neobrut-purple), var(--neobrut-blue), #06B6D4, var(--neobrut-purple));
+            background-size: 300% 300%;
+            animation: gradient-animate 2s ease infinite;
+        }
+
+        @keyframes gradient-animate {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .ai-comment-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--neobrut-white);
+            border: 2px solid var(--neobrut-black);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 2px 2px 0 var(--neobrut-black);
+        }
+
+        .ai-comment-icon img {
+            width: 20px;
+            height: 20px;
         }
 
         .ai-comment-text {
+            flex: 1;
             font-size: 14px;
             font-weight: 600;
             color: var(--neobrut-white);
@@ -3934,7 +3956,6 @@
             z-index: 1;
         }
 
-        /* Typing cursor effect */
         .ai-comment-text.typing::after {
             content: '';
             display: inline-block;
@@ -3951,42 +3972,34 @@
             51%, 100% { opacity: 0; }
         }
 
-        /* Dark gray blinking dots */
-        .ai-comment-typing-dots {
-            display: inline-flex;
+        .ai-comment-refresh-hint {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 6px;
+            display: flex;
             align-items: center;
             gap: 4px;
-            margin-left: 4px;
         }
 
-        .ai-comment-typing-dot {
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            animation: typing-blink 1.4s infinite ease-in-out both;
-        }
-
-        .ai-comment-typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .ai-comment-typing-dot:nth-child(2) { animation-delay: -0.16s; }
-        .ai-comment-typing-dot:nth-child(3) { animation-delay: 0s; }
-
-        @keyframes typing-blink {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
-            40% { transform: scale(1); opacity: 0.5; }
+        .ai-comment-refresh-hint svg {
+            width: 12px;
+            height: 12px;
         }
 
         .ai-comment-loading {
             display: flex;
             align-items: center;
-            gap: 5px;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 12px;
+            gap: 8px;
+        }
+
+        .ai-comment-loading-dots {
+            display: flex;
+            gap: 4px;
         }
 
         .ai-comment-loading-dot {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             background: var(--neobrut-white);
             border-radius: 50%;
             animation: bounce 1.4s infinite ease-in-out both;
@@ -5166,9 +5179,18 @@
 
             <!-- AI Комментарий -->
             <div class="ai-comment" id="ai-comment">
+                <div class="ai-comment-icon">
+                    <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="AI">
+                </div>
                 <div class="ai-comment-text" id="ai-comment-text">
-                    <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
                     <span id="ai-comment-span">Загрузка AI комментария...</span>
+                    <div class="ai-comment-refresh-hint">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Нажми для нового комментария
+                    </div>
                 </div>
             </div>
 
@@ -9032,10 +9054,9 @@
         // Функция анимации печати текста
         let typingTimeout = null;
         function typeTextWithAnimation(element, text, speed = 30) {
-            // Ищем span внутри элемента для текста
+            const aiCommentWidget = document.getElementById('ai-comment');
             const textSpan = element.querySelector('#ai-comment-span') || element;
 
-            // Очищаем предыдущую анимацию
             if (typingTimeout) {
                 clearTimeout(typingTimeout);
             }
@@ -9053,6 +9074,9 @@
                 } else {
                     textSpan.classList.remove('typing');
                     textSpan.textContent = text;
+                    aiCommentWidget.classList.remove('loading');
+                    const hint = element.querySelector('.ai-comment-refresh-hint');
+                    if (hint) hint.style.display = 'flex';
                 }
             }
 
@@ -9061,83 +9085,113 @@
 
         // Ручное обновление AI комментария по клику
         async function refreshAIComment() {
+            const aiCommentWidget = document.getElementById('ai-comment');
             const commentElement = document.getElementById('ai-comment-text');
             const currentWorkoutDay = getCurrentWorkoutDay();
             const percentage = calculateCompletionPercentage(currentWorkoutDay);
             const streak = calculateStreak();
 
-            // Показываем индикатор загрузки
+            aiCommentWidget.classList.add('loading');
+
             commentElement.innerHTML = `
                 <div class="ai-comment-loading">
                     <span>Анализирую прогресс</span>
-                    <div class="ai-comment-loading-dot"></div>
-                    <div class="ai-comment-loading-dot"></div>
-                    <div class="ai-comment-loading-dot"></div>
+                    <div class="ai-comment-loading-dots">
+                        <span class="ai-comment-loading-dot"></span>
+                        <span class="ai-comment-loading-dot"></span>
+                        <span class="ai-comment-loading-dot"></span>
+                    </div>
                 </div>
             `;
 
             try {
-                // Генерируем новый комментарий
                 const comment = await generateAICommentForDashboard(percentage, streak);
 
-                // Анимируем появление текста
+                commentElement.innerHTML = `
+                    <span id="ai-comment-span"></span>
+                    <div class="ai-comment-refresh-hint" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Нажми для нового комментария
+                    </div>
+                `;
+
                 typeTextWithAnimation(commentElement, comment, 25);
 
-                // Обновляем время и процент
                 lastAICommentUpdate = Date.now();
                 lastAICommentPercentage = percentage;
 
-                // Кешируем в localStorage
                 localStorage.setItem('fitTrackerAIComment', JSON.stringify({
                     comment,
                     timestamp: lastAICommentUpdate,
                     percentage: lastAICommentPercentage
                 }));
 
-                // Вибрация
                 if (window.Telegram?.WebApp?.HapticFeedback) {
                     Telegram.WebApp.HapticFeedback.selectionChanged();
                 }
             } catch (error) {
                 console.error('Error refreshing AI comment:', error);
-                commentElement.textContent = getFallbackComment(percentage, streak);
+                aiCommentWidget.classList.remove('loading');
+                const fallbackText = getFallbackComment(percentage, streak);
+                commentElement.innerHTML = `
+                    <span id="ai-comment-span">${fallbackText}</span>
+                    <div class="ai-comment-refresh-hint">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Нажми для нового комментария
+                    </div>
+                `;
             }
         }
 
         // Генерация AI комментария для dashboard
         async function updateAIComment(skipAnimation = false) {
+            const aiCommentWidget = document.getElementById('ai-comment');
             const displayDay = selectedWorkout;
             const percentage = calculateCompletionPercentage(displayDay);
             const streak = calculateStreak();
 
-            // Проверяем нужно ли обновлять
             if (!shouldUpdateAIComment(percentage) && !skipAnimation) {
-                return; // Используем закешированный комментарий
+                return;
             }
 
-            // Показываем индикатор загрузки (с иконкой)
+            aiCommentWidget.classList.add('loading');
+
             const commentElement = document.getElementById('ai-comment-text');
             commentElement.innerHTML = `
-                <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
-                <span id="ai-comment-span" class="ai-comment-loading">
-                    <span style="margin-right: 4px;">Анализирую прогресс</span>
-                    <span class="ai-comment-loading-dot"></span>
-                    <span class="ai-comment-loading-dot"></span>
-                    <span class="ai-comment-loading-dot"></span>
-                </span>
+                <div class="ai-comment-loading">
+                    <span>Анализирую прогресс</span>
+                    <div class="ai-comment-loading-dots">
+                        <span class="ai-comment-loading-dot"></span>
+                        <span class="ai-comment-loading-dot"></span>
+                        <span class="ai-comment-loading-dot"></span>
+                    </div>
+                </div>
             `;
 
-            // Генерируем комментарий
             const comment = await generateAICommentForDashboard(percentage, streak);
 
-            // Анимируем появление текста
+            commentElement.innerHTML = `
+                <span id="ai-comment-span"></span>
+                <div class="ai-comment-refresh-hint" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6M1 20v-6h6"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    Нажми для нового комментария
+                </div>
+            `;
+
             typeTextWithAnimation(commentElement, comment, 25);
 
-            // Сохраняем время обновления и процент
             lastAICommentUpdate = Date.now();
             lastAICommentPercentage = percentage;
 
-            // Кешируем в localStorage
             localStorage.setItem('fitTrackerAIComment', JSON.stringify({
                 comment,
                 timestamp: lastAICommentUpdate,
@@ -9252,14 +9306,15 @@
                     const commentElement = document.getElementById('ai-comment-text');
                     if (commentElement) {
                         commentElement.innerHTML = `
-                            <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
-                            <span id="ai-comment-span"></span>
+                            <span id="ai-comment-span">${comment}</span>
+                            <div class="ai-comment-refresh-hint">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"/>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                                </svg>
+                                Нажми для нового комментария
+                            </div>
                         `;
-                        // Безопасно устанавливаем текст комментария
-                        const span = commentElement.querySelector('#ai-comment-span');
-                        if (span) {
-                            span.textContent = comment;
-                        }
                     }
                     lastAICommentUpdate = timestamp;
                     lastAICommentPercentage = percentage;
