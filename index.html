@@ -129,11 +129,12 @@
             transform: translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-            pointer-events: none; /* Отключаем события внутри при перетаскивании */
+            pointer-events: none;
+            /* Отключаем события внутри при перетаскивании */
         }
 
         /* Включаем pointer-events только для самого элемента */
-        .workout-section.dragging > * {
+        .workout-section.dragging>* {
             pointer-events: auto;
         }
 
@@ -148,11 +149,11 @@
             transform: translate(-50%, -50%) scale(0) !important;
         }
 
-        .workout-section.dragging .todo-checkbox input:checked ~ .checkbox-checkmark {
+        .workout-section.dragging .todo-checkbox input:checked~.checkbox-checkmark {
             transform: translate(-50%, -50%) rotate(-45deg) scale(1) !important;
         }
 
-        .workout-section.dragging .todo-checkbox input:checked ~ .checkbox-visual {
+        .workout-section.dragging .todo-checkbox input:checked~.checkbox-visual {
             transform: rotate(-5deg) !important;
         }
 
@@ -164,13 +165,14 @@
             pointer-events: none;
         }
 
-        body.dragging-mode .activity-section > * {
+        body.dragging-mode .activity-section>* {
             pointer-events: auto;
         }
 
         .workout-header {
             padding: 0;
-            display: none; /* Скрываем пустой header */
+            display: none;
+            /* Скрываем пустой header */
         }
 
         .workout-title {
@@ -234,6 +236,7 @@
 
         /* Дополнительно отключаем подсветку при клике на мобильных */
         @media (hover: none) and (pointer: coarse) {
+
             .todo-item:active,
             .todo-subitem:active,
             .todo-expand:active {
@@ -286,7 +289,8 @@
             height: 100%;
             cursor: pointer;
             z-index: 2;
-            outline: none; /* Убираем синюю рамку при клике */
+            outline: none;
+            /* Убираем синюю рамку при клике */
         }
 
         .checkbox-visual {
@@ -301,7 +305,7 @@
             transition: all 0.2s;
         }
 
-        .todo-checkbox input:checked ~ .checkbox-visual {
+        .todo-checkbox input:checked~.checkbox-visual {
             background: var(--neobrut-yellow);
             transform: rotate(-5deg);
         }
@@ -318,7 +322,7 @@
             transition: transform 0.2s;
         }
 
-        .todo-checkbox input:checked ~ .checkbox-checkmark {
+        .todo-checkbox input:checked~.checkbox-checkmark {
             transform: translate(-50%, -50%) rotate(-45deg) scale(1);
         }
 
@@ -329,7 +333,8 @@
             color: var(--neobrut-darkgray);
             user-select: none;
             cursor: pointer;
-            outline: none; /* Убираем синюю рамку при клике */
+            outline: none;
+            /* Убираем синюю рамку при клике */
         }
 
         .todo-item.completed .todo-text {
@@ -364,7 +369,8 @@
             list-style: none;
             padding: 0;
             margin: 10px 0 0 0;
-            display: none; /* Скрыты по умолчанию */
+            display: none;
+            /* Скрыты по умолчанию */
         }
 
         .todo-sublist.expanded {
@@ -410,7 +416,8 @@
         .todo-subitem .todo-text {
             font-size: 14px;
             font-weight: 500;
-            outline: none; /* Убираем синюю рамку при клике */
+            outline: none;
+            /* Убираем синюю рамку при клике */
         }
 
         .todo-subitem.completed {
@@ -506,7 +513,8 @@
         @media (max-width: 768px) {
             .workout-section.show-todos #todo-content {
                 padding: 10px;
-                height: 190px; /* Финальная высота для лучшего отображения */
+                height: 190px;
+                /* Финальная высота для лучшего отображения */
             }
 
             .workout-section.show-todos .workout-title {
@@ -528,7 +536,8 @@
             /* Секция остается того же размера, что и с каруселью */
             display: flex;
             flex-direction: column;
-            padding: 0; /* Убираем вертикальные отступы */
+            padding: 0;
+            /* Убираем вертикальные отступы */
         }
 
         .workout-section.show-todos .workout-header {
@@ -573,8 +582,10 @@
             background: var(--neobrut-white);
             overflow-y: auto;
             overflow-x: hidden;
-            height: 190px; /* Финальная высота для лучшего отображения */
-            -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+            height: 190px;
+            /* Финальная высота для лучшего отображения */
+            -webkit-overflow-scrolling: touch;
+            /* Плавная прокрутка на iOS */
             /* Убираем flex чтобы height работал */
             flex: none;
         }
@@ -833,8 +844,8 @@
             transform: translate3d(100%, 0, 0);
             /* Плавная spring-анимация на CPU (cubic-bezier) */
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        visibility 0s linear 0.4s,
-                        opacity 0s linear 0.4s;
+                visibility 0s linear 0.4s,
+                opacity 0s linear 0.4s;
         }
 
         .exercise-card.show {
@@ -847,7 +858,7 @@
             will-change: transform;
             /* Показываем сразу без задержки */
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        opacity 0.3s ease;
+                opacity 0.3s ease;
         }
 
         .exercise-card.hide {
@@ -1041,6 +1052,7 @@
                 opacity: 0;
                 transform: translate3d(0, 10px, 0);
             }
+
             to {
                 opacity: 1;
                 transform: translate3d(0, 0, 0);
@@ -1075,8 +1087,8 @@
             border-radius: 50%;
             /* GPU-ускорённая трансформация */
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-                        background 0.3s ease,
-                        box-shadow 0.3s ease;
+                background 0.3s ease,
+                box-shadow 0.3s ease;
             /* Лёгкая тень для объёма */
             box-shadow:
                 inset 0 -2px 4px rgba(0, 0, 0, 0.2),
@@ -1112,9 +1124,11 @@
             0% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.3);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -1282,11 +1296,15 @@
         }
 
         @keyframes summaryFadeIn {
-            to { opacity: 1; }
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes summaryFadeOut {
-            to { opacity: 0; }
+            to {
+                opacity: 0;
+            }
         }
 
         @keyframes summarySlideUp {
@@ -1294,6 +1312,7 @@
                 opacity: 0;
                 transform: scale(0.9) translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1) translateY(0);
@@ -1413,6 +1432,7 @@
                 opacity: 0;
                 transform: scale(0.92) translateY(15px);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1) translateY(0);
@@ -2088,7 +2108,7 @@
             text-align: center;
             margin-top: auto;
             padding: 8px 12px;
-            background: rgba(0,0,0,0.03);
+            background: rgba(0, 0, 0, 0.03);
             border-radius: 6px;
         }
 
@@ -2175,8 +2195,13 @@
         }
 
         @keyframes celebrationFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .celebration-content {
@@ -2186,9 +2211,19 @@
         }
 
         @keyframes celebrationScale {
-            0% { transform: scale(0.5); opacity: 0; }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .celebration-emoji {
@@ -2198,15 +2233,22 @@
         }
 
         @keyframes celebrationBounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
 
         .celebration-title {
             font-size: 48px;
             font-weight: bold;
             margin-bottom: 20px;
-            text-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+            text-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
         }
 
         .celebration-subtitle {
@@ -2231,14 +2273,14 @@
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             margin-top: 20px;
         }
 
         .celebration-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
         }
 
         /* Конфетти эффект */
@@ -2252,8 +2294,15 @@
         }
 
         @keyframes confettiFall {
-            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
         }
 
         /* Стили для списка функций в поздравительном окне подписки (необрутализм) */
@@ -2319,15 +2368,41 @@
         }
 
         /* Задержка анимации для каждой функции (первые 6, потом быстро) */
-        .celebration-feature:nth-child(1) { animation-delay: 0.05s; }
-        .celebration-feature:nth-child(2) { animation-delay: 0.08s; }
-        .celebration-feature:nth-child(3) { animation-delay: 0.11s; }
-        .celebration-feature:nth-child(4) { animation-delay: 0.14s; }
-        .celebration-feature:nth-child(5) { animation-delay: 0.17s; }
-        .celebration-feature:nth-child(6) { animation-delay: 0.20s; }
-        .celebration-feature:nth-child(n+7) { animation-delay: 0.25s; }
-        .celebration-feature:nth-child(n+13) { animation-delay: 0.30s; }
-        .celebration-feature:nth-child(n+19) { animation-delay: 0.35s; }
+        .celebration-feature:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .celebration-feature:nth-child(2) {
+            animation-delay: 0.08s;
+        }
+
+        .celebration-feature:nth-child(3) {
+            animation-delay: 0.11s;
+        }
+
+        .celebration-feature:nth-child(4) {
+            animation-delay: 0.14s;
+        }
+
+        .celebration-feature:nth-child(5) {
+            animation-delay: 0.17s;
+        }
+
+        .celebration-feature:nth-child(6) {
+            animation-delay: 0.20s;
+        }
+
+        .celebration-feature:nth-child(n+7) {
+            animation-delay: 0.25s;
+        }
+
+        .celebration-feature:nth-child(n+13) {
+            animation-delay: 0.30s;
+        }
+
+        .celebration-feature:nth-child(n+19) {
+            animation-delay: 0.35s;
+        }
 
         @keyframes celebrationFeatureSlide {
             to {
@@ -2381,10 +2456,8 @@
         .activity-section {
             transition: opacity 0.15s ease;
             padding: 5px;
-            background: linear-gradient(
-                rgba(255, 255, 255, 0.2),
-                rgba(255, 255, 255, 0.3)
-            );
+            background: linear-gradient(rgba(255, 255, 255, 0.2),
+                    rgba(255, 255, 255, 0.3));
             display: flex;
             flex-direction: column;
             flex: 1;
@@ -2516,7 +2589,7 @@
             transform: translateY(-6px) !important;
             box-shadow:
                 10px 10px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0,0,0,0.1) !important;
+                inset 2px 2px 0 rgba(0, 0, 0, 0.1) !important;
             border-width: 4px !important;
             opacity: 1 !important;
         }
@@ -2525,7 +2598,7 @@
             transform: translate(-2px, -8px) !important;
             box-shadow:
                 12px 12px 0 var(--neobrut-black),
-                inset 2px 2px 0 rgba(0,0,0,0.1) !important;
+                inset 2px 2px 0 rgba(0, 0, 0, 0.1) !important;
         }
 
         .task-day-info {
@@ -3092,7 +3165,8 @@
         }
 
         .ai-chat-close {
-            display: none; /* Скрываем кнопку закрытия */
+            display: none;
+            /* Скрываем кнопку закрытия */
         }
 
         .ai-chat-content {
@@ -3125,6 +3199,7 @@
                 opacity: 0;
                 transform: translateY(5px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -3366,10 +3441,14 @@
         }
 
         @keyframes typingAnimation {
-            0%, 60%, 100% {
+
+            0%,
+            60%,
+            100% {
                 transform: translateY(0);
                 opacity: 0.5;
             }
+
             30% {
                 transform: translateY(-10px);
                 opacity: 1;
@@ -3420,6 +3499,7 @@
                 opacity: 0;
                 transform: translateX(-10px) rotate(-2deg);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0) rotate(0);
@@ -3731,11 +3811,27 @@
 
         /* Подёргивание вправо как hint для свайпа */
         @keyframes toastShakeHint {
-            0%, 100% { transform: translateX(-50%); }
-            20% { transform: translateX(calc(-50% + 8px)); }
-            40% { transform: translateX(calc(-50% - 4px)); }
-            60% { transform: translateX(calc(-50% + 4px)); }
-            80% { transform: translateX(calc(-50% - 2px)); }
+
+            0%,
+            100% {
+                transform: translateX(-50%);
+            }
+
+            20% {
+                transform: translateX(calc(-50% + 8px));
+            }
+
+            40% {
+                transform: translateX(calc(-50% - 4px));
+            }
+
+            60% {
+                transform: translateX(calc(-50% + 4px));
+            }
+
+            80% {
+                transform: translateX(calc(-50% - 2px));
+            }
         }
 
         .new-chat-toast-text {
@@ -3809,8 +3905,13 @@
         }
 
         @keyframes svgTimerCountdown {
-            from { stroke-dashoffset: var(--perimeter); }
-            to { stroke-dashoffset: 0; }
+            from {
+                stroke-dashoffset: var(--perimeter);
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
         }
 
         /* ===== STREAK АНИМАЦИЯ (как в Duolingo) ===== */
@@ -3868,34 +3969,73 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
         }
 
         @keyframes fireScale {
-            0% { transform: scale(0) rotate(-10deg); }
-            50% { transform: scale(1.3) rotate(5deg); }
-            100% { transform: scale(1) rotate(0deg); }
+            0% {
+                transform: scale(0) rotate(-10deg);
+            }
+
+            50% {
+                transform: scale(1.3) rotate(5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
         }
 
         @keyframes fireGlow {
-            0%, 100% { filter: drop-shadow(0 0 30px rgba(255, 150, 50, 0.8)); }
-            50% { filter: drop-shadow(0 0 60px rgba(255, 100, 0, 1)); }
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 30px rgba(255, 150, 50, 0.8));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 60px rgba(255, 100, 0, 1));
+            }
         }
 
         @keyframes numberSlide {
-            0% { transform: translateY(30px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            0% {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         @keyframes textSlide {
-            0% { transform: translateY(20px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            0% {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         /* ===== КОНЕЦ STREAK АНИМАЦИИ ===== */
@@ -4032,9 +4172,17 @@
         }
 
         @keyframes gradient-animate {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .ai-comment-icon {
@@ -4077,8 +4225,16 @@
         }
 
         @keyframes blink-cursor {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
         }
 
         .ai-comment-refresh-hint {
@@ -4114,13 +4270,31 @@
             animation: bounce 1.4s infinite ease-in-out both;
         }
 
-        .ai-comment-loading-dot:nth-child(1) { animation-delay: -0.32s; }
-        .ai-comment-loading-dot:nth-child(2) { animation-delay: -0.16s; }
-        .ai-comment-loading-dot:nth-child(3) { animation-delay: 0s; }
+        .ai-comment-loading-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .ai-comment-loading-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .ai-comment-loading-dot:nth-child(3) {
+            animation-delay: 0s;
+        }
 
         @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
-            40% { transform: scale(1); opacity: 1; }
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.6);
+                opacity: 0.5;
+            }
+
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         /* ===== NAVIGATION BUTTONS ===== */
@@ -4197,22 +4371,56 @@
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-5px); }
-            40% { transform: translateX(5px); }
-            60% { transform: translateX(-5px); }
-            80% { transform: translateX(5px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-5px);
+            }
+
+            40% {
+                transform: translateX(5px);
+            }
+
+            60% {
+                transform: translateX(-5px);
+            }
+
+            80% {
+                transform: translateX(5px);
+            }
         }
 
         /* Activity colors for calendar icon - более яркие необруталистические */
-        .activity-block-low { fill: var(--neobrut-green); }
-        .activity-block-medium { fill: var(--neobrut-blue); }
-        .activity-block-high { fill: var(--neobrut-purple); }
+        .activity-block-low {
+            fill: var(--neobrut-green);
+        }
+
+        .activity-block-medium {
+            fill: var(--neobrut-blue);
+        }
+
+        .activity-block-high {
+            fill: var(--neobrut-purple);
+        }
 
         /* Task colors - более яркие необруталистические */
-        .task-cube-done { fill: var(--neobrut-green); }
-        .task-cube-pending { stroke: var(--neobrut-black); stroke-width: 2; fill: var(--neobrut-lightgray); }
-        .task-checkmark { fill: var(--neobrut-white); }
+        .task-cube-done {
+            fill: var(--neobrut-green);
+        }
+
+        .task-cube-pending {
+            stroke: var(--neobrut-black);
+            stroke-width: 2;
+            fill: var(--neobrut-lightgray);
+        }
+
+        .task-checkmark {
+            fill: var(--neobrut-white);
+        }
 
         /* ===== ФИКСИРОВАННОЕ СООТНОШЕНИЕ ЭКРАНА ===== */
         body {
@@ -4309,6 +4517,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0);
@@ -4381,6 +4590,7 @@
                 transform: scale(0);
                 opacity: 1;
             }
+
             100% {
                 transform: scale(20);
                 opacity: 0;
@@ -4388,9 +4598,12 @@
         }
 
         @keyframes pulseScale {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.1);
             }
@@ -4441,9 +4654,12 @@
         }
 
         @keyframes hintBounce {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateY(0);
             }
+
             50% {
                 transform: translateY(-4px);
             }
@@ -4477,6 +4693,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0);
@@ -4654,6 +4871,7 @@
                 opacity: 0;
                 transform: translateY(40px) scale(0.95);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -4765,6 +4983,7 @@
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
@@ -4787,6 +5006,7 @@
                 transform: translateY(30px);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -5099,7 +5319,6 @@
         .email-modal-privacy-link:hover {
             text-decoration-style: solid;
         }
-
     </style>
 </head>
 
@@ -5126,7 +5345,8 @@
                     <p class="pricing-tagline">28-дневная программа тренировок</p>
 
                     <p class="pricing-description">
-                        Эффективная фитнес-программа для тех, кто хочет привести себя в форму за короткий срок. Каждая тренировка разработана так, чтобы дать максимальный результат за минимальное время.
+                        Эффективная фитнес-программа для тех, кто хочет привести себя в форму за короткий срок. Каждая
+                        тренировка разработана так, чтобы дать максимальный результат за минимальное время.
                     </p>
 
                     <ul class="pricing-features">
@@ -5199,7 +5419,8 @@
 
             <div class="email-modal-body" id="email-modal-body-input">
                 <p class="email-modal-description">Введите email для получения чека:</p>
-                <input type="email" class="email-modal-input" id="email-modal-input" placeholder="example@mail.com" autocomplete="email">
+                <input type="email" class="email-modal-input" id="email-modal-input" placeholder="example@mail.com"
+                    autocomplete="email">
 
                 <!-- Логотип ЮКассы -->
                 <div class="email-modal-yookassa-logo">
@@ -5208,14 +5429,18 @@
 
                 <!-- Текст соглашения с политикой конфиденциальности -->
                 <div class="email-modal-agreement">
-                    <p class="email-modal-agreement-text">Продолжая, вы соглашаетесь с <a href="https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-02-04-54" target="_blank" class="email-modal-privacy-link">политикой конфиденциальности</a></p>
-                    <p class="email-modal-help-link"><a href="#" id="email-modal-help-link" class="email-modal-privacy-link">нужна помощь?</a></p>
+                    <p class="email-modal-agreement-text">Продолжая, вы соглашаетесь с <a
+                            href="https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-02-04-54" target="_blank"
+                            class="email-modal-privacy-link">политикой конфиденциальности</a></p>
+                    <p class="email-modal-help-link"><a href="#" id="email-modal-help-link"
+                            class="email-modal-privacy-link">нужна помощь?</a></p>
                 </div>
 
                 <p class="email-modal-error" id="email-modal-error"></p>
                 <div class="email-modal-buttons">
                     <button class="email-modal-btn email-modal-btn-cancel" id="email-modal-cancel">Отмена</button>
-                    <button class="email-modal-btn email-modal-btn-confirm" id="email-modal-confirm">Перейти к оплате</button>
+                    <button class="email-modal-btn email-modal-btn-confirm" id="email-modal-confirm">Перейти к
+                        оплате</button>
                 </div>
             </div>
 
@@ -5226,7 +5451,8 @@
                 </div>
             </div>
 
-            <div class="email-modal-body email-modal-body-hidden email-modal-body-payment" id="email-modal-body-payment">
+            <div class="email-modal-body email-modal-body-hidden email-modal-body-payment"
+                id="email-modal-body-payment">
                 <div id="payment-form"></div>
             </div>
 
@@ -5238,7 +5464,8 @@
                     <p class="email-modal-email-display" id="email-modal-email-display"></p>
                 </div>
                 <div class="email-modal-buttons">
-                    <button class="email-modal-btn email-modal-btn-close" id="email-modal-close-success">Закрыть</button>
+                    <button class="email-modal-btn email-modal-btn-close"
+                        id="email-modal-close-success">Закрыть</button>
                 </div>
             </div>
 
@@ -5249,7 +5476,8 @@
                     <p id="email-modal-error-text"></p>
                 </div>
                 <div class="email-modal-buttons">
-                    <button class="email-modal-btn email-modal-btn-retry" id="email-modal-retry">Попробовать снова</button>
+                    <button class="email-modal-btn email-modal-btn-retry" id="email-modal-retry">Попробовать
+                        снова</button>
                     <button class="email-modal-btn email-modal-btn-cancel" id="email-modal-cancel-error">Отмена</button>
                 </div>
             </div>
@@ -5280,8 +5508,12 @@
                 </div>
                 <div class="strip-progress-chart">
                     <svg width="50" height="50" viewBox="0 0 36 36">
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
-                        <path id="strip-progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3" />
+                        <path id="strip-progress-circle"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="0, 100"
+                            stroke-linecap="round" />
                     </svg>
                 </div>
             </div>
@@ -5295,8 +5527,8 @@
                     <span id="ai-comment-span">Загрузка AI комментария...</span>
                     <div class="ai-comment-refresh-hint">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M23 4v6h-6M1 20v-6h6"/>
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                            <path d="M23 4v6h-6M1 20v-6h6" />
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                         </svg>
                         Нажми для нового комментария
                     </div>
@@ -5307,18 +5539,19 @@
             <div class="nav-buttons-container">
                 <!-- Кнопка чата -->
                 <button class="nav-button" id="nav-chat" data-slide="0" title="AI Чат">
-                    <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT" class="nav-icon-img">
+                    <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000" alt="ChatGPT"
+                        class="nav-icon-img">
                 </button>
 
                 <!-- Кнопка календаря активности -->
                 <button class="nav-button active" id="nav-calendar" data-slide="1" title="Календарь активности">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="2" y="8" width="6" height="6" rx="1" class="activity-block-low"/>
-                        <rect x="10" y="8" width="6" height="6" rx="1" class="activity-block-medium"/>
-                        <rect x="18" y="8" width="6" height="6" rx="1" class="activity-block-high"/>
-                        <rect x="2" y="16" width="6" height="6" rx="1" class="activity-block-high"/>
-                        <rect x="10" y="16" width="6" height="6" rx="1" class="activity-block-low"/>
-                        <rect x="18" y="16" width="6" height="6" rx="1" class="activity-block-medium"/>
+                        <rect x="2" y="8" width="6" height="6" rx="1" class="activity-block-low" />
+                        <rect x="10" y="8" width="6" height="6" rx="1" class="activity-block-medium" />
+                        <rect x="18" y="8" width="6" height="6" rx="1" class="activity-block-high" />
+                        <rect x="2" y="16" width="6" height="6" rx="1" class="activity-block-high" />
+                        <rect x="10" y="16" width="6" height="6" rx="1" class="activity-block-low" />
+                        <rect x="18" y="16" width="6" height="6" rx="1" class="activity-block-medium" />
                     </svg>
                 </button>
 
@@ -5326,16 +5559,19 @@
                 <button class="nav-button" id="nav-tasks" data-slide="2" title="Задания">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <!-- Левый верхний куб - выполнен -->
-                        <rect x="2" y="2" width="9" height="9" rx="2" class="task-cube-done"/>
-                        <path d="M4.5 6.5L6.5 8.5L8.5 5.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <rect x="2" y="2" width="9" height="9" rx="2" class="task-cube-done" />
+                        <path d="M4.5 6.5L6.5 8.5L8.5 5.5" stroke="white" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" fill="none" />
                         <!-- Правый верхний куб - выполнен -->
-                        <rect x="13" y="2" width="9" height="9" rx="2" class="task-cube-done"/>
-                        <path d="M15.5 6.5L17.5 8.5L19.5 5.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <rect x="13" y="2" width="9" height="9" rx="2" class="task-cube-done" />
+                        <path d="M15.5 6.5L17.5 8.5L19.5 5.5" stroke="white" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" fill="none" />
                         <!-- Левый нижний куб - выполнен -->
-                        <rect x="2" y="13" width="9" height="9" rx="2" class="task-cube-done"/>
-                        <path d="M4.5 17.5L6.5 19.5L8.5 16.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <rect x="2" y="13" width="9" height="9" rx="2" class="task-cube-done" />
+                        <path d="M4.5 17.5L6.5 19.5L8.5 16.5" stroke="white" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" fill="none" />
                         <!-- Правый нижний куб - не выполнен -->
-                        <rect x="13" y="13" width="9" height="9" rx="2" class="task-cube-pending"/>
+                        <rect x="13" y="13" width="9" height="9" rx="2" class="task-cube-pending" />
                     </svg>
                 </button>
             </div>
@@ -5366,8 +5602,8 @@
                         <div class="exercise-video-button" id="exercise-video-button" style="display: none;">
                             <div class="video-button-content">
                                 <svg class="video-play-icon" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10" fill="currentColor"/>
-                                    <polygon points="10,8 16,12 10,16" fill="white"/>
+                                    <circle cx="12" cy="12" r="10" fill="currentColor" />
+                                    <polygon points="10,8 16,12 10,16" fill="white" />
                                 </svg>
                                 <span class="video-button-text">Техника упражнения</span>
                             </div>
@@ -5379,21 +5615,21 @@
                         </div>
                         <div class="exercise-repost-btn" id="exercise-repost-btn" title="Переслать в AI">
                             <img src="https://img.icons8.com/?size=100&id=2Gttw0aekoFr&format=png&color=000000"
-                                 class="repost-send-icon" alt="Send">
+                                class="repost-send-icon" alt="Send">
                             <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000"
-                                 class="repost-ai-icon" alt="AI">
+                                class="repost-ai-icon" alt="AI">
                         </div>
                         <div class="exercise-check-btn" id="exercise-check-btn">
                             <svg class="exercise-check-svg" viewBox="0 0 36 36">
                                 <defs>
                                     <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stop-color="#00f5a0"/>
-                                        <stop offset="100%" stop-color="#00d47a"/>
+                                        <stop offset="0%" stop-color="#00f5a0" />
+                                        <stop offset="100%" stop-color="#00d47a" />
                                     </linearGradient>
                                 </defs>
                                 <circle class="exercise-check-bg" cx="18" cy="18" r="15"></circle>
-                                <circle class="exercise-check-progress" cx="18" cy="18" r="15"
-                                        stroke-dasharray="94.2" stroke-dashoffset="94.2"></circle>
+                                <circle class="exercise-check-progress" cx="18" cy="18" r="15" stroke-dasharray="94.2"
+                                    stroke-dashoffset="94.2"></circle>
                             </svg>
                             <span class="exercise-check-icon" id="exercise-check-icon">✓</span>
                         </div>
@@ -5429,7 +5665,8 @@
                         <!-- Toast "Новый чат" -->
                         <div class="new-chat-toast" id="new-chat-toast">
                             <svg class="new-chat-timer-svg" id="new-chat-timer-svg">
-                                <rect class="new-chat-timer-rect" id="new-chat-timer-rect" x="0" y="0" width="100%" height="100%" rx="14" ry="14"/>
+                                <rect class="new-chat-timer-rect" id="new-chat-timer-rect" x="0" y="0" width="100%"
+                                    height="100%" rx="14" ry="14" />
                             </svg>
                             <span class="new-chat-toast-text">Начать новый чат?</span>
                             <button class="new-chat-toast-btn" id="new-chat-toast-btn">✓</button>
@@ -5447,11 +5684,12 @@
                             <div class="chat-repost-indicator" id="chat-repost-indicator" style="display: none;">
                                 <button class="repost-close-btn" id="repost-close-btn" title="Удалить">×</button>
                                 <img src="https://img.icons8.com/?size=100&id=4KY3tfAid4dZ&format=png&color=000000"
-                                     class="repost-indicator-icon" alt="AI">
+                                    class="repost-indicator-icon" alt="AI">
                                 <span class="repost-indicator-text" id="repost-indicator-text"></span>
                             </div>
                             <div class="chat-input-row">
-                                <input type="text" class="chat-input-neobrut" id="slider-chat-input" placeholder="Спроси меня что угодно..." maxlength="500">
+                                <input type="text" class="chat-input-neobrut" id="slider-chat-input"
+                                    placeholder="Спроси меня что угодно..." maxlength="500">
                                 <button class="chat-send-neobrut" id="slider-chat-send">
                                     <span>→</span>
                                 </button>
@@ -5512,7 +5750,8 @@
                         </div>
                         <div class="chat-input-container">
                             <div class="chat-input-row-overlay">
-                                <input type="text" class="chat-input" id="chat-input" placeholder="Введите ваше сообщение..." maxlength="500">
+                                <input type="text" class="chat-input" id="chat-input"
+                                    placeholder="Введите ваше сообщение..." maxlength="500">
                                 <button class="chat-send" id="chat-send">Отправить</button>
                             </div>
                             <div class="char-limit-indicator" id="chat-char-limit">
@@ -5530,7 +5769,7 @@
             </div>
         </div>
 
-      </div>
+    </div>
 
     <script>
         // FitTracker AI v2.0 - 28-дневная программа
@@ -7764,7 +8003,7 @@
                         </div>
                         <div class="todo-text-wrapper ${isLockedDay ? 'future-day' : ''}">
                             <div class="todo-text" ${!isLockedDay ? "onclick=\"toggleTask('" + task.id + "')\"" : ''}>
-                                ${task.text}${task.completed && task.completedAt ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
+                                ${task.text}${task.completed && task.completedAt ? ` <span class="task-time-inline">${new Date(task.completedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>` : ''}
                             </div>
                         </div>
                     `;
@@ -8716,8 +8955,8 @@
 
             // Определяем emoji на основе результата
             const resultEmoji = summary.overallPercent >= 90 ? '🏆' :
-                              summary.overallPercent >= 75 ? '🎯' :
-                              summary.overallPercent >= 50 ? '💪' : '👊';
+                summary.overallPercent >= 75 ? '🎯' :
+                    summary.overallPercent >= 50 ? '💪' : '👊';
 
             // Вычисляем дополнительную статистику
             const avgTasksPerDay = summary.completedDays > 0 ? Math.round(summary.completedTasks / summary.completedDays * 10) / 10 : 0;
@@ -8860,11 +9099,11 @@
 
                 <!-- Слайды 5-8: Недели (кликабельные) -->
                 ${weeks.map((week, index) => {
-                    const weekClass = week.percent >= 75 ? 'excellent' : week.percent >= 50 ? 'good' : 'fair';
-                    const completedDays = week.days.filter(d => d.percent > 0).length;
-                    const bestDayPercent = week.bestDay ? week.bestDay.percent : 0;
+                const weekClass = week.percent >= 75 ? 'excellent' : week.percent >= 50 ? 'good' : 'fair';
+                const completedDays = week.days.filter(d => d.percent > 0).length;
+                const bestDayPercent = week.bestDay ? week.bestDay.percent : 0;
 
-                    return `
+                return `
                         <div class="summary-carousel-slide summary-week-slide" data-week="${index}" style="cursor: pointer;">
                             <div class="summary-week-header">
                                 <div class="summary-week-emoji">${week.emoji}</div>
@@ -8898,7 +9137,7 @@
                             </div>
                         </div>
                     `;
-                }).join('')}
+            }).join('')}
 
                 <!-- Слайд 9: Завершающий (Финал) -->
                 <div class="summary-carousel-slide summary-motivation-slide">
@@ -9079,7 +9318,7 @@
                                     if (task.completed && task.completedAt) {
                                         const timeSpan = document.createElement('span');
                                         timeSpan.className = 'task-time-inline';
-                                        timeSpan.textContent = ' ' + new Date(task.completedAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+                                        timeSpan.textContent = ' ' + new Date(task.completedAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
                                         todoText.appendChild(timeSpan);
                                     }
                                 }
@@ -9465,7 +9704,7 @@
             initializeApp();
         });
 
-            async function initializeApp() {
+        async function initializeApp() {
             // === ПРОВЕРКА ПОДПИСКИ ПРИ ЗАГРУЗКЕ ===
             const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
             const telegramId = user?.id;
@@ -9729,7 +9968,7 @@
         // ===== НОВЫЕ ФУНКЦИИ ДЛЯ ПРОЦЕНТНОЙ СИСТЕМЫ =====
 
         // Расчет процента выполнения для отдельной задачи
-        
+
         // Расчет общего процента выполнения для дня
         function calculateCompletionPercentage(day) {
             const tasks = todoData[day];
@@ -9780,7 +10019,7 @@
             renderTaskDayWidgets();
         }
 
-        
+
         // ===== КОНЕЦ НОВЫХ ФУНКЦИЙ =====
 
         // Проверка выполнения тренировки
@@ -9819,7 +10058,7 @@
             const todayKey = formatDateKey(today);
 
             const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                               'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
             const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
             // Генерируем месяцы
@@ -9960,7 +10199,7 @@
             }, 300); // Небольшая задержка для завершения анимации
         }
 
-        
+
         // Получение активности для даты
         function getActivityForDate(date) {
             const key = formatDateKey(date);
@@ -10064,8 +10303,8 @@
             return `${date.getDate()} ${['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'][date.getMonth()]}`;
         }
 
-  
-  
+
+
         // Функции для режима отображения задач
         function openWorkoutModal(workout) {
             // Получаем номер дня (поддерживает как старый формат {day}, так и просто число)
@@ -10732,7 +10971,7 @@
 
             // Функция для переключения слайдов
             // Глобальная функция для доступа из repostExercise
-            window.switchSlide = function(targetSlide) {
+            window.switchSlide = function (targetSlide) {
                 if (targetSlide < 0 || targetSlide > 2) return;
                 if (!calendarContainers || calendarContainers.length === 0) return;
 
@@ -10799,7 +11038,7 @@
 
             // Обновляем функцию switchSlide для обновления кнопок
             const originalSwitchSlide = switchSlide;
-            switchSlide = function(targetSlide) {
+            switchSlide = function (targetSlide) {
                 originalSwitchSlide(targetSlide);
                 updateNavButtonsActive();
 
@@ -11244,7 +11483,7 @@
 
                 // Прогрев AI - быстрый запрос для инициализации
                 if (chatHistory.length === 2) { // Только при первом открытии
-                    generateAIResponse("👋").catch(() => {}); // Silent fail
+                    generateAIResponse("👋").catch(() => { }); // Silent fail
                 }
             }, 10);
         }
@@ -12352,7 +12591,7 @@
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase.js?v=100"></script>
-    <script src="purchase.js?v=104"></script>
+    <script src="purchase.js?v=105"></script>
 </body>
 
 </html>
